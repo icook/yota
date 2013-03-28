@@ -1,1 +1,3 @@
-__author__ = 'isaac'
+import Form
+
+Form = Form.Form

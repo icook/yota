@@ -1,10 +1,20 @@
 from jinja2 import Environment, PackageLoader
+import os
 
 class Renderer(object):
-    search_path = []
+    # automatically populate our search path with the default templates
+    search_path = [os.path.dirname(os.path.realpath(__file__))]
 
-    def __init__(self):
-        self.env = Environment(loader=PackageLoader('yourapplication', 'templates'))
+    @property
+    def env(self):
+        """ Simple lazy loaders """
+        if not self._env:
+            self._env = Enviroment(loader=FileSystemLoader(self.search_path))
+        return self._env
 
-    def render(self):
-		pass
+    def render(self, nodes, g_context):
+        buildup = None
+        for n in nodes:
+            template = self.env.get_template(n.template)
+            buildup += template.render(nodes.get_context(g_context))
+        return buildup
