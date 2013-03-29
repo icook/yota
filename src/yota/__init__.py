@@ -2,6 +2,7 @@ from collections import OrderedDict
 from yota.exceptions import ValidatorNotCallable
 from yota.renderers import JinjaRenderer
 from yota.nodes import Node
+import json
 
 class OrderedDictMeta(type):
     def __init__(mcs, name, bases, dict):
@@ -13,7 +14,8 @@ class OrderedDictMeta(type):
             if isinstance(value, Node):
                 value.name = name
                 t[value._create_counter] = value
-        mcs._nodes = OrderedDict()
+        mcs._node_list = []
+        mcs._node_store = {}
         for i, value in sorted(t.items()):
             # keeps track of the order of items
             mcs._node_list.append(value)
@@ -30,8 +32,9 @@ class Form(object):
     start_template = 'form_open.html'
     close_template = 'form_close.html'
 
-    def __init__(self, name=self.__class__.__name__):
-        self.name = name
+    def __init__(self, name=None):
+        # set a default for our name to the class name
+        self.name = name if name else self.__class__.__name__
 
         # since our default id is based off of the parent id
         # we can pass it in here
@@ -41,17 +44,17 @@ class Form(object):
     def render(self):
         # Add our open and close form to the node list
         n = self._node_list
-        begin = Node(template=self.start_template, **context)
-        end = Node(template=self.close_template, **context)
+        begin = Node(template=self.start_template, **self.context)
+        end = Node(template=self.close_template, **self.context)
         n.insert(0, begin)
         n.append(end)
 
-        return self.renderer().render(self.n, self.g_context)
+        return self.renderer().render(n, self.g_context)
 
     def validate(self):
         errors = {}
         # loop over our nodes
-        for n in self._nodes:
+        for n in self._node_list:
             # try to iterate over their validators
             for val in list(n.validators):
                 try:

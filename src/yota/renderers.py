@@ -3,7 +3,7 @@ import os
 
 class JinjaRenderer(object):
     # automatically populate our search path with the default templates
-    search_path = [os.path.dirname(os.path.realpath(__file__))]
+    search_path = [os.path.dirname(os.path.realpath(__file__)) + "/templates/"]
     _env = None
 
     @property
@@ -15,7 +15,7 @@ class JinjaRenderer(object):
 
     def render(self, nodes, g_context):
         buildup = ""
-        for n in nodes.values():
+        for n in nodes:
             template = self.env.get_template(n.template)
             buildup += template.render(n.get_context(g_context))
         return buildup

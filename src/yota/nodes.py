@@ -32,7 +32,7 @@ class Node(object):
         """ Builds our rendering context that includes everything that's not private
         and merges in our global context. Called by our renderer at render time
         """
-        d = {i: j for i, j in self.__dict__.items() if not i.startswith("_") and i not in _ignores }
+        d = {i: j for i, j in self.__dict__.items() if not i.startswith("_") and i not in self._ignores }
         # check to make sure all required attributes are present
         for r in self._requires:
             if r not in d:
@@ -42,7 +42,10 @@ class Node(object):
 
 class ListNode(Node):
     template = 'list.html'
+    _requires = ['items']
 
 class ButtonNode(Node):
     template = 'button.html'
+    _requires = ['title']
+
 
