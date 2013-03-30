@@ -2,12 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>title</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js"></script>
+  <title>Yota example application</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
 </head>
 <body>
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+      <a class="brand" href="#">Yota</a>
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          <li class="active"><a href="#">Introduction</a></li>
+          <li><a href="#about">Unused</a></li>
+          <li><a href="#contact">Unused</a></li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Main hero unit for a primary marketing message or call to action -->
+  <div class="hero-unit">
+    <h1>Yota</h1>
+    <p>Yota is the product of personal aggrivation with overly complicated 
+    python form libraries that always seemed to get in my way. My goal is to 
+    create something that is flexible and non-imposing on style. Yota also aims
+    to maintain a tiny, well documented code base, making it easy to contribute and 
+    tweak for your own needs.</p>
+    <p class="text-center"><a href="#" class="btn btn-warning btn-large">Download</a>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a href="#" class="btn btn-success btn-large">Quick Start</a></p>
+  </div>
+
+  <!-- Example row of columns -->
+  <div class="row">
+    {{ form|safe }}
+  </div>
+
+  <hr>
+
+  <footer>
+    <p>&copy; 2013</p>
+  </footer>
+
+</div> <!-- /container -->
 <!-- page content -->
-{{ form|safe }}
+<script src="http://code.jquery.com/jquery.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
 </body>
 </html>

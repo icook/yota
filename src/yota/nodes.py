@@ -1,4 +1,4 @@
-from exceptions import InvalidContext
+from yota.exceptions import InvalidContext
 
 class Node(object):
     """ Base node for all other nodes
@@ -11,7 +11,7 @@ class Node(object):
 
     template = None
     validator = None
-    #name = attribute set in the parent form or can be passed to init
+    #name = attribute set it the parent form or can be passed to init
 
     def __init__(self, **kwargs):
         # Allows the parent form to keep track of attribute order
@@ -22,11 +22,18 @@ class Node(object):
         self.__dict__.update(kwargs)
 
 
-    def set_id(self, parent_name):
+    def set_identifiers(self, parent_name):
         """ Function that gets called by the parent Form to set the text
         id of the form node. Intended for use in the id field for rendering
         """
-        self.id = "{}_{}".format(parent_name, self.name)
+        # Set some good defaults based on attribute name and parent name,
+        # but always allow the user to override the values at the init level
+        if not hasattr(self, 'id'):
+            self.id = "{}_{}".format(parent_name, self._attr_name)
+        if not hasattr(self, 'name'):
+            self.name = self._attr_name
+        if not hasattr(self, 'title'):
+            self.title = self._attr_name.capitalize()
 
     def get_context(self, g_context):
         """ Builds our rendering context that includes everything that's not private
@@ -46,6 +53,6 @@ class ListNode(Node):
 
 class ButtonNode(Node):
     template = 'button.html'
-    _requires = ['title']
 
-
+class EntryNode(Node):
+    template = 'entry.html'

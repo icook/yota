@@ -1,5 +1,10 @@
-<select id="{{ id }}" name="{{ name }}">
-    {% for item in items %}
-    <option value="{{item[0]}}">{{item[1]}}</option>
-    {% endfor %}
-</select>
+<div class="control-group">
+    <label class="control-label" for="{{ id }}">{{ title }}</label>
+    <div class="controls">
+        <select id="{{ id }}" name="{{ name }}">
+            {% for item in items %}
+            <option value="{{item[0]}}">{{item[1]}}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>

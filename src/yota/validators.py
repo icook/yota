@@ -11,5 +11,5 @@ class MinLengthValidator(object):
     def __call__(self, value):
         if len(value) >= self.min_length:
             return None
-        else
+        else:
             return self.message
