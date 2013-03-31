@@ -1,5 +1,6 @@
 from yota.exceptions import InvalidContext
 
+
 class Node(object):
     """ Base node for all other nodes
     """
@@ -11,7 +12,7 @@ class Node(object):
 
     template = None
     validator = None
-    #name = attribute set it the parent form or can be passed to init
+    #name = attribute set in the parent form or can be passed to init
 
     def __init__(self, **kwargs):
         # Allows the parent form to keep track of attribute order
@@ -21,6 +22,12 @@ class Node(object):
         # passes everything to our rendering context and updates params
         self.__dict__.update(kwargs)
 
+    def __str__(self):
+        return "Node ({})<attr_name: {}, id: {}, _id_: {}>".format(
+                self.__class__.__name__,
+                self.__dict__.get('_attr_name', None),
+                self.__dict__.get('id', None),
+                id(self))
 
     def set_identifiers(self, parent_name):
         """ Function that gets called by the parent Form to set the text
@@ -28,6 +35,7 @@ class Node(object):
         """
         # Set some good defaults based on attribute name and parent name,
         # but always allow the user to override the values at the init level
+
         if not hasattr(self, 'id'):
             self.id = "{}_{}".format(parent_name, self._attr_name)
         if not hasattr(self, 'name'):
@@ -39,7 +47,7 @@ class Node(object):
         """ Builds our rendering context that includes everything that's not private
         and merges in our global context. Called by our renderer at render time
         """
-        d = {i: j for i, j in self.__dict__.items() if not i.startswith("_") and i not in self._ignores }
+        d = {i: getattr(self, i) for i in dir(self) if not i.startswith("_") and i not in self._ignores }
         # check to make sure all required attributes are present
         for r in self._requires:
             if r not in d:
@@ -47,12 +55,4 @@ class Node(object):
         d.update(g_context)
         return d
 
-class ListNode(Node):
-    template = 'list.html'
-    _requires = ['items']
 
-class ButtonNode(Node):
-    template = 'button.html'
-
-class EntryNode(Node):
-    template = 'entry.html'

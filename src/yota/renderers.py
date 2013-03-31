@@ -1,6 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 
+
 class JinjaRenderer(object):
     # automatically populate our search path with the default templates
     search_path = [os.path.dirname(os.path.realpath(__file__)) + "/templates/"]

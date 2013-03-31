@@ -4,6 +4,7 @@ class PostProcessor(object):
     web development frameworks. """
     pass
 
+
 class FlaskPostProcessor(object):
     def filter_post(self, postdict):
         return postdict
