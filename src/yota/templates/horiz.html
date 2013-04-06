@@ -1,9 +1,13 @@
 <div class="control-group">
     {% block error %}
         {% if error %}
-            <div class="alert alert-error">
-                {{ error['message'] }}
-            </div>
+        <div class="alert alert-error">
+            {{ error['message'] }}
+        </div>
+        {% endif %}
+        {% if ajax %}
+        <div class="alert alert-error" style="display:none;" id="{{ id }}_error">
+        </div>
         {% endif %}
     {% endblock %}
     {% block label %}

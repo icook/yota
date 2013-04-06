@@ -1,2 +1,22 @@
-<form method="post" class="form-horizontal">
+<form method="post" action="/json" class="form-horizontal" id="{{ id }}">
+    {% if ajax %}
+    <script type="text/javascript">
+    $(function () {
+    ajax_activate("{{ id }}",
+        function (id, error, data) {
+            if (error) {
+                $('#' + id + '_error').html(data['message']);
+                $('#' + id + '_error').show();
+            } else {
+                $('#' + id + '_error').hide();
+            }
+        },
+        function () {
+        });
+    });
+    </script>
+    {% endif %}
+    {% for key, val in hidden.iteritems() %}
+    <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
+    {% endfor %}
     <h2>Yota: an example</h2>

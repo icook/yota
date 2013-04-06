@@ -17,6 +17,15 @@ def testing():
         frm = t.render()
     return render_template('index.html', form=frm)
 
+@app.route("/json", methods=['POST'])
+def json_validate():
+    if request.method == 'POST':
+        # extract our parameters that were used to generate the form from the
+        # hidden fields that were generated in the begin element
+        t = SimpleForm.get_form_from_data(request.form)
+        json = t.json_validate(request.form)
+        return json
+
 class BaseNode(Node):
     base = "horiz.html"
 
@@ -34,6 +43,15 @@ class SubmitNode(BaseNode):
     template = 'submit.html'
 
 class SimpleForm(Form):
+    g_context = {'ajax': True}
+
+    @classmethod
+    def get_form_from_data(cls, data):
+        args = []
+        for key, val in data.iteritems():
+            if key.startswith('_arg_'):
+                args.append(val)
+        return cls.get_form(*args)
 
     @classmethod
     def get_form(cls, name, count=1):
@@ -41,7 +59,7 @@ class SimpleForm(Form):
         for i in reversed(xrange(int(count))):
             append_list.append(
                 EntryNode(title="Item {}".format(i), _attr_name='item{}'.format(i)))
-        f = SimpleForm(name=name)
+        f = SimpleForm(name=name, id=name, ajax=True, hidden={'name': name, 'count': count})
         f.insert_after('address', append_list)
         return f
 
