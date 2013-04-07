@@ -2,7 +2,7 @@ from collections import OrderedDict
 from yota.exceptions import ValidatorNotCallable
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
-from yota.nodes import Node
+from yota.nodes import LeaderNode, Node
 from yota.validators import Check
 import json
 import copy
@@ -92,7 +92,10 @@ class Form(object):
                 setattr(c, n._attr_name, n)
         return c
 
-    def __init__(self, name=None, **kwargs):
+    def __init__(self, name=None, g_context=None, **kwargs):
+        # init our context if passed in
+        self.g_context = g_context if g_context else {}
+
         # set a default for our name to the class name
         self.name = name if name else self.__class__.__name__
 
@@ -107,14 +110,14 @@ class Form(object):
         # Add our open and close form to the end of the tmp lst
         n = self._node_list  # alias node list
         if not hasattr(self, 'start'):
-            self.insert(0, Node(template=self.start_template,
+            self.insert(0, LeaderNode(template=self.start_template,
                          _attr_name='start',
                          **self.context))
         else:
             self.insert(0, self.start)
 
         if not hasattr(self, 'close'):
-            self.insert(-1, Node(template=self.close_template,
+            self.insert(-1, LeaderNode(template=self.close_template,
                        _attr_name='close',
                        **self.context))
         else:

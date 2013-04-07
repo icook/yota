@@ -1,4 +1,5 @@
 import platform
+from collections import namedtuple
 import re
 import urllib
 import urllib2
@@ -17,8 +18,8 @@ class MinLengthValidator(ValidatorBase):
         self.message = message if message else "Minimum allowed length {}".format(length)
         super(MinLengthValidator, self).__init__()
 
-    def __call__(self, value):
-        if len(value) < self.min_length:
+    def __call__(self, target):
+        if len(target.data) < self.min_length:
             return {'message': self.message}
 
 
@@ -29,8 +30,8 @@ class MaxLengthValidator(ValidatorBase):
         self.message = message if message else "Maximum allowed length {}".format(length)
         super(MinLengthValidator, self).__init__()
 
-    def __call__(self, value):
-        if len(value) > self.min_length:
+    def __call__(self, target):
+        if len(target.data) > self.min_length:
             return {'message': self.message}
 
 class RequiredValidator(ValidatorBase):
@@ -39,8 +40,8 @@ class RequiredValidator(ValidatorBase):
         self.message = message if message else "A value is required"
         super(RequiredValidator, self).__init__()
 
-    def __call__(self, value):
-        if len(value) == 0:
+    def __call__(self, target):
+        if len(target.data) == 0:
             return {'message': self.message}
 
 
@@ -95,29 +96,38 @@ class Check(object):
         self._attr_name = None
 
     def resolve_attr_names(self, data, form):
-        # Load up the args and kwargs that were passed with submission
-        # data in order to pass into the validator. Called from
-        # validate function.
-        print id(self.args)
+        """ Load up the args and kwargs that were passed with submission
+        data in order to pass into the validator. Called from
+        validate function. """
+
+        NodeData = namedtuple('NodeData', ['node', 'data'])
+
+        # Process args
         for i in enumerate(self.args):
             node = form.get_by_attr(self.args[i])
             try:
-                self.args[i] = data[node.name]
+                self.args[i] = NodeData(node, data[node.name])
             except KeyError:
                 raise FormDataAccessException
+
+        # Process kwargs
         for val, i in self.kwargs.iteritems():
             node = form.get_by_attr(val)
             try:
-                self.kwargs[i] = data[node.name]
+                self.kwargs[i] = NodeData(node, data[node.name])
             except KeyError:
                 raise FormDataAccessException
+
+        # Automatically add the target if no args/kwargs specified
         if len(self.args) == 0 and len(self.kwargs) == 0:
             node = form.get_by_attr(self.target)
             try:
-                self.args.append(data[node.name])
+                self.args.append(NodeData(node, data[node.name]))
             except KeyError:
                 raise FormDataAccessException
+
         self.target = form.get_by_attr(self.target)
+
     def __str__(self):
         return "Check<validator: {}, target: {}, args: {}, kwargs: {}>".format(self.validator, self.target, self.args, self.kwargs)
 

@@ -30,8 +30,8 @@ class Node(object):
                 id(self))
 
     def set_identifiers(self, parent_name):
-        """ Function that gets called by the parent Form to set the text
-        id of the form node. Intended for use in the id field for rendering
+        """ This function gets called by the parent Form on addition to the
+        form set various identifiers id of the form node. Intended for use in the id field for rendering
         """
         # Set some good defaults based on attribute name and parent name,
         # but always allow the user to override the values at the init level
@@ -52,7 +52,12 @@ class Node(object):
         for r in self._requires:
             if r not in d:
                 raise InvalidContext("Missing required context value '{}'".format(r))
-        d.update(g_context)
+        d['g'] = g_context
         return d
 
 
+class LeaderNode(Node):
+
+    def set_identifiers(self, parent_name):
+        super(LeaderNode, self).set_identifiers(parent_name)
+        delattr(self, 'title')

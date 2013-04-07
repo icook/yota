@@ -9,22 +9,23 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET', 'POST'])
 def testing():
+    # grab our count variable from the url arguments
     count = request.args.get('count', 1)
-    t = SimpleForm.get_form('test', count)
-    if request.method == 'POST':
-        frm = t.validate_render(request.form)
-    else:
-        frm = t.render()
-    return render_template('index.html', form=frm)
 
-@app.route("/json", methods=['POST'])
-def json_validate():
-    if request.method == 'POST':
-        # extract our parameters that were used to generate the form from the
-        # hidden fields that were generated in the begin element
-        t = SimpleForm.get_form_from_data(request.form)
-        json = t.json_validate(request.form)
-        return json
+    # Generate a regular form via a classmethod to provide extra functionality
+    regular_form = SimpleForm.get_form('regular', count=count)
+    ajax = SimpleForm.get_form('ajax', mode=1, count=count)
+    # Handle regular submission of the form
+    if request.method == 'POST' and '_ajax_' not in request.form:
+        reg_render = regular_form.validate_render(request.form)
+    elif '_ajax_' in request.form:
+        return ajax.json_validate(request.form)
+    else:
+        reg_render = regular_form.render()
+
+    # Generate our ajax form
+
+    return render_template('index.html', reg_form=reg_render, ajax_form=ajax.render())
 
 class BaseNode(Node):
     base = "horiz.html"
@@ -43,7 +44,6 @@ class SubmitNode(BaseNode):
     template = 'submit.html'
 
 class SimpleForm(Form):
-    g_context = {'ajax': True}
 
     @classmethod
     def get_form_from_data(cls, data):
@@ -54,19 +54,26 @@ class SimpleForm(Form):
         return cls.get_form(*args)
 
     @classmethod
-    def get_form(cls, name, count=1):
+    def get_form(cls, name, mode=0, count=1):
+
+        # Make a list of nodes to add into the Form nodelist
         append_list = []
         for i in reversed(xrange(int(count))):
             append_list.append(
                 EntryNode(title="Item {}".format(i), _attr_name='item{}'.format(i)))
-        f = SimpleForm(name=name, id=name, ajax=True, hidden={'name': name, 'count': count})
+
+        # Populate our global context depending on values
+        g_context = {}
+        if mode == 1:
+            g_context['ajax'] = True
+
+        f = SimpleForm(name=name, id=name, g_context=g_context, hidden={'name': name, 'count': count})
         f.insert_after('address', append_list)
         return f
 
     first = EntryNode(title="First Name", validators=MinLengthValidator(5))
     last = EntryNode(title="Last Name")
     _last_valid = Check(MinLengthValidator(5), 'last')
-    #_email_valid = Validator(PasswordSameValidator(), 'email', ['email', 'email_confirm'], {'test': 'first'})
     address = EntryNode(validators=RequiredValidator())
     state = ListNode(items=vals.states)
     submit = SubmitNode(title="Submit")

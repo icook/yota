@@ -42,9 +42,17 @@
 
   <!-- Example row of columns -->
   <div class="row">
-    {{ form|safe }}
+    <h3>Regular Forms</h3>
+    <p>Below is a simple example form generated with Yota. The form is re-rendered on submission via <code>Form.render_validate()</code> to provide automatic injection of validation errors into the templating context. This injection is provided via a callback method in the <code>Node</code> class that can easily be overridden if a different semantic is preferred.</p>
+    {{ reg_form|safe }}
   </div>
 
+  <div class="row">
+    <h3>AJAX Submit Forms</h3>
+    <p>The form below uses very similar code to the above example except a flag is passed into the global rendering context designating it as an AJAX form. This triggers the inclusion of Javascript snippets and placeholder error divs that enable transparent validation. Validation messages are populated by callbacks defined in Javascript and are supplied with all the data that the Python validator returned. Although a general pattern is for the validator to return a message
+    attribute in practice the system is flexible and can return anything.</p>
+    {{ ajax_form|safe }}
+  </div>
   <hr>
 
   <footer>

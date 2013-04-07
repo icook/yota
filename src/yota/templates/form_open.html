@@ -1,5 +1,5 @@
-<form method="post" action="/json" class="form-horizontal" id="{{ id }}">
-    {% if ajax %}
+<form method="post" class="form-horizontal" id="{{ id }}">
+    {% if g.ajax %}
     <script type="text/javascript">
     $(function () {
     ajax_activate("{{ id }}",
@@ -15,8 +15,11 @@
         });
     });
     </script>
+    <input type="hidden" name="_ajax_" value="True"/>
     {% endif %}
     {% for key, val in hidden.iteritems() %}
     <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
     {% endfor %}
-    <h2>Yota: an example</h2>
+    {% if title %}
+    <h2>{{ title }}</h2>
+    {% endif %}
