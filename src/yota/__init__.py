@@ -9,9 +9,10 @@ import copy
 
 class OrderedDictMeta(type):
     def __init__(mcs, name, bases, dict):
-        """ Basically do a whole lot of convoluted work to preserve
-        order of our attributes as they were entered
-        """
+        """ Process all of the attributes in the `Form` (or subclass)
+        declaration and place them accordingly. This builds the internal
+        _node_list and _validation_list. """
+
         t = {}
         mcs._validation_list = []
         for name, value in dict.items():
@@ -37,33 +38,39 @@ class OrderedDictMeta(type):
             mcs._node_list.append(value)
 
 class Form(object):
-    """ This is the base class that all forms should inherit from. It
+    """ This is the base class that all user defined forms should inherit from,
+    and as such it is the main way to access functionality in Yota. It
     provides the core functionality involved with setting up and
     rendering the form.
 
-    @param dict g_context: This is a global context that will be
-    passed to all nodes in rendering.
+    :var context: This is a global context that will be
+    passed to all nodes in rendering thorugh their rendering context as 'g'
+    variable.
+    :type g_context: dictionary
 
-    @param dict context: This is a context specifically for the special
+    :var context: This is a context specifically for the special
     form open and form close nodes, canonically called start and close.
+    :type context: dictionary
 
-    @param Renderer _renderer: This is a class object that is used to
+    :var _renderer: This is a class object that is used to
     perform the actual rendering steps, allowing different rendering
     engines to be swapped out.
+    :type _renderer: Renderer or subclass
 
-    @param Processor _processor: This is a class that performs post
+    :var _processor: This is a class that performs post
     processing on whatever is passed in as data during validation. The
     intended purpose of this was to write processors that translated
     submitted form data from the format of the web framework being used
     to a format that Yota expects. It also allows things like filtering
     stripping characters or encoding all data that enters a validator.
+    :type _processor: Processor or subclass
 
-    @param bool enable_error_header:
-
-    @param string start_template: This is the name of the template used to
+    :var start_template: This is the name of the template used to
     generate the start form node.
+    :type start_template: string
 
-    @param string close_template: Same as above except for the close template.
+    :var close_template: Same as above except for the close template.
+    :type close_template: string
     """
 
     __metaclass__ = OrderedDictMeta
@@ -73,7 +80,6 @@ class Form(object):
     _renderer = JinjaRenderer
     _processor = FlaskPostProcessor
     hidden = {}
-    enable_error_header = True
     start_template = 'form_open.html'
     close_template = 'form_close.html'
 
@@ -108,7 +114,6 @@ class Form(object):
             n.set_identifiers(self.name)
 
         # Add our open and close form to the end of the tmp lst
-        n = self._node_list  # alias node list
         if not hasattr(self, 'start'):
             self.insert(0, LeaderNode(template=self.start_template,
                          _attr_name='start',
@@ -126,13 +131,17 @@ class Form(object):
 
 
     def render(self):
-        """ Runs the renderer to actually parse templates of nodes
-        and generate the form HTML. Also handles adding the start
-        and end template nodes from the parent form. """
+        """ Runs the renderer to parse templates of nodes and generate the form
+        HTML. """
 
         return self._renderer().render(self._node_list, self.g_context)
 
     def insert(self, position, new_node_list):
+        """ Inserts a `Node` object at the specified position into the
+        _node_list of the form. Index -1 is an alias for the end of the list.
+        After insertion the `Node.set_identifiers` will be called to generate
+        identification for the `Node`. For this to function, _attr_name must be
+        specified for the node prior to insertion.  """
         # check to allow passing in just a node
         if isinstance(new_node_list, Node):
             new_node_list = (new_node_list,)
@@ -146,9 +155,16 @@ class Form(object):
             new_node.set_identifiers(self.name)
 
     def insert_after(self, prev_attr_name, new_node_list):
-        """ Runs through the internal node structure attempting to find
+        """
+        :param prev_attr_name: The attribute name of the `Node` that you would
+        like to insert after.
+        :type prev_attr_name: string
+        :param new_node_list: The `Node` or list of `Node`s to be inserted.
+
+        Runs through the internal node structure attempting to find
         prev_attr_name and inserts the passed node after it. If the
-        prev_attr_name cannot be found it will be inserted at the end """
+        prev_attr_name cannot be found it will be inserted at the end. Intenally
+        calls `Form.insert` and has the same requirements of the `Node`."""
 
         # check to allow passing in just a node
         if isinstance(new_node_list, Node):
@@ -169,7 +185,7 @@ class Form(object):
                 self._node_list.append(new_node)
 
     def get_by_attr(self, name):
-        # Simple accessor wrapper for looking up a node by _attr_name
+        """ Safe accessor for looking up a node by _attr_name """
         try:
             attr = getattr(self, name)
         except:
@@ -185,84 +201,110 @@ class Form(object):
         error renderer, whether that be javascript callbacks or re-rendering
         the form with error info in the rendering context.
 
-        @param errors: This will be a dictionary of all other nodes that have
+        :param errors: This will be a dictionary of all other nodes that have
         errors. Key values are the id of the node while the value is a dict
         of what the validator is passing back.
         """
 
         return {'message': 'Please resolve the errors below to continue.'}
 
-    def process_validation(self, vdict):
-        return vdict
-
-    def _gen_validate(self, data):
+    def _gen_validate(self, data, postprocessor=None):
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
-        for n in self._validation_list:
-            print id(n.args)
-
+        invalid = []
         # loop over our nodes
         for n in self._validation_list:
-            print n
             # try to iterate over their validators
             n.resolve_attr_names(data, self)
+            block = False
             try:
+                # Run our validator
                 r = n.validate()
             except TypeError as e:
                 raise ValidatorNotCallable("Validators provided must be callable, type '{}' instead.".format(type(n.validator)))
-            yield (n.target, r)
+            if r:
+                # Set the error value of the node to equal the dictionary that
+                # is returned by the validator
+
+                # If they returned a tuple of tuples
+                if not isinstance(r[0], tuple):
+                    r = (r,)
+                for n in r:
+                    # slightly confusing way of setting our block = True by
+                    # default
+                    if not block:
+                        block = n.get('block', True)
+                    if postprocessor:
+                        n[0].error = postprocessor(n[1])
+                    else:
+                        n[0].error = n[1]
+                    invalid.append(n[0])
+
+        return block, invalid
 
 
-    def json_validate(self, data):
-        """ Runs all the accumulated validators on the data passed and returns the
-        result of each failed validation to the target node. Given the data from
-        your post call it is run through a post- processor and then validated
-        with appropriate node modules """
+    def json_validate(self, data, postprocessor=None, piecewise=False, enable_error_header=False):
+        """ The same as `Form.validate_render` except the errors are loaded into
+        a JSON string to be passed back as a query result. This output is
+        designed to be used by the Yota Javascript library.
+
+        :param piecewise: If set to True, the validator will silently ignore
+        validator for which it has insufficient information. This is designed to
+        be used for the AJAX piecewise validation function, although it does not
+        have to be.
+        :type piecewise: boolean
+        """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
         errors = {}
-        valid = []
-        block = False
+        block, invalid = self._gen_validate(data, postprocessor=postprocessor)
         # loop over our nodes
-        for target_node, validation_result in self._gen_validate(data):
-            if validation_result:
-                # block by default, unless specified
-                block = validation_result.get('block', True)
-                # run filter on our validation result
-                errors[target_node.id] = self.process_validation(validation_result)
-            else:
-                valid.append(target_node.id)
+        for node in invalid:
+            errors[node.id] = node.error
 
         # if needed we should run our all form message generator and return
         # json encoded error message
         retval = {'success': not block}
-        if len(errors) > 0 and self.enable_error_header:
+        if len(errors) > 0 and enable_error_header:
             errors['start'] = self.error_header_generate(errors)
         retval['errors'] = errors
-        retval['valid'] = valid
         return json.dumps(retval)
 
-    def validate_render(self, data):
+    def validate_render(self, data, postprocessor=None, enable_error_header=False):
+        """ Runs all the accumulated validators on the data passed in and returns the
+        result of each failed validation to the target node. Given the data from
+        your post call it is run through post- processor and then validated
+        with appropriate node modules.
+
+        :param data: The data to be passed through the `Form._processor`. If
+        the data is in the form of a dictionary where the key is the 'name' of
+        the form field and the data is a string then no post-processing is
+        neccessary.
+        :type data: dictionary
+
+        :param postprocessor: A callable that accepts a single dictionary can be
+        passed in and will be executed for every validation error encountered.
+        This can be useful for filtering/encoding strings, wrapping the
+        information in various tags, etc.
+        :type postprocessor: callable
+
+        :param enable_error_header: If set to True, `Form.error_header_generate`
+        will be run when there is at least one blocking validation error and
+        it's output will be passed as an error to the 'start' `Node`.
+        :type enable_error_header: boolean
+        """
+
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
-
         errors = {}
-        block = False
-        # loop over our nodes
-        for target_node, validation_result in self._gen_validate(data):
-            if validation_result:
-                # block by default, unless specified
-                block = validation_result.get('block', True)
-                # run filter on our validation result
-                errors[target_node.id] = self.process_validation(validation_result)
-                target_node.error = validation_result
+        block, invalid = self._gen_validate(data, postprocessor=postprocessor)
 
         # run our form validators at the end
-        if len(errors) > 0:
+        if len(errors) > 0 and enable_error_header:
             if self.enable_error_header:
                 self.start.error = self.error_header_generate(errors)
 

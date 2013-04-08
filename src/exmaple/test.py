@@ -27,22 +27,6 @@ def testing():
 
     return render_template('index.html', reg_form=reg_render, ajax_form=ajax.render())
 
-class BaseNode(Node):
-    base = "horiz.html"
-
-class ListNode(BaseNode):
-    template = 'list.html'
-    _requires = ['items']
-
-class ButtonNode(BaseNode):
-    template = 'button.html'
-
-class EntryNode(BaseNode):
-    template = 'entry.html'
-
-class SubmitNode(BaseNode):
-    template = 'submit.html'
-
 class SimpleForm(Form):
 
     @classmethod
@@ -67,7 +51,11 @@ class SimpleForm(Form):
         if mode == 1:
             g_context['ajax'] = True
 
-        f = SimpleForm(name=name, id=name, g_context=g_context, hidden={'name': name, 'count': count})
+        f = SimpleForm(name=name,
+                id=name,
+                g_context=g_context,
+                hidden={'name': name,
+                        'count': count})
         f.insert_after('address', append_list)
         return f
 
