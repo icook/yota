@@ -2,6 +2,23 @@
     {% if g.ajax %}
     <script type="text/javascript">
     $(function () {
+        window.visited = {};
+        // setup our listeners
+        $("#{{ id }}").find("[data-piecewise]").each(function() {
+            var v = $(this).attr("id");
+            visited[v] = false;
+            var type = $(this).attr("data-piecewise")
+            if (type == "blur")
+                $(this).blur(function() { window.visited[v] = true; });
+            else
+                $(this).keyup(function() { window.visited[v] = true; });
+        });
+    });
+    </script>
+    {% endif %}
+    {% if g.ajax %}
+    <script type="text/javascript">
+    $(function () {
     ajax_activate("{{ id }}",
         function (id, error, data) {
             if (error) {

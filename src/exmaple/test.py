@@ -14,7 +14,7 @@ def testing():
 
     # Generate a regular form via a classmethod to provide extra functionality
     regular_form = SimpleForm.get_form('regular', count=count)
-    ajax = SimpleForm.get_form('ajax', mode=1, count=count)
+    ajax = SimpleForm.get_form('ajax', mode=2, count=count)
     # Handle regular submission of the form
     if request.method == 'POST' and '_ajax_' not in request.form:
         reg_render = regular_form.validate_render(request.form)
@@ -50,6 +50,9 @@ class SimpleForm(Form):
         g_context = {}
         if mode == 1:
             g_context['ajax'] = True
+        elif mode == 2:
+            g_context['ajax'] = True
+            g_context['piecewise'] = True
 
         f = SimpleForm(name=name,
                 id=name,

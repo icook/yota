@@ -1,6 +1,6 @@
 {% extends base %}
 {% block control %}
-<select id="{{ id }}" name="{{ name }}">
+<select data-piecewise="blur" id="{{ id }}" name="{{ name }}">
     {% for item in items %}
     <option value="{{item[0]}}">{{item[1]}}</option>
     {% endfor %}
