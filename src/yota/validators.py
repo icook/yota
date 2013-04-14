@@ -230,7 +230,7 @@ class Check(object):
         NodeData = namedtuple('NodeData', ['node', 'data'])
 
         # Process args
-        for i in enumerate(self.args):
+        for i in self.args:
             node = form.get_by_attr(self.args[i])
             try:
                 self.args[i] = NodeData(node, data[node.name])

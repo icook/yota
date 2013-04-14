@@ -5,13 +5,20 @@
         window.visited = {};
         // setup our listeners
         $("#{{ id }}").find("[data-piecewise]").each(function() {
-            var v = $(this).attr("id");
+            var v = $(this).attr("name");
             visited[v] = false;
             var type = $(this).attr("data-piecewise")
-            if (type == "blur")
-                $(this).blur(function() { window.visited[v] = true; });
-            else
-                $(this).keyup(function() { window.visited[v] = true; });
+            if (type == "blur") {
+                $(this).blur(function() {
+                    window.visited[v] = true;
+                    $("#{{ id }}").ajaxSubmit();
+                });
+            } else {
+                $(this).keyup(function() {
+                    window.visited[v] = true;
+                    $("#{{ id }}").ajaxSubmit({'piecewise': true});
+                });
+            }
         });
     });
     </script>
