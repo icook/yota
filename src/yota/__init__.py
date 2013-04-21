@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from yota.exceptions import ValidatorNotCallable
+from yota.exceptions import ValidatorNotCallable, FormDataAccessException
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
 from yota.nodes import LeaderNode, Node
@@ -22,8 +22,8 @@ class OrderedDictMeta(type):
                 if hasattr(value, 'validators'):
                     if not isinstance(value.validator, tuple) and \
                        not isinstance(value.validator, list):
-                        value.validators = (value.validators,)
-                    for validator in list(value.validators):
+                        value.validators = [value.validators,]
+                    for validator in value.validators:
                         # shorthand for adding a validation tuple
                         c = Check(validator, name)
                         mcs._validation_list.append(c)
@@ -213,20 +213,20 @@ class Form(object):
         data = self._processor().filter_post(data)
 
         invalid = []
+        block = True
         # loop over our nodes
         for n in self._validation_list:
             # try to iterate over their validators
-            n.resolve_attr_names(data, self)
-            block = False
+            if piecewise:
+                try:
+                    n.resolve_attr_names(data, self)
+                except FormDataAccessException:
+                    continue
+            else:
+                n.resolve_attr_names(data, self)
             try:
                 # Run our validator
-                if piecewise:
-                    try:
-                        r = n.validate()
-                    except FormDataAccessException:
-                        continue
-                else:
-                    r = n.validate()
+                r = n.validate()
             except TypeError as e:
                 raise ValidatorNotCallable("Validators provided must be callable, type '{}' instead.".format(type(n.validator)))
             if r:
@@ -240,11 +240,11 @@ class Form(object):
                     # slightly confusing way of setting our block = True by
                     # default
                     if not block:
-                        block = n.get('block', True)
+                        block = n[1].get('block', True)
                     if postprocessor:
-                        n[0].error = postprocessor(n[1])
+                        setattr(n[0], 'error', postprocessor(n[1]))
                     else:
-                        n[0].error = n[1]
+                        setattr(n[0], 'error', n[1])
                     invalid.append(n[0])
 
         return block, invalid

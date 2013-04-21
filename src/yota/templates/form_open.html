@@ -2,6 +2,27 @@
     {% if g.ajax %}
     <script type="text/javascript">
     $(function () {
+        ajax_activate("{{ id }}",
+        function (id, error, data) {
+            if (error) {
+                //$('#' + id + '_error').html(data['message']);
+                //$('#' + id + '_error').fadeIn();
+                if ($('#' + id).attr('data-error') != "true") {
+                    $('#' + id).tooltip({title: data['message'],
+                                          placement: 'right',
+                                          trigger: 'manual'});
+                    $('#' + id).tooltip('show');
+                    $('#' + id).attr('data-error', "true");
+                }
+            } else {
+                $('#' + id).tooltip('destroy');
+                $('#' + id).attr('data-error', "false");
+            }
+        },
+        function () {
+        });
+
+        {% if g.piecewise %}
         window.visited = {};
         // setup our listeners
         $("#{{ id }}").find("[data-piecewise]").each(function() {
@@ -11,35 +32,22 @@
             if (type == "blur") {
                 $(this).blur(function() {
                     window.visited[v] = true;
-                    $("#{{ id }}").ajaxSubmit();
+                    $("#{{ id }}").ajaxSubmit(window.yota_ajax_options);
                 });
             } else {
                 $(this).keyup(function() {
                     window.visited[v] = true;
-                    $("#{{ id }}").ajaxSubmit({'piecewise': true});
+                    $("#{{ id }}").ajaxSubmit(window.yota_ajax_options);
                 });
             }
         });
-    });
-    </script>
-    {% endif %}
-    {% if g.ajax %}
-    <script type="text/javascript">
-    $(function () {
-    ajax_activate("{{ id }}",
-        function (id, error, data) {
-            if (error) {
-                $('#' + id + '_error').html(data['message']);
-                $('#' + id + '_error').show();
-            } else {
-                $('#' + id + '_error').hide();
-            }
-        },
-        function () {
-        });
+        {% endif %}
     });
     </script>
     <input type="hidden" name="_ajax_" value="True"/>
+    {% endif %}
+    {% if g.piecewise %}
+    <input type="hidden" name="_piecewise_" value="True"/>
     {% endif %}
     {% for key, val in hidden.iteritems() %}
     <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />

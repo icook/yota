@@ -70,7 +70,7 @@ class MinLengthValidator(ValidatorBase):
 
     def __call__(self, target):
         if len(target.data) < self.min_length:
-            return (target.node.id, {'message': self.message})
+            return (target.node, {'message': self.message})
 
 
 class MaxLengthValidator(ValidatorBase):
@@ -90,7 +90,7 @@ class MaxLengthValidator(ValidatorBase):
 
     def __call__(self, target):
         if len(target.data) > self.min_length:
-            return (target.node.id, {'message': self.message})
+            return (target.node, {'message': self.message})
 
 class RequiredValidator(ValidatorBase):
     """ Checks to make sure the user entered something.
@@ -105,7 +105,7 @@ class RequiredValidator(ValidatorBase):
 
     def __call__(self, target):
         if len(target.data) == 0:
-            return (target.node.id, {'message': self.message})
+            return (target.node, {'message': self.message})
 
 
 class EmailValidator(ValidatorBase):
@@ -145,7 +145,7 @@ class EmailValidator(ValidatorBase):
             except UnicodeError:
                 pass
 
-        return (value.node.id, {'message': self.message})
+        return (value.node, {'message': self.message})
 
 class Check(object):
     """ This object wraps a validator callable and is intended to be used in
@@ -203,12 +203,12 @@ class Check(object):
     If neither kwargs or args are specified and cannot be implicitly determined
     an exception will be thrown. """
 
-    def __init__(self, validator, args=None, kwargs=None):
+    def __init__(self, validator, *args, **kwargs):
         self.validator = validator
         if not args:
             self.args = []
         else:
-            self.args = args
+            self.args = list(args)
 
         if not kwargs:
             self.kwargs = {}
@@ -227,13 +227,14 @@ class Check(object):
         if self.resolved:
             return
 
+
         NodeData = namedtuple('NodeData', ['node', 'data'])
 
         # Process args
-        for i in self.args:
-            node = form.get_by_attr(self.args[i])
+        for key, arg in enumerate(self.args):
+            node = form.get_by_attr(arg)
             try:
-                self.args[i] = NodeData(node, data[node.name])
+                self.args[key] = NodeData(node, data[node.name])
             except KeyError:
                 raise FormDataAccessException
 

@@ -1,28 +1,31 @@
 function ajax_activate(form_id, error_callback, success_callback) {
-    var options = { 
+    window.yota_ajax_options = { 
         success: function (jsonObj)  {
-            alert("sdfomsdflkgfdsg");
             // do some processing on the json that's returned
             if (jsonObj.success) {
                 success_callback();
             } else {
-                for (var key in jsonObj.errors) {
-                    var obj = jsonObj.errors[key];
-                    error_callback(key, true, obj);
-                }
-                for (var i = 0; i < jsonObj.valid.length; i++) {
-                    error_callback(jsonObj.valid[i], false, {});
-                }
+                $('#' + form_id + " > *").find(":input").each(function() {
+                    if (!(this.id in jsonObj.errors)) {
+                        error_callback(this.id, false, {});
+                    } else {
+                        error_callback(this.id, true, jsonObj.errors[this.id]);
+                    }
+                });
             }
         },
-        beforeSubmit: function(arr, $form, options) {
+        beforeSubmit: function(arr, form, options) {
             // go through our array and remove all the data items that haven't been marked as touched
-            for (var i = 0; i < form.length; i++) {
-                if (form[i].name in window.visited)
-                    form.splice(i, 1);
+            for (var i = arr.length-1; i > 0; i--) {
+                // automatically pass all _ prefixed names
+                if (arr[i].name[0] == '_')
+                    continue;
+                if (!window.visited[arr[i].name]) {
+                    arr.splice(i, 1);
+                }
             }
         },
         dataType: 'json'
     }; 
-    $('#' + form_id).ajaxForm(options);
+    $('#' + form_id).ajaxForm(window.yota_ajax_options);
 }

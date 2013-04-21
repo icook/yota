@@ -19,7 +19,10 @@ def testing():
     if request.method == 'POST' and '_ajax_' not in request.form:
         reg_render = regular_form.validate_render(request.form)
     elif '_ajax_' in request.form:
-        return ajax.json_validate(request.form)
+        if '_piecewise_' in request.form:
+            return ajax.json_validate(request.form, piecewise=True)
+        else:
+            return ajax.json_validate(request.form)
     else:
         reg_render = regular_form.render()
 
