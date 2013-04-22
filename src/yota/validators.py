@@ -92,6 +92,12 @@ class MaxLengthValidator(ValidatorBase):
         if len(target.data) > self.max_length:
             return (target.node, {'message': self.message})
 
+class NonBlockingDummyValidator(ValidatorBase):
+    """ A dummy class for testing non-blocking validators
+    """
+    def __call__(self, target):
+        return (target.node, {'message': "I'm not blocking!", 'block': False})
+
 class RequiredValidator(ValidatorBase):
     """ Checks to make sure the user entered something.
 
@@ -119,19 +125,18 @@ class EmailValidator(ValidatorBase):
         r'|^\[(25[0-5]|2[0-4]\d|[0-1]?\d?\d)(\.(25[0-5]|2[0-4]\d|[0-1]?\d?\d)){3}\]$',
         re.IGNORECASE)
     domain_whitelist = ['localhost']
-    def __init__(self, length, message=None):
-        self.regex = regex
-        self.message = message if message else "Maximum allowed length {}".format(length)
-        super(MinLengthValidator, self).__init__()
 
-    def __call__(self, target):
+    def __init__(self, message=None):
+        self.message = message if message else "Maximum allowed length {}".format(length)
+        super(EmailValidator, self).__init__()
+
+    def valid(self, value):
         if not value or '@' not in value:
-            return {'message': self.message}
+            return False
 
         user_part, domain_part = value.rsplit('@', 1)
-
         if not self.user_regex.match(user_part):
-            return {'message': self.message}
+            return False
 
         if (not domain_part in self.domain_whitelist and
                 not self.domain_regex.match(domain_part)):
@@ -139,13 +144,19 @@ class EmailValidator(ValidatorBase):
             try:
                 domain_part = domain_part.encode('idna').decode('ascii')
                 if not self.domain_regex.match(domain_part):
-                    return {'message': self.message}
+                    return False
                 else:
-                    return
+                    return True
             except UnicodeError:
                 pass
 
-        return (value.node, {'message': self.message})
+        return True
+
+    def __call__(self, target):
+        if self.valid(target.data):
+            return None
+        else:
+            return (target.node, {'message': self.message})
 
 class Check(object):
     """ This object wraps a validator callable and is intended to be used in
@@ -255,9 +266,6 @@ class Check(object):
                 raise FormDataAccessException
 
         self.resolved = True
-
-    def __str__(self):
-        return "Check<validator: {}, args: {}, kwargs: {}>".format(self.validator, self.args, self.kwargs)
 
     def validate(self):
         # Convenience function making Form validate semantics cleaner

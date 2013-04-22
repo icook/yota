@@ -27,6 +27,24 @@ class TestValidation(unittest.TestCase):
         block, invalid = test._gen_validate({'t': 'toolong'})
         assert(len(invalid) > 0)
 
+    def test_email(self):
+        class TForm(yota.Form):
+            t = yota.nodes.EntryNode()
+            _t_valid = yota.Check(yota.validators.EmailValidator(
+                message="Darn"), 't')
+
+        test = TForm()
+        block, invalid = test._gen_validate({'t': 'm@testing.com'})
+        assert(len(invalid) == 0)
+        block, invalid = test._gen_validate({'t': 'toolong'})
+        assert(len(invalid) > 0)
+        block, invalid = test._gen_validate({'t': 'm@t%.com'})
+        assert(len(invalid) > 0)
+        block, invalid = test._gen_validate({'t': u'm@t\x80%.com'})
+        assert(len(invalid) > 0)
+        block, invalid = test._gen_validate({'t': u'm@\xc3.com'.encode('idna')})
+        assert(len(invalid) == 0)
+
     def test_required(self):
         class TForm(yota.Form):
             t = yota.nodes.EntryNode()
@@ -38,15 +56,14 @@ class TestValidation(unittest.TestCase):
         block, invalid = test._gen_validate({'t': ''})
         assert(len(invalid) > 0)
 
-    def test_error_header(self):
+    def test_non_blocking(self):
         class TForm(yota.Form):
             t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), 't')
+            _t_valid = yota.Check(yota.validators.NonBlockingDummyValidator(), 't')
 
         test = TForm()
-        invalid = test.validate_render({'t': ''},
-                enable_error_header=True)
-        assert(hasattr(test.start, 'error'))
+        block, invalid = test._gen_validate({'t': 'toolong'})
+        assert(block == False)
 
 class TestCheck(unittest.TestCase):
     def test_key_error_args(self):

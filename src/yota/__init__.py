@@ -213,7 +213,7 @@ class Form(object):
         data = self._processor().filter_post(data)
 
         invalid = []
-        block = True
+        block = False
         # loop over our nodes
         for n in self._validation_list:
             # try to iterate over their validators
