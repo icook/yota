@@ -49,9 +49,11 @@
     {% if g.piecewise %}
     <input type="hidden" name="_piecewise_" value="True"/>
     {% endif %}
+    {% if hidden %}
     {% for key, val in hidden.iteritems() %}
     <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
     {% endfor %}
+    {% endif %}
     {% if title %}
     <h2>{{ title }}</h2>
     {% endif %}

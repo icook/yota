@@ -1,5 +1,8 @@
 *.py[cod]
 
+# Docs
+docs/_build
+
 # C extensions
 *.so
 
@@ -23,6 +26,7 @@ pip-log.txt
 
 # Unit test / coverage reports
 .coverage
+cover
 .tox
 nosetests.xml
 

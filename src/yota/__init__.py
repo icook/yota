@@ -228,7 +228,7 @@ class Form(object):
                 # Run our validator
                 r = n.validate()
             except TypeError as e:
-                raise ValidatorNotCallable("Validators provided must be callable, type '{}' instead.".format(type(n.validator)))
+                raise ValidatorNotCallable("Validators provided must be callable, type '{}' instead. Caused by {}".format(type(n.validator), e))
             if r:
                 # Set the error value of the node to equal the dictionary that
                 # is returned by the validator
@@ -307,13 +307,11 @@ class Form(object):
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
-        errors = {}
         block, invalid = self._gen_validate(data, postprocessor=postprocessor)
 
         # run our form validators at the end
-        if len(errors) > 0 and enable_error_header:
-            if self.enable_error_header:
-                self.start.error = self.error_header_generate(errors)
+        if len(invalid) > 0 and enable_error_header:
+            setattr(self.start, 'error', self.error_header_generate(invalid))
 
         return self.render()
 

@@ -86,10 +86,10 @@ class MaxLengthValidator(ValidatorBase):
     def __init__(self, length, message=None):
         self.max_length = length
         self.message = message if message else "Maximum allowed length {}".format(length)
-        super(MinLengthValidator, self).__init__()
+        super(MaxLengthValidator, self).__init__()
 
     def __call__(self, target):
-        if len(target.data) > self.min_length:
+        if len(target.data) > self.max_length:
             return (target.node, {'message': self.message})
 
 class RequiredValidator(ValidatorBase):
@@ -103,7 +103,7 @@ class RequiredValidator(ValidatorBase):
         self.message = message if message else "A value is required"
         super(RequiredValidator, self).__init__()
 
-    def __call__(self, target):
+    def __call__(self, target=None):
         if len(target.data) == 0:
             return (target.node, {'message': self.message})
 
@@ -224,25 +224,33 @@ class Check(object):
         with a KeyedTuple containing the submitted data and the Node object
         reference. """
 
-        if self.resolved:
-            return
-
-
         NodeData = namedtuple('NodeData', ['node', 'data'])
 
         # Process args
         for key, arg in enumerate(self.args):
-            node = form.get_by_attr(arg)
+            # We need to get our node information. If already resolved, just pull from arg
+            if self.resolved:
+                node = arg.node
+            else:
+                node = form.get_by_attr(arg)
+
+            # Try and acquire our data from the from submission
             try:
                 self.args[key] = NodeData(node, data[node.name])
             except KeyError:
                 raise FormDataAccessException
 
         # Process kwargs
-        for val, i in self.kwargs.iteritems():
-            node = form.get_by_attr(val)
+        for key, val in self.kwargs.iteritems():
+            # We need to get our node information. If already resolved, just
+            # pull from arg
+            if self.resolved:
+                node = val.node
+            else:
+                node = form.get_by_attr(val)
+
             try:
-                self.kwargs[i] = NodeData(node, data[node.name])
+                self.kwargs[key] = NodeData(node, data[node.name])
             except KeyError:
                 raise FormDataAccessException
 

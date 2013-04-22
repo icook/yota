@@ -1,4 +1,4 @@
-class InvalidContext(Exception):
+class InvalidContextException(Exception):
         pass
 
 

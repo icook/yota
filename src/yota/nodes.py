@@ -1,4 +1,4 @@
-from yota.exceptions import InvalidContext
+from yota.exceptions import InvalidContextException
 
 
 class Node(object):
@@ -90,7 +90,7 @@ class Node(object):
         # check to make sure all required attributes are present
         for r in self._requires:
             if r not in d:
-                raise InvalidContext("Missing required context value '{}'".format(r))
+                raise InvalidContextException("Missing required context value '{}'".format(r))
         d['g'] = g_context
         return d
 
