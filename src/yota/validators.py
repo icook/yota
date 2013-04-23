@@ -1,59 +1,9 @@
-import platform
 from collections import namedtuple
 import re
-import urllib
-import urllib2
-import urlparse
-from yota.exceptions import ValidationError, FormDataAccessException
-
-class ValidatorBase(object):
-    """
-    Validators in Yota are a fairly abstract concept. Essentially they are
-    callables that get executed by one of the three different validation methods
-    exposed by the `Form` class. Validators are supplied with a NamedTuple for
-    each attribute name that is passed to their parent `Check` object in `Form`
-    definition. The named tuple has two attributes: node and data. Node will be
-    a reference to the actual `Node` instance that is linked to the specified
-    attribute name while data is populated with the submission data associated
-    with that `Node`. This allows you to write a validator that accepts an
-    arbitrarily large amount of data with which to generate an output.
-
-    Return Expectations
-    ====================
-
-    Validators are expected to return either a single tuple or a list of tuples,
-    or None indicating no validation message to be transferred. The tuples must
-    contain the a target node as their first parameter and a dictionary of
-    validation results as the second parameter. There are a couple special
-    attributes that can be defined in this dictionary, but these will be
-    discussed a little later. How this data is used varies slightly depending on
-    the validation method used.
-
-    Validator Semantics
-    =====================
-
-    With the regular form validation method `Form.validate_render` the data will
-    get passed directly to the `Node` rendering context when the form is
-    re-rendered as the ``error`` attribute. In your `Node` template, the error
-    can then be used for anything related to rendering and will contain
-    everything in the dictionary.
-
-    With either the piecewise json validation method or the regular json
-    validation method the data data will get translated into a JSON object that
-    is packed into antoher object where the key is the `Node.id` of your target
-    `Node` passed back as the validation result.
-
-    Special Key Values
-    =====================
-
-    At the moment they only special key is 'block'. If set to False the
-    validation message will not prevent the form from submitting. This is useful
-    for things like notification of password strength, etc.
-    """
-    pass
+from yota.exceptions import FormDataAccessException
 
 
-class MinLengthValidator(ValidatorBase):
+class MinLengthValidator(object):
     """ Checks to see if data is at least :length long.
 
     :param length: The minimum length of the data.
@@ -62,18 +12,20 @@ class MinLengthValidator(ValidatorBase):
     :param message: The message to present to the user upon failure.
     :type message: string
     """
-    __slots__=["message", "min_length"]
+    __slots__ = ["message", "min_length"]
+
     def __init__(self, length, message=None):
         self.min_length = length
-        self.message = message if message else "Minimum allowed length {}".format(length)
+        self.message = message if message else "Minimum allowed length {}" \
+            .format(length)
         super(MinLengthValidator, self).__init__()
 
     def __call__(self, target):
         if len(target.data) < self.min_length:
-            return (target.node, {'message': self.message})
+            return target.node, {'message': self.message}
 
 
-class MaxLengthValidator(ValidatorBase):
+class MaxLengthValidator(object):
     """ Checks to see if data is at most :length long.
 
     :param length: The maximum length of the data.
@@ -82,42 +34,53 @@ class MaxLengthValidator(ValidatorBase):
     :param message: The message to present to the user upon failure.
     :type message: string
     """
-    __slots__=["message", "max_length"]
+    __slots__ = ["message", "max_length"]
+
     def __init__(self, length, message=None):
         self.max_length = length
-        self.message = message if message else "Maximum allowed length {}".format(length)
+        self.message = message if message else "Maximum allowed length {}" \
+            .format(length)
         super(MaxLengthValidator, self).__init__()
 
     def __call__(self, target):
         if len(target.data) > self.max_length:
-            return (target.node, {'message': self.message})
+            return target.node, {'message': self.message}
 
-class NonBlockingDummyValidator(ValidatorBase):
+
+class NonBlockingDummyValidator(object):
     """ A dummy class for testing non-blocking validators
     """
-    def __call__(self, target):
-        return (target.node, {'message': "I'm not blocking!", 'block': False})
 
-class RequiredValidator(ValidatorBase):
+    def __call__(self, target):
+        return target.node, {'message': "I'm not blocking!", 'block': False}
+
+
+class RequiredValidator(object):
     """ Checks to make sure the user entered something.
 
     :param message: (optional) The message to present to the user upon failure.
     :type message: string
     """
-    __slots__=["message"]
+    __slots__ = ["message"]
+
     def __init__(self, message=None):
         self.message = message if message else "A value is required"
         super(RequiredValidator, self).__init__()
 
     def __call__(self, target=None):
         if len(target.data) == 0:
-            return (target.node, {'message': self.message})
+            return target.node, {'message': self.message}
 
 
-class EmailValidator(ValidatorBase):
+class EmailValidator(object):
+    """ A direct port of the Django Email validator. Checks to see if an
+    email is valid using regular expressions.
+    """
+
     user_regex = re.compile(
         r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*$"  # dot-atom
-        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"$)', # quoted-string
+        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-\011\013\014\016-\177])*"$)',
+        # quoted-string
         re.IGNORECASE)
     domain_regex = re.compile(
         r'(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?$)'  # domain
@@ -127,10 +90,14 @@ class EmailValidator(ValidatorBase):
     domain_whitelist = ['localhost']
 
     def __init__(self, message=None):
-        self.message = message if message else "Maximum allowed length {}".format(length)
+        self.message = message if message else "Entered value must be a valid" \
+                                               " Email address"
         super(EmailValidator, self).__init__()
 
     def valid(self, value):
+        """ A small breakout function to make passing back errors less
+        redundant.
+        """
         if not value or '@' not in value:
             return False
 
@@ -156,7 +123,8 @@ class EmailValidator(ValidatorBase):
         if self.valid(target.data):
             return None
         else:
-            return (target.node, {'message': self.message})
+            return target.node, {'message': self.message}
+
 
 class Check(object):
     """ This object wraps a validator callable and is intended to be used in
@@ -174,7 +142,7 @@ class Check(object):
     :param dict kwargs: Same as args above except it allows passing in node
     information as keyword arguments to the validator callable.
 
-    `Check` objects are desinged to be declared in your form subclass in one of
+    `Check` objects are designed to be declared in your form subclass in one of
     two ways. Explicit:::
 
         class MyForm(yota.Form):
@@ -188,7 +156,7 @@ class Check(object):
     instance is a bit of magic behind the scenes, but just know that it matches
     up to the attribute name you give the node in the your `Form` class
     definition. If you later add a `Node` dynamically it will need to specify
-    the _attr_name upon declaration explicity. More on this in Dynamically
+    the _attr_name upon declaration explicitly. More on this in Dynamically
     Adding Nodes.
 
     Implicit declaration is a nice option for simple validators, and is simply
@@ -231,15 +199,20 @@ class Check(object):
 
     def resolve_attr_names(self, data, form):
         """ Called internally by the validation methods this resolves all arg
-        and kawrg strings to their respective `Node` objects and replaces them
+        and kwarg strings to their respective `Node` objects and replaces them
         with a KeyedTuple containing the submitted data and the Node object
-        reference. """
+        reference.
+        :param form: A reference to the Form class that the check is being
+        resolved to.
+        :param data: The full form data dictionary submitted for validation.
+        """
 
         NodeData = namedtuple('NodeData', ['node', 'data'])
 
         # Process args
         for key, arg in enumerate(self.args):
-            # We need to get our node information. If already resolved, just pull from arg
+            # We need to get our node information.
+            # If already resolved, just pull from arg
             if self.resolved:
                 node = arg.node
             else:
@@ -268,5 +241,7 @@ class Check(object):
         self.resolved = True
 
     def validate(self):
-        # Convenience function making Form validate semantics cleaner
+        """ Called by the validation routines. Allows the Check to specify
+        parameters that will be passed to our Validation method.
+        """
         return self.validator(*self.args, **self.kwargs)

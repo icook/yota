@@ -49,17 +49,11 @@ class Node(object):
 
         # passes everything to our rendering context and updates params
         self.__dict__.update(kwargs)
-
-    def __str__(self):
-        return "Node ({})<attr_name: {}, id: {}, _id_: {}>".format(
-                self.__class__.__name__,
-                self.__dict__.get('_attr_name', None),
-                self.__dict__.get('id', None),
-                id(self))
+        self._attr_name = None
 
     def set_identifiers(self, parent_name):
         """ This function gets called by the parent `Form` when it is
-        initialized or inserted. It is designed to set verious unique
+        initialized or inserted. It is designed to set various unique
         identifiers. By default it generates an id for the Node that is
         {parent_name}_{_attr_id}, a title for the Node that is the _attr_name
         capitalized, and a name for the element that is just the _attr_name. All
@@ -84,24 +78,40 @@ class Node(object):
         """ Builds our rendering context for the Node at render time. By default
         all attributes of the Node are added to the global namespace and the
         global rendering context is passed in under the variable 'g'. This
-        function is designed to be overridden for customization.  """
+        function is designed to be overridden for customization.
+        :param g_context: The global rendering context passed in from the
+        rendering method.
+        """
 
         d = {i: getattr(self, i) for i in dir(self) if not i.startswith("_") and i not in self._ignores }
         # check to make sure all required attributes are present
         for r in self._requires:
             if r not in d:
-                raise InvalidContextException("Missing required context value '{}'".format(r))
+                raise InvalidContextException(
+                    "Missing required context value '{}'".format(r))
         d['g'] = g_context
         return d
 
+
 class BaseNode(Node):
+    """ This base Node supplies the name of the base rendering template the
+    is used for standard form elements. This base template provides error
+    divs and the horizontal form layout for Bootstrap.
+    """
     base = "horiz.html"
 
+
 class ListNode(BaseNode):
+    """ Node for providing a basic drop down list. Requires an attribute that
+     is a list of tuples providing the key and value for the dropdown list
+     items.
+    """
     template = 'list.html'
     _requires = ['items']
 
 class ButtonNode(BaseNode):
+    """ Creates a simple button in your form.
+    """
     template = 'button.html'
 
 class EntryNode(BaseNode):

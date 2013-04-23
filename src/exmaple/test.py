@@ -30,6 +30,7 @@ def testing():
 
     return render_template('index.html', reg_form=reg_render, ajax_form=ajax.render())
 
+
 class SimpleForm(Form):
 
     @classmethod
