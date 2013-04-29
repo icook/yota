@@ -1,6 +1,10 @@
+.. _validators:
+
 =====================
 Validators and Checks
 =====================
+
+.. py:currentmodule:: yota
 
 Validators allow you to provide users feedback on their input through
 structured, reusable callables. Validators can be sent an arbitrary number of
@@ -32,7 +36,7 @@ in the Form declaration supplies 'name'. This is indicating the name of the Node
 that you would like to supply to the Validator as input. Later when the
 validator is to be called the string is replaced by a NamedTuple.  The named
 tuple has two attributes: node and data. Node will be a reference to the actual
-`Node` instance while data is populated with the submission data associated with
+:class:`Node` instance while data is populated with the submission data associated with
 that `Node`. This allows you to write a validator that accepts an arbitrarily
 large amount of data with which to generate an output in what is hoped to be a
 convenient and simple syntax.
@@ -68,12 +72,7 @@ Special Key Values
 =====================
 
 |  **Block**
-| If set to False the validation message will not prevent the form from
-submitting. Since the block value is actually something passed back from Yota at
-validation time, the actual action to be taken is up to the user. As might be
-expected, a single blocking validator will cause the block flag to
-return true. This is useful for things like notification of password strength,
-etc.
+| If set to False the validation message will not prevent the form from submitting. Since the block value is actually something passed back from Yota at validation time, the actual action to be taken is up to the user. As might be expected, a single blocking validator will cause the block flag to return true. This is useful for things like notification of password strength, etc.
 
 .. py:module:: yota
 

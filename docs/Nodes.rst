@@ -1,8 +1,8 @@
 ===========
-Form Class
+Nodes
 ===========
 
-.. py:module:: yota
+.. py:currentmodule:: yota
 
 API
 ===========

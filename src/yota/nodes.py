@@ -2,35 +2,28 @@ from yota.exceptions import InvalidContextException
 
 
 class Node(object):
-    """ Base node for all other nodes. Many Nodes make up a Form. Nodes are
-    generally something like a submit button or a username entry field, but in
-    practice are simply a template linked together with some metadata and can
-    constitute anything. Some non-traditional examples are the opening of the
-    form (provided automatically in the `Form` class), perhaps a fieldset tag,
-    or a note to display above a particular portion of the `Form`.
+    """ Nodes are holders of context for rendering and validating a portion of
+    your :class:`Form`. This default base Node is designed to provide a template
+    along with specific context information to a templating engine such as
+    Jinja2. For validation a Node acts as an information source or an error
+    sink. Essentially Nodes can be used to source data for use in a
+    :class:`Check`, and they can then be delivered some sort of validation error
+    via a validator result.
 
-    :var _ignores: A list of attributes that won't be passed into the rendering
-    context. By default the template and validator attributes are ignored.
+    :param _ignores: A list of attributes that won't be passed into the rendering context. By default the template and validator attributes are ignored.
     :type _ignore: list
 
-    :var _requires: A list of attributes that are required to render the
-    template properly. An exception will be thrown if one of these attributes is
-    missing. By default this is empty.
+    :param _requires: A list of attributes that are required to render the template properly. An exception will be thrown if one of these attributes is missing. By default this is empty.
     :type _requires: list
 
-    :var template: String name of the template to be parsed upon rendering. This
-    is passed into the `Form._renderer` so it needs to be whatever that is
-    designed to accept. Jinja2 is looking for a filename like 'node.html' that
-    occurs in it's search path.
+    :param template: String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node.html' that occurs in it's search path.
     :type template: string
 
-    :var validator: An optional attribute that specifies a `Check` object to be
-    associated with the Node.
+    :param validator: An optional attribute that specifies a :class:`Check` object to be associated with the Node. This is automatically extracted at parse time and cannot be manipulated after Node insertion.
     :type validator: callable
 
     The default Node init method accepts any keyword arguments and adds them to
-    the Node's rendering context.
-    """
+    the Node's rendering context.  """
 
     _create_counter = 0
     # a list of attributes that must be provided for rendering to proceed
@@ -58,10 +51,10 @@ class Node(object):
         {parent_name}_{_attr_id}, a title for the Node that is the _attr_name
         capitalized, and a name for the element that is just the _attr_name. All
         of these attributes are then passed onto the rendering context of the
-        Node by default.
+        Node by default. By default all of these attributes will yield to
+        attributes passed into the __init__ method.
 
-        :param parent_name: The name of the parent form. Useful in ensuring
-        unique identifiers on your element names.
+        :param parent_name: The name of the parent form. Useful in ensuring unique identifiers on your element names.
         :type parent_name: string
         """
 
@@ -79,8 +72,7 @@ class Node(object):
         all attributes of the Node are added to the global namespace and the
         global rendering context is passed in under the variable 'g'. This
         function is designed to be overridden for customization.
-        :param g_context: The global rendering context passed in from the
-        rendering method.
+        :param g_context: The global rendering context passed in from the rendering method.
         """
 
         d = {i: getattr(self, i) for i in dir(self) if not i.startswith("_") and i not in self._ignores }
