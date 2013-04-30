@@ -16,7 +16,7 @@ class Node(object):
     :param _requires: A list of attributes that are required to render the template properly. An exception will be thrown if one of these attributes is missing. By default this is empty.
     :type _requires: list
 
-    :param template: String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node.html' that occurs in it's search path.
+    :param template: String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node' that occurs in it's search path.
     :type template: string
 
     :param validator: An optional attribute that specifies a :class:`Check` object to be associated with the Node. This is automatically extracted at parse time and cannot be manipulated after Node insertion.
@@ -25,14 +25,18 @@ class Node(object):
     The default Node init method accepts any keyword arguments and adds them to
     the Node's rendering context.  """
 
+    # allows tracking of the order of Node creation
     _create_counter = 0
-    # a list of attributes that must be provided for rendering to proceed
     _requires = []
-    # a list of attributes to not put in the rendering context
     _ignores = ['template', 'validator']
-
+    _attr_name = None
     template = None
     validator = None
+    # A placeholder where error messages for the node will be placed
+    errors = []
+    # a placeholder for incoming data. Used during validation
+    data = ''
+
     #name = attribute set in the parent form or can be passed to init
 
     def __init__(self, **kwargs):
@@ -42,7 +46,14 @@ class Node(object):
 
         # passes everything to our rendering context and updates params
         self.__dict__.update(kwargs)
-        self._attr_name = None
+
+    def add_error(self, error):
+        """ This method serves mostly as a wrapper alowing for different error
+        ordering semantics, or possibly error post-processing. Errors from
+        validation methods should be added in this way allowing them to be
+        caught. More information about what gets passed in in the
+        :doc:`Validators` section. """
+        self.errors.append(error)
 
     def set_identifiers(self, parent_name):
         """ This function gets called by the parent `Form` when it is
@@ -67,6 +78,17 @@ class Node(object):
         if not hasattr(self, 'title'):
             self.title = self._attr_name.capitalize()
 
+    def resolve_data(self, data):
+        """ This method is called when resolving the data from a form submission
+        and linking it to a specific Node. The return value of this function is
+        passed directly to the Validators data portion for your node. By default
+        this will try and lookup data from the submission using the name
+        attribute. """
+        try:
+            return data[self.name]
+        except:
+            raise FormDataAccessException
+
     def get_context(self, g_context):
         """ Builds our rendering context for the Node at render time. By default
         all attributes of the Node are added to the global namespace and the
@@ -90,7 +112,7 @@ class BaseNode(Node):
     is used for standard form elements. This base template provides error
     divs and the horizontal form layout for Bootstrap.
     """
-    base = "horiz.html"
+    base = "horiz.htm.html.htmll"
 
 
 class ListNode(BaseNode):
@@ -98,19 +120,19 @@ class ListNode(BaseNode):
      is a list of tuples providing the key and value for the dropdown list
      items.
     """
-    template = 'list.html'
+    template = 'list'
     _requires = ['items']
 
 class ButtonNode(BaseNode):
     """ Creates a simple button in your form.
     """
-    template = 'button.html'
+    template = 'button'
 
 class EntryNode(BaseNode):
-    template = 'entry.html'
+    template = 'entry'
 
 class SubmitNode(BaseNode):
-    template = 'submit.html'
+    template = 'submit'
 
 class LeaderNode(Node):
     """ A Node that simply removes the title attribute from the Node rendering

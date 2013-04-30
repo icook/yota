@@ -4,8 +4,10 @@ import os
 
 class JinjaRenderer(object):
     # automatically populate our search path with the default templates
-    search_path = [os.path.dirname(os.path.realpath(__file__)) + "/templates/"]
+    search_path = [os.path.dirname(os.path.realpath(__file__)) +
+            "/templates/jinja/"]
     _env = None
+    suffix = ".html"
 
     @property
     def env(self):
@@ -16,7 +18,7 @@ class JinjaRenderer(object):
 
     def render(self, nodes, g_context):
         buildup = ""
-        for n in nodes:
-            template = self.env.get_template(n.template)
-            buildup += template.render(n.get_context(g_context))
+        for node in nodes:
+            template = self.env.get_template(node.template + self.suffix)
+            buildup += template.render(node.get_context(g_context))
         return buildup

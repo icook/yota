@@ -205,36 +205,25 @@ class Check(object):
         :param data: The full form data dictionary submitted for validation.
         """
 
-        NodeData = namedtuple('NodeData', ['node', 'data'])
-
         # Process args
         for key, arg in enumerate(self.args):
             # We need to get our node information.
             # If already resolved, just pull from arg
             if self.resolved:
-                node = arg.node
+                node = arg
             else:
                 node = form.get_by_attr(arg)
-
-            # Try and acquire our data from the from submission
-            try:
-                self.args[key] = NodeData(node, data[node.name])
-            except KeyError:
-                raise FormDataAccessException
+            node.resolve_data(data)
 
         # Process kwargs
         for key, val in self.kwargs.iteritems():
             # We need to get our node information. If already resolved, just
             # pull from arg
             if self.resolved:
-                node = val.node
+                node = val
             else:
                 node = form.get_by_attr(val)
-
-            try:
-                self.kwargs[key] = NodeData(node, data[node.name])
-            except KeyError:
-                raise FormDataAccessException
+            node.resolve_data(data)
 
         self.resolved = True
 

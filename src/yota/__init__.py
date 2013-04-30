@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from yota.exceptions import ValidatorNotCallable, FormDataAccessException
+from yota.exceptions import ValidatorNotCallableException, FormDataAccessException
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
 from yota.nodes import LeaderNode, Node
@@ -86,8 +86,8 @@ class Form(object):
     def __init__(self,
                  name=None,
                  auto_start_close=True,
-                 start_template='form_close.html',
-                 close_template='form_open.html',
+                 start_template='form_close',
+                 close_template='form_open',
                  g_context=None,
                  start=None,
                  close=None,
@@ -188,61 +188,76 @@ class Form(object):
             return attr
         return None
 
-    def error_header_generate(self, errors):
-        """ This method is automatically called when any validators on the
-        form fail to pass (unless the validator passes block: False). The
-        method should generate a dictionary that will be passed to your
-        error renderer, whether that be javascript callbacks or re-rendering
-        the form with error info in the rendering context.
+    def error_header_generate(self, errors, block):
+        """ This method is called when any validators on the form fail to pass.
+        The method should generate a dictionary that will be passed to your
+        error renderer, whether that be javascript callbacks or re-rendering the
+        form with error info in the rendering context.
 
-        :param errors: This will be a dictionary of all other nodes that have errors. Key values are the id of the node while the value is a dict of what the validator is passing back.
+        :param errors: This will be a list of all other Nodes that have errors.
+        :param block: Whether or not the form submission will be blocked.
+        :type block: boolean
+
+        By default this function does nothing, but a common method of
+        implementing it may be as follows:
+        .. code-block:: python
+
+            self.start.add_error({'message':
+                                  'Please resolve the errors below to continue.'})
+
+        This will provide a simple error message to your start Node.
         """
+        pass
 
-        return {'message': 'Please resolve the errors below to continue.'}
 
     def _gen_validate(self, data, postprocessor=None, piecewise=False):
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
-        invalid = []
-        block = False
-        # loop over our nodes
-        for n in self._validation_list:
+        # accumulate a set of nodes that may contain errors
+        node_set = set()
+        # loop over our checks and run our validators
+        for check in self._validation_list:
             # try to iterate over their validators
-            if piecewise:
-                try:
-                    n.resolve_attr_names(data, self)
-                except FormDataAccessException:
-                    continue
-            else:
-                n.resolve_attr_names(data, self)
+            try:
+                check.resolve_attr_names(data, self)
+            except FormDataAccessException as e:
+                # ignore the exception if we're in piecewise mode
+                if not piecewise:
+                    raise e
             try:
                 # Run our validator
-                r = n.validate()
+                check.validate()
             except TypeError as e:
-                raise ValidatorNotCallable("Validators provided must be callable, type '{}' instead. Caused by {}".format(type(n.validator), e))
-            if r:
-                # Set the error value of the node to equal the dictionary that
-                # is returned by the validator
+                raise ValidatorNotCallableException("Validators provided must "
+                "be callable, type '{}' instead. Caused by {}". \
+                        format(type(check.validator), e))
+            # populate our set with potentially effected nodes
+            node_set.update(check.kwargs.iteritems())
+            node_set.update(check.args)
 
-                # If they returned a tuple of tuples
-                if not isinstance(r[0], tuple):
-                    r = (r,)
-                for n in r:
-                    # slightly confusing way of setting our block = True by
-                    # default
-                    if not block:
-                        block = n[1].get('block', True)
-                    if postprocessor:
-                        setattr(n[0], 'error', postprocessor(n[1]))
-                    else:
-                        setattr(n[0], 'error', n[1])
-                    invalid.append(n[0])
+        block = False
+        # a list to hold Nodes that actually have errors
+        error_node_set = []
+        if node_set:
+            # Set the error value of the node to equal the dictionary that
+            # is returned by the validator
 
-        return block, invalid
+            for node in node_set:
+                # slightly confusing way of setting our block = True by
+                # default
+                if node.errors:
+                    error_node_list.append(node)
+                else:
+                    continue
+
+                for error in node.errors:
+                    block |= error.get('block', True)
+
+        return block, error_node_list
 
 
-    def json_validate(self, data, postprocessor=None, piecewise=False, enable_error_header=False):
+    def json_validate(self, data, postprocessor=None, piecewise=False):
         """ The same as `Form.validate_render` except the errors are loaded into
         a JSON string to be passed back as a query result. This output is
         designed to be used by the Yota Javascript library.
@@ -269,7 +284,7 @@ class Form(object):
         retval['errors'] = errors
         return json.dumps(retval)
 
-    def validate_render(self, data, postprocessor=None, enable_error_header=False):
+    def validate_render(self, data, postprocessor=None):
         """ Runs all the accumulated validators on the data passed in and returns the
         result of each failed validation to the target node. Given the data from
         your post call it is run through post- processor and then validated
@@ -292,7 +307,7 @@ class Form(object):
 
         # run our form validators at the end
         if len(invalid) > 0 and enable_error_header:
-            setattr(self.start, 'error', self.error_header_generate(invalid))
+            self.error_header_generate(invalid, block)
 
         return self.render()
 

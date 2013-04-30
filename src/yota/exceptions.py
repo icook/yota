@@ -2,7 +2,7 @@ class InvalidContextException(Exception):
         pass
 
 
-class ValidatorNotCallable(Exception):
+class ValidatorNotCallableException(Exception):
         pass
 
 
