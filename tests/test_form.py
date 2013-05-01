@@ -35,11 +35,12 @@ class TestForms(unittest.TestCase):
         class TForm(yota.Form):
             t = yota.nodes.EntryNode()
             _t_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), 't')
+            def error_header_generate(self, errors, block):
+                self.start.add_error({'message': 'testo'})
 
         test = TForm()
-        invalid = test.validate_render({'t': ''},
-                enable_error_header=True)
-        assert(hasattr(test.start, 'error'))
+        invalid = test.validate_render({'t': ''})
+        assert(hasattr(test.start, 'errors'))
 
     def test_json_validation(self):
         class TForm(yota.Form):
@@ -47,10 +48,12 @@ class TestForms(unittest.TestCase):
             _t_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), 't')
             t2 = yota.nodes.EntryNode()
             _t2_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), 't2')
+            def error_header_generate(self, errors, block):
+                self.start.add_error({'message': 'testo'})
 
         test = TForm()
         invalid = test.json_validate({'t': ''},
-                enable_error_header=True, piecewise=True)
+                piecewise=True)
 
     def test_post_processor(self):
         class TForm(yota.Form):

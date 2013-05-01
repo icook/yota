@@ -211,6 +211,9 @@ class Form(object):
 
 
     def _gen_validate(self, data, postprocessor=None, piecewise=False):
+        for node in self._node_list:
+            node.errors = []
+
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
@@ -225,6 +228,8 @@ class Form(object):
                 # ignore the exception if we're in piecewise mode
                 if not piecewise:
                     raise e
+                else:
+                    continue
             try:
                 # Run our validator
                 check.validate()
@@ -233,12 +238,12 @@ class Form(object):
                 "be callable, type '{}' instead. Caused by {}". \
                         format(type(check.validator), e))
             # populate our set with potentially effected nodes
-            node_set.update(check.kwargs.iteritems())
+            node_set.update(check.kwargs.itervalues())
             node_set.update(check.args)
 
         block = False
         # a list to hold Nodes that actually have errors
-        error_node_set = []
+        error_node_list = []
         if node_set:
             # Set the error value of the node to equal the dictionary that
             # is returned by the validator
@@ -274,13 +279,13 @@ class Form(object):
                 postprocessor=postprocessor, piecewise=piecewise)
         # loop over our nodes
         for node in invalid:
-            errors[node.id] = node.error
+            errors[node.id] = node.errors
 
         # if needed we should run our all form message generator and return
         # json encoded error message
         retval = {'success': not block}
-        if len(errors) > 0 and enable_error_header:
-            errors['start'] = self.error_header_generate(errors)
+        if len(errors) > 0:
+            errors['start'] = self.error_header_generate(errors, block)
         retval['errors'] = errors
         return json.dumps(retval)
 
@@ -296,8 +301,6 @@ class Form(object):
         :param postprocessor: A callable that accepts a single dictionary can be passed in and will be executed for every validation error encountered.  This can be useful for filtering/encoding strings, wrapping the information in various tags, etc.
         :type postprocessor: callable
 
-        :param enable_error_header: If set to True, `Form.error_header_generate` will be run when there is at least one blocking validation error and it's output will be passed as an error to the 'start' `Node`.
-        :type enable_error_header: boolean
         """
 
         # Allows user to set a modular processor on incoming data
@@ -306,7 +309,7 @@ class Form(object):
         block, invalid = self._gen_validate(data, postprocessor=postprocessor)
 
         # run our form validators at the end
-        if len(invalid) > 0 and enable_error_header:
+        if len(invalid) > 0:
             self.error_header_generate(invalid, block)
 
         return self.render()

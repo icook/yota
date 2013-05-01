@@ -42,7 +42,7 @@ class TestValidation(unittest.TestCase):
         assert(len(invalid) > 0)
         block, invalid = test._gen_validate({'t': u'm@t\x80%.com'})
         assert(len(invalid) > 0)
-        block, invalid = test._gen_validate({'t': u'm@\xc3.com'.encode('idna')})
+        block, invalid = test._gen_validate({'t': u'm@\xc3.com'})
         assert(len(invalid) == 0)
 
     def test_required(self):

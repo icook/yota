@@ -1,4 +1,4 @@
-from yota.exceptions import InvalidContextException
+from yota.exceptions import InvalidContextException, FormDataAccessException
 
 
 class Node(object):
@@ -85,7 +85,7 @@ class Node(object):
         this will try and lookup data from the submission using the name
         attribute. """
         try:
-            return data[self.name]
+            self.data = data[self.name]
         except:
             raise FormDataAccessException
 
@@ -112,7 +112,7 @@ class BaseNode(Node):
     is used for standard form elements. This base template provides error
     divs and the horizontal form layout for Bootstrap.
     """
-    base = "horiz.htm.html.htmll"
+    base = "horiz.html"
 
 
 class ListNode(BaseNode):

@@ -22,7 +22,7 @@ class MinLengthValidator(object):
 
     def __call__(self, target):
         if len(target.data) < self.min_length:
-            return target.node, {'message': self.message}
+            target.add_error({'message': self.message})
 
 
 class MaxLengthValidator(object):
@@ -44,7 +44,7 @@ class MaxLengthValidator(object):
 
     def __call__(self, target):
         if len(target.data) > self.max_length:
-            return target.node, {'message': self.message}
+            target.add_error({'message': self.message})
 
 
 class NonBlockingDummyValidator(object):
@@ -52,7 +52,7 @@ class NonBlockingDummyValidator(object):
     """
 
     def __call__(self, target):
-        return target.node, {'message': "I'm not blocking!", 'block': False}
+        target.add_error({'message': "I'm not blocking!", 'block': False})
 
 
 class RequiredValidator(object):
@@ -69,7 +69,7 @@ class RequiredValidator(object):
 
     def __call__(self, target=None):
         if len(target.data) == 0:
-            return target.node, {'message': self.message}
+            target.add_error({'message': self.message})
 
 
 class EmailValidator(object):
@@ -115,7 +115,7 @@ class EmailValidator(object):
                 else:
                     return True
             except UnicodeError:
-                pass
+                return False
 
         return True
 
@@ -123,7 +123,7 @@ class EmailValidator(object):
         if self.valid(target.data):
             return None
         else:
-            return target.node, {'message': self.message}
+            target.add_error({'message': self.message})
 
 
 class Check(object):
@@ -209,21 +209,17 @@ class Check(object):
         for key, arg in enumerate(self.args):
             # We need to get our node information.
             # If already resolved, just pull from arg
-            if self.resolved:
-                node = arg
-            else:
-                node = form.get_by_attr(arg)
-            node.resolve_data(data)
+            if not self.resolved:
+                self.args[key] = form.get_by_attr(arg)
+            self.args[key].resolve_data(data)
 
         # Process kwargs
         for key, val in self.kwargs.iteritems():
             # We need to get our node information. If already resolved, just
             # pull from arg
-            if self.resolved:
-                node = val
-            else:
-                node = form.get_by_attr(val)
-            node.resolve_data(data)
+            if not self.resolved:
+                self.kwargs[key] = form.get_by_attr(val)
+            self.kwargs[key].resolve_data(data)
 
         self.resolved = True
 
