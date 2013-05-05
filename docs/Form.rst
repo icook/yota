@@ -15,7 +15,6 @@ This is the core of Yota's functionality. To create a Form with Yota you must
 inherit from the From superclass like in the following example.
 
 .. code-block:: python
-    :linenos:
 
     from yota import Form
     from yota.nodes import *
@@ -27,12 +26,12 @@ inherit from the From superclass like in the following example.
         address = EntryNode()
         submit = SubmitNode(title="Submit")
 
-Forms are simply a collection of Nodes and Checks. The Checks drive validation of the Form and will be talked about next, while the Nodes drive rendering. Conceptually Nodes can be thought of as a single input section in your form, but it can actually be anything that is destined to generate some HTML or Javascript in your Form. For example you may wish to place a header at the beginning to the Form even though it isn't used for any data entry. Most keyword arguments passed to a Node are passed directly to their rendering context, and thus their use is completely up to user choice. More information on Nodes can be found in the `Node` documentation section. Your new Form class inherits lots of functionality for common tasks such as rendering and validation.
+Forms are simply a collection of Nodes and Checks. The Checks drive validation of the Form and will be talked about next, while the Nodes drive rendering. Conceptually Nodes can be thought of as a single input section in your form, but it can actually be anything that is destined to generate some HTML or Javascript in your Form. For example you may wish to place a header at the beginning to the Form even though it isn't used for any data entry. Most keyword arguments passed to a Node are passed directly to their rendering context, and thus their use is completely up to user choice. More information on Nodes can be found in the :doc:`Nodes` documentation section. Your new Form class inherits lots of functionality for common tasks such as rendering and validation.
 
 To render our Form we can call the :func:`yota.Form.render` function on an instance of our Form object::
 
     >>> personal = PersonalForm()
-    >>> personal.redner()
+    >>> personal.render()
     '<form method="post">
     ...
     </form>'
@@ -97,7 +96,10 @@ Changing Rendering Engines
 By default Jinja2 is the renderer for Yota, however support for other renderes
 is possible by setting the :attr:`yota.Form._renderer` to a different
 implementation of the :class:`yota.Renderer` class. The default is
-:class:`yota.JinjaRenderer`.
+:class:`yota.JinjaRenderer`. A standard pattern would be to set the Form
+class object _renderer attribute allowing the attribute change to be effectively
+global. This would normally be done in whatever setup function your web
+framework provides.
 
 
 API

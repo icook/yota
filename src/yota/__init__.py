@@ -45,14 +45,19 @@ class Form(object):
 
     :param g_context: This is a global context that will be passed to all nodes in rendering thorugh their rendering context as 'g' variable.
     :type g_context: dictionary
+
     :param context: This is a context specifically for the special form open and form close nodes, canonically called start and close.
     :type context: dictionary
+
     :param _renderer: This is a class object that is used to perform the actual rendering steps, allowing different rendering engines to be swapped out.
     :type _renderer: Renderer or subclass
-    :param _processor: This is a class that performs post processing on whatever is passed in as data during validation. The intended purpose of this was to write processors that translated submitted form data from the format of the web framework being used to a format that Yota expects. It also allows things like filtering stripping characters or encoding all data that enters a validator.
+
+    :param _processor:
     :type _processor: Processor or subclass
+
     :param start_template: This is the name of the template used to generate the start form node.
     :type start_template: string
+
     :param close_template: Same as above except for the close template.
     :type close_template: string
     """
@@ -62,11 +67,32 @@ class Form(object):
     g_context = {}
     context = {}
     _renderer = JinjaRenderer
+    """ This is a class object that is used to perform the actual rendering
+    steps, allowing different rendering engines to be swapped out. More about
+    this in the section :ref:` """
     _processor = FlaskPostProcessor
+    """ This is a class that performs post processing on whatever is passed in
+    as data during validation. The intended purpose of this was to write
+    processors that translated submitted form data from the format of the web
+    framework being used to a format that Yota expects. It also allows things
+    like filtering stripping characters or encoding all data that enters a
+    validator. """
     hidden = {}
+    """ A dictionary of hidden key/value pairs to be injected into the form.
+    This is frequently used to pass dynamic form parameters into the validator.
+    """
     start_template = 'form_open.html'
+    """ The template used when automatically injecting a start Node. See
+    :attr:`yota.Form.auto_start_close` for more information. """
     close_template = 'form_close.html'
+    """ The template used when automatically injecting a close Node. See
+    :attr:`yota.Form.auto_start_close` for more information. """
     auto_start_close = True
+    """ Dictates whether or not start and close Nodes will
+    be automatically appended/prepended to your form. Note that this must be
+    set via __init__ or your class definition since it must be set before
+    __init__ for the Form is run. """
+
 
     def __new__(cls, **kwargs):
         """ We want our created Form to have a copy of the origninal
