@@ -10,11 +10,13 @@
         </div>
         {% endif %}
     {% endblock %}
-    {% block label %}
-    <label class="control-label" for="{{ name }}">{{ title }}</label>
-    {% endblock %}
+    {% if label %}
+        {% block label %}
+            <label class="control-label" for="{{ name }}">{{ title }}</label>
+        {% endblock %}
+    {% endif %}
     <div class="controls">
-    {% block control %}
-    {% endblock %}
+        {% block control %}
+        {% endblock %}
     </div>
 </div>

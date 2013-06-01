@@ -40,6 +40,7 @@ class Node(object):
 
     template = None
     validator = None
+    label = True
     #name = attribute set in the parent form or can be passed to init
 
     def __init__(self, **kwargs):
@@ -96,6 +97,8 @@ class Node(object):
 
 class BaseNode(Node):
     base = "horiz.html"
+    css_class = ''
+    css_style = ''
 
 class ListNode(BaseNode):
     template = 'list.html'
@@ -106,6 +109,11 @@ class ButtonNode(BaseNode):
 
 class EntryNode(BaseNode):
     template = 'entry.html'
+
+class TextareaNode(BaseNode):
+    template = 'textarea.html'
+    rows = '5'
+    columns = '10'
 
 class SubmitNode(BaseNode):
     template = 'submit.html'

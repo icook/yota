@@ -44,7 +44,7 @@ class Form(object):
     rendering the form.
 
     :var context: This is a global context that will be
-    passed to all nodes in rendering thorugh their rendering context as 'g'
+    passed to all nodes in rendering through their rendering context as 'g'
     variable.
     :type g_context: dictionary
 
@@ -84,7 +84,7 @@ class Form(object):
     close_template = 'form_close.html'
 
     def __new__(cls, **kwargs):
-        """ We want our created Form to have a copy of the origninal
+        """ We want our created Form to have a copy of the original
         form list so that dynamic additions to the list do not
         effect all Form instances """
 
@@ -98,12 +98,15 @@ class Form(object):
                 setattr(c, n._attr_name, n)
         return c
 
-    def __init__(self, name=None, g_context=None, **kwargs):
+    def __init__(self, name=None, g_context=None, form_class=None, **kwargs):
         # init our context if passed in
         self.g_context = g_context if g_context else {}
 
         # set a default for our name to the class name
         self.name = name if name else self.__class__.__name__
+
+        # Set a default form class
+        self.form_class = form_class if form_class else "form-horizontal"
 
         # passes everything to our rendering context and updates params
         self.context.update(kwargs)
@@ -116,7 +119,7 @@ class Form(object):
         # Add our open and close form to the end of the tmp lst
         if not hasattr(self, 'start'):
             self.insert(0, LeaderNode(template=self.start_template,
-                         _attr_name='start',
+                         _attr_name='start', css_class=self.form_class,
                          **self.context))
         else:
             self.insert(0, self.start)
@@ -163,7 +166,7 @@ class Form(object):
 
         Runs through the internal node structure attempting to find
         prev_attr_name and inserts the passed node after it. If the
-        prev_attr_name cannot be found it will be inserted at the end. Intenally
+        prev_attr_name cannot be found it will be inserted at the end. Intentionally
         calls `Form.insert` and has the same requirements of the `Node`."""
 
         # check to allow passing in just a node
