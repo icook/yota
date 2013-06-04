@@ -42,34 +42,20 @@ class Form(object):
     and as such it is the main way to access functionality in Yota. It
     provides the core functionality involved with setting up and
     rendering the form.
-
-    :param g_context: This is a global context that will be passed to all nodes in rendering thorugh their rendering context as 'g' variable.
-    :type g_context: dictionary
-
-    :param context: This is a context specifically for the special form open and form close nodes, canonically called start and close.
-    :type context: dictionary
-
-    :param _renderer: This is a class object that is used to perform the actual rendering steps, allowing different rendering engines to be swapped out.
-    :type _renderer: Renderer or subclass
-
-    :param _processor:
-    :type _processor: Processor or subclass
-
-    :param start_template: This is the name of the template used to generate the start form node.
-    :type start_template: string
-
-    :param close_template: Same as above except for the close template.
-    :type close_template: string
     """
 
     __metaclass__ = OrderedDictMeta
 
     g_context = {}
+    """ This is a global context that will be passed to all nodes in rendering
+    thorugh their rendering context as 'g' variable. """
     context = {}
+    """ This is a context specifically for the special form open and form close
+    nodes, canonically called start and close. """
     _renderer = JinjaRenderer
     """ This is a class object that is used to perform the actual rendering
     steps, allowing different rendering engines to be swapped out. More about
-    this in the section :ref:` """
+    this in the section :class:`Renderer` """
     _processor = FlaskPostProcessor
     """ This is a class that performs post processing on whatever is passed in
     as data during validation. The intended purpose of this was to write

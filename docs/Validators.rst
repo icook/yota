@@ -13,9 +13,9 @@ number of output Nodes.
 
 A validator should be a Python callable. The callable will be accessed through a
 Check object that provides context on how you would like your validator to be
-executed _in this given instance_. Checks are what provide your validation
+executed *in this given instance*. Checks are what provide your validation
 callable with the data it is going to validate. When the validation callable is
-run it is supplied with a reference to a Node. The Node's data attribute will be
+run it is supplied with a reference to a Node. The :class:`Node`'s data attribute will be
 populated with the submitted form data. At this point, perhaps an example will
 help clarify:::
 
@@ -34,11 +34,11 @@ input value is longer than 5 characters. You can see the creation of the Check
 instance in the Form declaration supplies the string 'name'. This is indicating
 the _attr_name of the Node that you would like to supply to the Validator as
 input. Later when the validator is to be called the string is replaced by a
-refernce to a Node with the specified _attr_name. The method behind this
+refernce to a :class:`Node` with the specified :attr:`Node._attr_name`. The method behind this
 maddness is that it allows for dynamically adding Nodes at and up until
 vaildation time, as well as dynamic injection of validation rules themselves.
 In addition your validation methods can now request as much data as you'd like,
-and subsequently can disperse errors to an arbitrary number of Nodes.
+and subsequently can disperse errors to an arbitrary number of :class:`Node`.
 
 Return Semantics
 ====================
@@ -48,15 +48,16 @@ appending error information to one of their Nodes errors list attribute. The
 data that is put into this list is fairly flexible, although a dictionary is
 recommended. If you are running a JSON based validation method the data must by
 serializable, otherwise it may be anything since it is merely passed into the
-rendering context of your templates. Note: If you wish to make use of Special Key
-Values as discussed below the return value must be a dictionary.
+rendering context of your templates. 
+
+.. note:: If you wish to make use of `Special Key Values`_ you will be required to use dictionaries to return errors.
 
 Validator Execution
 =====================
 
-With the regular form validation method `Form.validate_render` the values after
+With the regular form validation method :meth:`Form.validate_render` the values after
 validation are preserved completely and passed into the rendering context. In
-your `Node` template, the error can then be used for anything related to
+your :class:`Node` template, the error can then be used for anything related to
 rendering and will contain everything that was returned by your validator.
 
 With either the piecewise JSON validation method or the regular JSON validation
@@ -68,7 +69,7 @@ the piecewise documentation section.
 Special Key Values
 =====================
 
-|  **Block**
+| **Block**
 | If set to False the validation message will not prevent the form from submitting. Since the block value is actually something passed back from Yota at validation time, the actual action to be taken is up to the user. As might be expected, a single blocking validator will cause the block flag to return true. This is useful for things like notification of password strength, etc.
 
 .. py:module:: yota

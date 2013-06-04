@@ -2,13 +2,15 @@ from yota.exceptions import InvalidContextException, FormDataAccessException
 
 
 class Node(object):
-    """ Nodes are holders of context for rendering and validating a portion of
+    """ Nodes are holders of context for rendering and displaying validating for a portion of
     your :class:`Form`. This default base Node is designed to provide a template
     along with specific context information to a templating engine such as
     Jinja2. For validation a Node acts as an information source or an error
     sink. Essentially Nodes can be used to source data for use in a
     :class:`Check`, and they can then be delivered some sort of validation error
-    via a validator result.
+    via a the internal :attr:`errors` attribute.
+
+    .. note:: By default all keyword attributes passed to a Node's init function are passed onto the rendering context. To override this, use the :attr:`Node._ignores` attribute.
 
     :param _ignores: A list of attributes that won't be passed into the rendering context. By default the template and validator attributes are ignored.
     :type _ignore: list
@@ -23,21 +25,33 @@ class Node(object):
     :type validator: callable
 
     The default Node init method accepts any keyword arguments and adds them to
-    the Node's rendering context.  """
+    the Node's rendering context.
 
-    # allows tracking of the order of Node creation
+    """
+
     _create_counter = 0
+    """ Allows tracking of the order of Node creation """
     _requires = []
+    """ A List of attributes that will be required at render time. An exception
+    will be thrown if these attributes are not present. Useful for things like
+    lists that require certain data to render properly. """
     _ignores = ['template', 'validator']
+    """ A List of attribute names to explicity not include in the rendering
+    context. Mostly a niceity for keeping the rendering context clutter free.
+    """
     _attr_name = None
+    """ This is how the Node is identified in the Form. If populated
+    automatically if the Node is defined in an a Form class definition, however
+    if the Node is added dynamically it will need to be defined before adding it
+    to the Form. """
     template = None
-    validator = None
-    # A placeholder where error messages for the node will be placed
+    """ The name of the template to use when rendering the Form. Used by the
+    :class:`Renderer` """
     errors = []
-    # a placeholder for incoming data. Used during validation
+    """ A placeholder where error messages for the node will be placed by
+    Validators. """
     data = ''
-
-    #name = attribute set in the parent form or can be passed to init
+    """ A placeholder for incoming data. Used during validation """
 
     def __init__(self, **kwargs):
         # Allows the parent form to keep track of attribute order

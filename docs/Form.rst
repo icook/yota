@@ -28,7 +28,7 @@ inherit from the From superclass like in the following example.
 
 Forms are simply a collection of Nodes and Checks. The Checks drive validation of the Form and will be talked about next, while the Nodes drive rendering. Conceptually Nodes can be thought of as a single input section in your form, but it can actually be anything that is destined to generate some HTML or Javascript in your Form. For example you may wish to place a header at the beginning to the Form even though it isn't used for any data entry. Most keyword arguments passed to a Node are passed directly to their rendering context, and thus their use is completely up to user choice. More information on Nodes can be found in the :doc:`Nodes` documentation section. Your new Form class inherits lots of functionality for common tasks such as rendering and validation.
 
-To render our Form we can call the :func:`yota.Form.render` function on an instance of our Form object::
+To render our Form we can call the :meth:`Form.render` function on an instance of our Form object::
 
     >>> personal = PersonalForm()
     >>> personal.render()
@@ -42,7 +42,7 @@ passes the list of Nodes in the Form onto the Renderer. Most renderers will
 render each each Node's template and append them all together. In addition to
 the Nodes that you have defined in your subclass, a Node for the beginning and
 end of your Form will automatically be injected. The is a convenience that can
-be disabled by setting the :attr:`yota.Form.auto_start_close` to False. We
+be disabled by setting the :attr:`Form.auto_start_close` to False. We
 can see this functionality in action in the below example::
 
     >>> form = PersonalForm()
@@ -60,7 +60,7 @@ Even though 'first' was our first element in the Form and 'submit' was our last,
 the Nodes 'start' and 'close' have been prepended and appended respectively. By
 default these Nodes load from templates 'form_open.html' and 'form_close.html',
 however these values can be easily overridden, as can the entire start and close
-Nodes. For more information see the :attr:`yota.Form.start`, 
+Nodes. For more information see the :attr:`Form.start`, 
 
 Validation Intro
 ================
@@ -94,9 +94,9 @@ When you define a Check object you are essentially specifying a Validator that n
 Changing Rendering Engines
 ==========================
 By default Jinja2 is the renderer for Yota, however support for other renderes
-is possible by setting the :attr:`yota.Form._renderer` to a different
-implementation of the :class:`yota.Renderer` class. The default is
-:class:`yota.JinjaRenderer`. A standard pattern would be to set the Form
+is possible by setting the :attr:`Form._renderer` to a different
+implementation of the :class:`Renderer` class. The default is
+:class:`JinjaRenderer`. A standard pattern would be to set the Form
 class object _renderer attribute allowing the attribute change to be effectively
 global. This would normally be done in whatever setup function your web
 framework provides.
@@ -107,3 +107,4 @@ API
 
 .. autoclass:: Form
     :members:
+    :private-members:
