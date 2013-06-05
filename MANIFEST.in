@@ -1,1 +1,2 @@
 recursive-include src *.html
+recursive-include src *.js
