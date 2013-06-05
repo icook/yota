@@ -47,6 +47,7 @@ class Node(object):
     data = ''
     """ A placeholder for incoming data. Used during validation """
     validator = None
+    label = True
 
     def __init__(self, **kwargs):
         # Allows the parent form to keep track of attribute order
@@ -122,6 +123,8 @@ class BaseNode(Node):
     divs and the horizontal form layout for Bootstrap.
     """
     base = "horiz.html"
+    css_class = ''
+    css_style = ''
 
 
 class ListNode(BaseNode):
@@ -139,6 +142,11 @@ class ButtonNode(BaseNode):
 
 class EntryNode(BaseNode):
     template = 'entry'
+
+class TextareaNode(BaseNode):
+    template = 'textarea.html'
+    rows = '5'
+    columns = '10'
 
 class SubmitNode(BaseNode):
     template = 'submit'

@@ -81,7 +81,7 @@ class Form(object):
 
 
     def __new__(cls, **kwargs):
-        """ We want our created Form to have a copy of the origninal
+        """ We want our created Form to have a copy of the original
         form list so that dynamic additions to the list do not
         effect all Form instances """
 
@@ -103,6 +103,7 @@ class Form(object):
                  g_context=None,
                  start=None,
                  close=None,
+                 form_class=None,
                  **kwargs):
         self.auto_start_close = auto_start_close
         self.start_template = start_template
@@ -111,6 +112,9 @@ class Form(object):
 
         # set a default for our name to the class name
         self.name = name if name else self.__class__.__name__
+
+        # Set a default form class
+        self.form_class = form_class if form_class else "form-horizontal"
 
         # passes everything to our rendering context and updates params
         self.context.update(kwargs)
@@ -123,7 +127,7 @@ class Form(object):
         # Add our open and close form to the end of the tmp lst
         if not start:
             self.insert(0, LeaderNode(template=self.start_template,
-                         _attr_name='start',
+                         _attr_name='start', css_class=self.form_class,
                          **self.context))
         else:
             self.insert(0, start)
