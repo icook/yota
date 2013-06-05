@@ -139,37 +139,43 @@ class Form(object):
 
     def render(self):
         """ Runs the renderer to parse templates of nodes and generate the form
-        HTML. """
+        HTML.
+
+        :returns: A string containing the generated output.
+        """
 
         return self._renderer().render(self._node_list, self.g_context)
 
     def insert(self, position, new_node_list):
-        """ Inserts a `Node` object at the specified position into the
-        _node_list of the form. Index -1 is an alias for the end of the list.
-        After insertion the `Node.set_identifiers` will be called to generate
-        identification for the `Node`. For this to function, _attr_name must be
-        specified for the node prior to insertion.  """
+        """ Inserts a :class:`Node` object or a list of objects at the specified
+        position into the :attr:`Form._node_list` of the form. Index -1 is an
+        alias for the end of the list.  After insertion the
+        :meth:`Node.set_identifiers` will be called to generate identification
+        for the :class:`Node`. For this to function, :attr:`Form._attr_name`
+        must be specified for the node prior to insertion. """
+
         # check to allow passing in just a node
         if isinstance(new_node_list, Node):
             new_node_list = (new_node_list,)
 
         for i, new_node in enumerate(new_node_list):
             if position == -1:
-                self._node_list.append(new_node);
+                self._node_list.append(new_node)
             else:
                 self._node_list.insert(position + i, new_node);
             setattr(self, new_node._attr_name, new_node)
             new_node.set_identifiers(self.name)
 
     def insert_after(self, prev_attr_name, new_node_list):
-        """ Runs through the internal node structure attempting to find
-        prev_attr_name and inserts the passed node after it. If the
-        prev_attr_name cannot be found it will be inserted at the end. Intenally
-        calls `Form.insert` and has the same requirements of the `Node`.
+        """ Runs through the internal node structure attempting to find a
+        :class:`Node` object whos :attr:`Node._attr_name` is prev_attr_name and
+        inserts the passed node after it. If `prev_attr_name` cannot be matched it
+        will be inserted at the end. Internally calls :meth:`Form.insert` and
+        has the same requirements of the :class:`Node`.
 
         :param prev_attr_name: The attribute name of the `Node` that you would like to insert after.
         :type prev_attr_name: string
-        :param new_node_list: The `Node` or list of `Node`s to be inserted.
+        :param new_node_list: The :class:`Node` or list of Nodes to be inserted.
         :type new_node_list: Node or list of Nodes """
 
         # check to allow passing in just a node
@@ -191,7 +197,7 @@ class Form(object):
                 self._node_list.append(new_node)
 
     def get_by_attr(self, name):
-        """ Safe accessor for looking up a node by _attr_name """
+        """ Safe accessor for looking up a node by :attr:`Node._attr_name` """
         try:
             attr = getattr(self, name)
         except:
@@ -222,7 +228,10 @@ class Form(object):
         pass
 
 
-    def _gen_validate(self, data, postprocessor=None, piecewise=False):
+    def _gen_validate(self, data, piecewise=False):
+        """ This is an internal utility function that does the grunt work of
+        running validation logic for a :class:`Form`. It is called by the other
+        primary validation methods. """
         for node in self._node_list:
             node.errors = []
 
@@ -274,8 +283,8 @@ class Form(object):
         return block, error_node_list
 
 
-    def json_validate(self, data, postprocessor=None, piecewise=False):
-        """ The same as `Form.validate_render` except the errors are loaded into
+    def json_validate(self, data, piecewise=False):
+        """ The same as :meth:`Form.validate_render` except the errors are loaded into
         a JSON string to be passed back as a query result. This output is
         designed to be used by the Yota Javascript library.
 
@@ -287,8 +296,7 @@ class Form(object):
         data = self._processor().filter_post(data)
 
         errors = {}
-        block, invalid = self._gen_validate(data,
-                postprocessor=postprocessor, piecewise=piecewise)
+        block, invalid = self._gen_validate(data, piecewise=piecewise)
         # loop over our nodes
         for node in invalid:
             errors[node.id] = node.errors
@@ -301,24 +309,21 @@ class Form(object):
         retval['errors'] = errors
         return json.dumps(retval)
 
-    def validate_render(self, data, postprocessor=None):
-        """ Runs all the accumulated validators on the data passed in and returns the
-        result of each failed validation to the target node. Given the data from
-        your post call it is run through post- processor and then validated
-        with appropriate node modules.
+    def validate_render(self, data):
+        """ Runs all the validators on the `data` that is passed in and
+        returns a re-render of the :class:`Form`. Since validators are designed
+        to pass error information in through the :attr:`Node.errors` attribute
+        then this error information is in turn availible through the rendering
+        context.
 
         :param data: The data to be passed through the `Form._processor`. If the data is in the form of a dictionary where the key is the 'name' of the form field and the data is a string then no post-processing is neccessary.
         :type data: dictionary
-
-        :param postprocessor: A callable that accepts a single dictionary can be passed in and will be executed for every validation error encountered.  This can be useful for filtering/encoding strings, wrapping the information in various tags, etc.
-        :type postprocessor: callable
-
         """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
-        block, invalid = self._gen_validate(data, postprocessor=postprocessor)
+        block, invalid = self._gen_validate(data)
 
         # run our form validators at the end
         if len(invalid) > 0:

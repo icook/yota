@@ -68,7 +68,6 @@ Validation Intro
 To add some validation to our Form we need to create a Check. Checks are just containers for Validators and hold information about how the Validator should be executed. The below code will add a Check for the 'first' Node to ensure a minimum length of 5 characters.
 
 .. code-block:: python
-    :linenos:
     :emphasize-lines: 8
 
     from yota import Form
@@ -91,20 +90,41 @@ The constructor prototype may help provide some reference for the explaination:
 
 When you define a Check object you are essentially specifying a Validator that needs to be run when the Form data is validated, and the information that needs to be passed to said Validator. Attr_args and attr_kwargs should be strings that define what data will get passed into the Validator at validation time. For instance in the above example that data that was entered for the 'first' Node will get passed to the validator. More information on Checks and Validators can be found on the :doc:`Validators` page.
 
-Changing Rendering Engines
+.. _renderers:
+
+Rendering Engines
 ==========================
 By default Jinja2 is the renderer for Yota, however support for other renderes
-is possible by setting the :attr:`Form._renderer` to a different
-implementation of the :class:`Renderer` class. The default is
-:class:`JinjaRenderer`. A standard pattern would be to set the Form
-class object _renderer attribute allowing the attribute change to be effectively
-global. This would normally be done in whatever setup function your web
-framework provides.
+is possible by setting the :attr:`Form._renderer` to a different class that
+implements the proper interface. Currently the default and only option is
+:class:`JinjaRenderer`, however other implementations should be easy to write.
+The default Nodes :attr:`Node.template` property lacks a file extension and
+expects the renderer to auto-append this before calling the template, thus
+allowing the Node to work accross different renderers.
 
+Renderers are invoked when a render method of a :class:`Form` is executed.
+currently these include :meth:`Form.render` and :meth:`Form.validate_render`.
+renderers were designed mainly to allow the interchange of template engines and
+context gathering semantics. 
 
-API
+Renderer Interface
+*********************
+As of now only one method must be implemented by a Renderer: the render method.
+It accepts two parameters, a list of Nodes to be rendererd in order and a
+dictionary that contains the global context to include in the template context.
+Looking at the source for JinjaRenderer will provide some guidence on how you
+might write your own Renderer.
+
+Switching Renderers
+*********************
+A standard pattern would be to set the Form class object _renderer attribute
+allowing the attribute change to be effectively global. This would normally be
+done in whatever setup function your web framework provides.
+
+Form API
 ===========
 
 .. autoclass:: Form
     :members:
     :private-members:
+    :undoc-members:

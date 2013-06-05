@@ -1,30 +1,28 @@
 import os
 
-class Renderer(object):
-    """ Renderers are invoked when a render method of a :class:`Form` is
-    executed. Currently these include :meth:`Form.render` and
-    :meth:`Form.validate_render`. Renderers were designed mainly to allow the
-    interchange of template engines and context gathering semantics. As of now
-    only the JinjaRenderer is availible, unless you want to write one :).
-    """
-    pass
-
-class JinjaRenderer(Renderer):
+class JinjaRenderer(object):
     from jinja2 import Environment, FileSystemLoader
-    # automatically populate our search path with the default templates
+
+    # a defualt search path for templates
     search_path = [os.path.dirname(os.path.realpath(__file__)) +
             "/templates/jinja/"]
+
+    # allow lazy loading of the enviroment
     _env = None
+
+    # the default template suffix
     suffix = ".html"
 
     @property
     def env(self):
-        """ Simple lazy loaders """
+        """ Simple lazy loader for the Jinja2 enviroment """
         if not self._env:
-            self._env = JinjaRenderer.Environment(loader=JinjaRenderer.FileSystemLoader(JinjaRenderer.search_path))
+            self._env = JinjaRenderer.Environment(
+                    loader=JinjaRenderer.FileSystemLoader(JinjaRenderer.search_path))
         return self._env
 
     def render(self, nodes, g_context):
+        """ Loop over each Node and render it into a big blob of a string """
         buildup = ""
         for node in nodes:
             template = self.env.get_template(node.template + self.suffix)

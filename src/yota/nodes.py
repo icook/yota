@@ -12,13 +12,13 @@ class Node(object):
 
     .. note:: By default all keyword attributes passed to a Node's init function are passed onto the rendering context. To override this, use the :attr:`Node._ignores` attribute.
 
-    :param _ignores: A list of attributes that won't be passed into the rendering context. By default the template and validator attributes are ignored.
-    :type _ignore: list
+    :param _ignores: See :attr:`Node._ignores`
+    :type _ignores: list
 
-    :param _requires: A list of attributes that are required to render the template properly. An exception will be thrown if one of these attributes is missing. By default this is empty.
+    :param _requires: See :attr:`Node._requires`
     :type _requires: list
 
-    :param template: String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node' that occurs in it's search path.
+    :param template: See :attr:`Node.template`
     :type template: string
 
     :param validator: An optional attribute that specifies a :class:`Check` object to be associated with the Node. This is automatically extracted at parse time and cannot be manipulated after Node insertion.
@@ -32,26 +32,21 @@ class Node(object):
     _create_counter = 0
     """ Allows tracking of the order of Node creation """
     _requires = []
-    """ A List of attributes that will be required at render time. An exception
-    will be thrown if these attributes are not present. Useful for things like
-    lists that require certain data to render properly. """
+    """ A List of attributes that will be required at render time. An exception will be thrown if these attributes are not present. Useful for things like lists that require certain data to render properly. """
     _ignores = ['template', 'validator']
     """ A List of attribute names to explicity not include in the rendering
     context. Mostly a niceity for keeping the rendering context clutter free.
     """
     _attr_name = None
-    """ This is how the Node is identified in the Form. If populated
-    automatically if the Node is defined in an a Form class definition, however
-    if the Node is added dynamically it will need to be defined before adding it
-    to the Form. """
+    """ This is how the Node is identified in the Form. If populated automatically if the Node is defined in an a Form class definition, however if the Node is added dynamically it will need to be defined before adding it to the Form. """
     template = None
-    """ The name of the template to use when rendering the Form. Used by the
-    :class:`Renderer` """
+    """ String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node' that occurs in it's search path.  """
     errors = []
     """ A placeholder where error messages for the node will be placed by
     Validators. """
     data = ''
     """ A placeholder for incoming data. Used during validation """
+    validator = None
 
     def __init__(self, **kwargs):
         # Allows the parent form to keep track of attribute order

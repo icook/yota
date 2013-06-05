@@ -15,15 +15,16 @@ A validator should be a Python callable. The callable will be accessed through a
 Check object that provides context on how you would like your validator to be
 executed *in this given instance*. Checks are what provide your validation
 callable with the data it is going to validate. When the validation callable is
-run it is supplied with a reference to a Node. The :class:`Node`'s data attribute will be
-populated with the submitted form data. At this point, perhaps an example will
-help clarify:::
+run it is supplied with a reference to a Node. The submitted data that is
+associated with that :class:`Node` will be loaded into the data attribute. At
+this point, perhaps an example will help clarify.
 
+.. code-block:: python
     import yota
 
     def MyValidator(text):
         if len(text.data) > 5:
-            test.errors.append({'message': "You're text is too long!"})
+            test.add_error({'message': "You're text is too long!"})
 
     class MyForm(yota.Form):
         name = yota.nodes.EntryNode()
@@ -58,7 +59,7 @@ Validator Execution
 With the regular form validation method :meth:`Form.validate_render` the values after
 validation are preserved completely and passed into the rendering context. In
 your :class:`Node` template, the error can then be used for anything related to
-rendering and will contain everything that was returned by your validator.
+rendering and will contain exactly what was returned by your validator.
 
 With either the piecewise JSON validation method or the regular JSON validation
 method the data will get translated into JSON. This JSON string is designed to
@@ -74,6 +75,7 @@ Special Key Values
 
 .. py:module:: yota
 
+===========
 Check API
 ===========
 
