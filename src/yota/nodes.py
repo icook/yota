@@ -144,7 +144,7 @@ class EntryNode(BaseNode):
     template = 'entry'
 
 class TextareaNode(BaseNode):
-    template = 'textarea.html'
+    template = 'textarea'
     rows = '5'
     columns = '10'
 
