@@ -1,8 +1,8 @@
 <div class="control-group">
     {% block error %}
-        {% if error %}
+        {% if errors %}
         <div class="alert alert-error">
-            {{ error['message'] }}
+            {{ errors[0]['message'] }}
         </div>
         {% endif %}
         {% if g.ajax %}

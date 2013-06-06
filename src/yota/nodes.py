@@ -86,7 +86,7 @@ class Node(object):
         if not hasattr(self, 'name'):
             self.name = self._attr_name
         if not hasattr(self, 'title'):
-            self.title = self._attr_name.capitalize()
+            self.title = self._attr_name.capitalize().replace('_', ' ')
 
     def resolve_data(self, data):
         """ This method is called when resolving the data from a form submission
