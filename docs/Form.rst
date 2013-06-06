@@ -121,6 +121,70 @@ A standard pattern would be to set the Form class object _renderer attribute
 allowing the attribute change to be effectively global. This would normally be
 done in whatever setup function your web framework provides.
 
+Dynamic Forms
+==========================
+One of the key features of Yota is the ability to make changes to the Form
+schema at runtime with little effort. For example, say you wanted to make a Form
+that allowed the user to enter a list of names, and the form included a button
+that added another field with JavaScript. Or perhaps you would like to create a
+Form that is slightly different depending on session data. With a dynamic Form schema managing
+these situations can be much easier.
+
+Since the Form object that is used to run validation after a submission needs to
+match the Form object that was used to originally render the Form there are some
+considerations that need to be made. There are of course many ways to try and
+solve this synchronization problem, but here is a straightforward solution that
+should apply to most situations.
+
+For our example below we will make a :class:`Form` that changes the number of
+input fields present in the Form based on a parameter. The general idea is to
+store the parameters that drives the creation of the Form in hidden input fields
+and intercept them on re-submission to recreate the correct Form object for
+validating.
+
+.. code-block:: python
+
+    class DynamicForm(Form):
+        @classmethod
+        def get_form_from_data(cls, data):
+            """ This method is used for reproducing the Form object as it was
+            originally. This method has the advantage of allowing the hidden
+            input field to be modified by JavaScript and still maintain
+            correctness. """
+            args = []
+            for key, val in data.iteritems():
+                if key.startswith('_arg_'):
+                    args.append(val)
+            return cls.get_form(args)
+
+        @classmethod
+        def get_form(cls, count=1):
+            """ This method builds a DynamicForm object taking a count
+            parameter to drive the insertion of the other input fields. """
+
+            # Make a list of Nodes to add into the Form nodelist
+            append_list = []
+            for i in xrange(int(count)):
+                """ Note that dynamically inserted Nodes need their _attr_name to
+                be explicitly defined """
+                append_list.append(
+                    EntryNode(title="Item {}".format(i), _attr_name='item{}'.format(i)))
+
+            form = DynamicForm(name=name,
+                            id=name,
+                            g_context=g_context,
+                            hidden={'count': count})
+            # Add in our dynamic elements
+            form.insert(0, append_list)
+            return form
+
+        submit = SubmitNode(title="Submit")
+
+The default templates for Yota support the hidden parameter being passed into
+the Form's start Node, and this is of course required to pass the data back to
+the get_from_from_data method. A complete example of how to perform this can be
+found in the yota_examples project on Github.
+
 Form API
 ===========
 
