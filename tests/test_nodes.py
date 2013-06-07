@@ -92,6 +92,6 @@ class TestNode(unittest.TestCase):
 
         test = TForm()
         with self.assertRaises(yota.exceptions.InvalidContextException):
-            block, invalid = test.render()
+            output = test.render()
 if __name__ == '__main__':
     unittest.main()

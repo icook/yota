@@ -55,16 +55,6 @@ class TestForms(unittest.TestCase):
         invalid = test.json_validate({'t': ''},
                 piecewise=True)
 
-    def test_post_processor(self):
-        class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.RequiredValidator(), 't')
-
-        test = TForm()
-        block, invalid = test._gen_validate({'t': u''}, postprocessor= lambda s:
-                {'message': s['message'] + "test"})
-        assert(len(invalid) > 0)
-
 class TestExtra(unittest.TestCase):
     def test_get_by_attr(self):
         class TForm(yota.Form):

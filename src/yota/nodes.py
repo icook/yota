@@ -12,13 +12,16 @@ class Node(object):
 
     .. note:: By default all keyword attributes passed to a Node's init function are passed onto the rendering context. To override this, use the :attr:`Node._ignores` attribute.
 
-    :param _ignores: See :attr:`Node._ignores`
+    :param _attr_name: This is how the Node is identified in the Form. If populated automatically if the Node is defined in an a Form class definition, however if the Node is added dynamically it will need to be defined before adding it to the Form.
+    :type _attr_name: string
+
+    :param _ignores: A List of attribute names to explicity not include in the rendering context. Mostly a niceity for keeping the rendering context clutter free.
     :type _ignores: list
 
-    :param _requires: See :attr:`Node._requires`
+    :param _requires: A List of attributes that will be required at render time. An exception will be thrown if these attributes are not present. Useful for things like lists that require certain data to render properly.
     :type _requires: list
 
-    :param template: See :attr:`Node.template`
+    :param template: String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node' that occurs in it's search path.
     :type template: string
 
     :param validator: An optional attribute that specifies a :class:`Check` object to be associated with the Node. This is automatically extracted at parse time and cannot be manipulated after Node insertion.
@@ -30,29 +33,45 @@ class Node(object):
     """
 
     _create_counter = 0
-    """ Allows tracking of the order of Node creation """
-    _requires = []
-    """ A List of attributes that will be required at render time. An exception will be thrown if these attributes are not present. Useful for things like lists that require certain data to render properly. """
-    _ignores = ['template', 'validator']
-    """ A List of attribute names to explicity not include in the rendering
-    context. Mostly a niceity for keeping the rendering context clutter free.
-    """
-    _attr_name = None
-    """ This is how the Node is identified in the Form. If populated automatically if the Node is defined in an a Form class definition, however if the Node is added dynamically it will need to be defined before adding it to the Form. """
-    template = None
-    """ String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node' that occurs in it's search path.  """
-    errors = []
-    """ A placeholder where error messages for the node will be placed by
-    Validators. """
-    data = ''
-    """ A placeholder for incoming data. Used during validation """
-    validator = None
-    label = True
+    """ Allows tracking the order of Node creation """
 
-    def __init__(self, **kwargs):
+    def __init__(self,
+                 template=None,
+                 validator=None,
+                 label=True,
+                 _requires=None,
+                 _ignores=None,
+                 _attr_name=None,
+                 **kwargs):
+
+        # Allow _ignores and _requires to be overwritten at the instance level,
+        # and also have a default
+        if _ignores:
+            self.ignores = _ignores
+        elif not hasattr(self, '_ignores'):  # careful not to overwrite class attr
+            self._ignores = ['template', 'validator']
+
+        if _requires:
+            self._requires = _requires
+        elif not hasattr(self, '_requires'):  # careful not to overwrite class attr
+            self._requires = []  # make sure it's there to prevent errors
+
+        if not hasattr(self, 'validator'):  # careful not to overwrite class attr
+            self.validator = validator
+
+
+        if template:
+            self.template = template
+        self._attr_name = _attr_name
+        self.label = label
+
         # Allows the parent form to keep track of attribute order
         self._create_counter = Node._create_counter
         Node._create_counter += 1
+
+        # A placeholder for validation process
+        self.errors = []
+        self.data = ''
 
         # passes everything to our rendering context and updates params
         self.__dict__.update(kwargs)
@@ -156,5 +175,9 @@ class LeaderNode(Node):
     context. Intended for use in the start and end Nodes. """
 
     def set_identifiers(self, parent_name):
+        # set our start node's id to actually be the name of the form
+        if not hasattr(self, 'id'):
+            self.id = parent_name
+
         super(LeaderNode, self).set_identifiers(parent_name)
         delattr(self, 'title')
