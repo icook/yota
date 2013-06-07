@@ -14,12 +14,12 @@ Or you can install it from Git with:
 
 + git clone https://github.com/icook/yota.git
 + cd yota
-+ pip install -e .``` OR ```python setup.py develop
++ pip install .
 
 Examples
 ================
 
-Checkout the example usages in the project `Yota Examples <https://github.com/icook/yota_examples>`_.
+Checkout the example usages in the project [Yota Examples](https://github.com/icook/yota_examples>).
 
 Getting Started
 ================
