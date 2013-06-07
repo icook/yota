@@ -8,7 +8,7 @@ requires = [
 ]
 
 setup(name='yota',
-      version='0.1',
+      version='0.1.1',
       description='A form library with a focus on simplicity',
       long_description="",
       author='',

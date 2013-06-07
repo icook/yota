@@ -20,6 +20,7 @@ associated with that :class:`Node` will be loaded into the data attribute. At
 this point, perhaps an example will help clarify.
 
 .. code-block:: python
+
     import yota
 
     def MyValidator(text):
@@ -75,7 +76,6 @@ Special Key Values
 
 .. py:module:: yota
 
-===========
 Check API
 ===========
 
