@@ -1,0 +1,11 @@
+{% extends base %}
+{% block control %}
+
+{% for id, description in buttons %}
+<label class="{{type}} {{ css_class }}">
+    <input type="{{type}}" name="{{name}}" id="{{id}}"{% if data == value %} selected{% endif %}>
+    {{description}}
+</label>
+{% endfor %}
+
+{% endblock %}

@@ -160,6 +160,15 @@ class ListNode(BaseNode):
     template = 'list'
     _requires = ['items']
 
+class GroupedInputsNode(BaseNode):
+    """ Node for providing a group of input elements, designed with radio or
+     checkbox elements in mind. Requires an attribute that is a list of
+     tuples providing the id for the items and description for labels.
+    """
+    template = 'grouped_elements'
+    type = 'radio'
+    _requires = ['buttons']
+
 class ButtonNode(BaseNode):
     """ Creates a simple button in your form.
     """
@@ -169,6 +178,7 @@ class EntryNode(BaseNode):
     template = 'entry'
 
 class TextareaNode(BaseNode):
+    """ A node with a basic textarea template with defaults provided  """
     template = 'textarea'
     rows = '5'
     columns = '10'
