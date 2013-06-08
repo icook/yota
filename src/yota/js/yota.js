@@ -32,5 +32,5 @@ function ajax_activate(form_id, error_callback, success_callback, piecewise) {
         },
         dataType: 'json'
     }; 
-    $('#' + form_id).ajaxForm(window.yota_ajax_options);
+    $('#' + form_id).ajaxForm($.extend({data: {'submit_action': 'true'}}, window.yota_ajax_options));
 }

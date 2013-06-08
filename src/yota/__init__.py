@@ -228,14 +228,16 @@ class Form(object):
         """ This is an internal utility function that does the grunt work of
         running validation logic for a :class:`Form`. It is called by the other
         primary validation methods. """
+        # reset all error lists and data
         for node in self._node_list:
             node.errors = []
+            node.data = ''
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
-        # accumulate a set of nodes that may contain errors
-        node_set = set()
+        # assume to be not blocking
+        block = False
         # loop over our checks and run our validators
         for check in self._validation_list:
             # try to iterate over their validators
@@ -246,6 +248,8 @@ class Form(object):
                 if not piecewise:
                     raise e
                 else:
+                    # make sure no success until all validators can run
+                    block = True
                     continue
             try:
                 # Run our validator
@@ -254,27 +258,27 @@ class Form(object):
                 raise ValidatorNotCallableException("Validators provided must "
                 "be callable, type '{0}' instead. Caused by {1}". \
                         format(type(check.validator), e))
-            # populate our set with potentially effected nodes
-            node_set.update(check.kwargs.itervalues())
-            node_set.update(check.args)
 
-        block = False
         # a list to hold Nodes that actually have errors
         error_node_list = []
-        if node_set:
-            # Set the error value of the node to equal the dictionary that
-            # is returned by the validator
+        for node in self._node_list:
+            # slightly confusing way of setting our block = True by
+            # default
+            if node.errors:
+                error_node_list.append(node)
+            else:
+                # if the data field is blank, try and populate it
+                if node.data == '':
+                    try:
+                        node.resolve_data(data)
+                    except FormDataAccessException:
+                        pass
+                continue
 
-            for node in node_set:
-                # slightly confusing way of setting our block = True by
-                # default
-                if node.errors:
-                    error_node_list.append(node)
-                else:
-                    continue
-
+            if not block:  # no sense in checking if already blocking
                 for error in node.errors:
                     block |= error.get('block', True)
+
 
         return block, error_node_list
 
@@ -290,9 +294,15 @@ class Form(object):
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
+        # pass our data into the global rendering context for filling in info
+        self.g_context['data'] = data
 
         errors = {}
         block, invalid = self._gen_validate(data, piecewise=piecewise)
+        # auto-disable if this is not the submit action and it's a piecewise to
+        # prevent auto-submission
+        if data.get('submit_action', 'false') != 'true' and piecewise:
+            block = True
         # loop over our nodes
         for node in invalid:
             errors[node.id] = node.errors
@@ -320,6 +330,8 @@ class Form(object):
         data = self._processor().filter_post(data)
 
         block, invalid = self._gen_validate(data)
+
+        self.g_context['block'] = block
 
         # run our form validators at the end
         if len(invalid) > 0:
