@@ -41,6 +41,7 @@
             }
         },
         function () {
+            $('#{{ id }}_success').show();
         }, piecewise);
 
     });
@@ -55,6 +56,9 @@
     <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
     {% endfor %}
     {% endif %}
+    <div class="alert alert-success" style="display:none;" id="{{ id }}_success">
+        Thank you for your submission!
+    </div>
     {% if title %}
     <h2>{{ title }}</h2>
     {% endif %}
