@@ -3,6 +3,9 @@ function ajax_activate(form_id, error_callback, success_callback, piecewise) {
         success: function (jsonObj)  {
             // do some processing on the json that's returned
             if (jsonObj.success) {
+                $('#' + form_id + " > *").find(":input").each(function() {
+                    error_callback(this.id, false, {});
+                });
                 success_callback();
             } else {
                 $('#' + form_id + " > *").find(":input").each(function() {
