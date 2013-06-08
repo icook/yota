@@ -16,7 +16,7 @@ class MinLengthValidator(object):
 
     def __init__(self, length, message=None):
         self.min_length = length
-        self.message = message if message else "Minimum allowed length {}" \
+        self.message = message if message else "Minimum allowed length {0}" \
             .format(length)
         super(MinLengthValidator, self).__init__()
 
@@ -38,7 +38,7 @@ class MaxLengthValidator(object):
 
     def __init__(self, length, message=None):
         self.max_length = length
-        self.message = message if message else "Maximum allowed length {}" \
+        self.message = message if message else "Maximum allowed length {0}" \
             .format(length)
         super(MaxLengthValidator, self).__init__()
 

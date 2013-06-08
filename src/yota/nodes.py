@@ -101,7 +101,7 @@ class Node(object):
         # Set some good defaults based on attribute name and parent name,
         # but always allow the user to override the values at the init level
         if not hasattr(self, 'id'):
-            self.id = "{}_{}".format(parent_name, self._attr_name)
+            self.id = "{0}_{1}".format(parent_name, self._attr_name)
         if not hasattr(self, 'name'):
             self.name = self._attr_name
         if not hasattr(self, 'title'):
@@ -126,12 +126,18 @@ class Node(object):
         :param g_context: The global rendering context passed in from the rendering method.
         """
 
-        d = {i: getattr(self, i) for i in dir(self) if not i.startswith("_") and i not in self._ignores }
+        # d = {i: getattr(self, i) for i in dir(self) if not i.startswith("_") and i not in self._ignores }
+        # Dat 2.6 compat
+        d = {}
+        for key in dir(self):
+            if not key.startswith("_") and key not in self._ignores:
+                d[key] = getattr(self, key)
+
         # check to make sure all required attributes are present
         for r in self._requires:
             if r not in d:
                 raise InvalidContextException(
-                    "Missing required context value '{}'".format(r))
+                    "Missing required context value '{0}'".format(r))
         d['g'] = g_context
         return d
 

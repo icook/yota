@@ -72,8 +72,8 @@ class TestCheck(unittest.TestCase):
             _t_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), 't')
 
         test = TForm()
-        with self.assertRaises(yota.exceptions.FormDataAccessException):
-            block, invalid = test._gen_validate({})
+        self.assertRaises(yota.exceptions.FormDataAccessException,
+                test._gen_validate, {})
 
     def test_key_error_args(self):
         class TForm(yota.Form):
@@ -82,8 +82,8 @@ class TestCheck(unittest.TestCase):
 
         test = TForm()
         block, invalid = test._gen_validate({'t': 'testing'})
-        with self.assertRaises(yota.exceptions.FormDataAccessException):
-            block, invalid = test._gen_validate({})
+        self.assertRaises(yota.exceptions.FormDataAccessException,
+                test._gen_validate, {})
 
 class TestNode(unittest.TestCase):
     def test_required(self):
@@ -91,7 +91,6 @@ class TestNode(unittest.TestCase):
             t = yota.nodes.ListNode()
 
         test = TForm()
-        with self.assertRaises(yota.exceptions.InvalidContextException):
-            output = test.render()
+        self.assertRaises(yota.exceptions.InvalidContextException, test.render)
 if __name__ == '__main__':
     unittest.main()

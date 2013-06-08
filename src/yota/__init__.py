@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from yota.exceptions import ValidatorNotCallableException, FormDataAccessException
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
@@ -7,7 +6,7 @@ from yota.validators import Check
 import json
 import copy
 
-class OrderedDictMeta(type):
+class TrackingMeta(type):
     def __init__(mcs, name, bases, dict):
         """ Process all of the attributes in the `Form` (or subclass)
         declaration and place them accordingly. This builds the internal
@@ -57,7 +56,7 @@ class Form(object):
 
     """
 
-    __metaclass__ = OrderedDictMeta
+    __metaclass__ = TrackingMeta
     _renderer = JinjaRenderer
     """ This is a class object that is used to perform the actual rendering
     steps, allowing different rendering engines to be swapped out. More about
@@ -253,7 +252,7 @@ class Form(object):
                 check.validate()
             except TypeError as e:
                 raise ValidatorNotCallableException("Validators provided must "
-                "be callable, type '{}' instead. Caused by {}". \
+                "be callable, type '{0}' instead. Caused by {1}". \
                         format(type(check.validator), e))
             # populate our set with potentially effected nodes
             node_set.update(check.kwargs.itervalues())
