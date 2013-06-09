@@ -178,10 +178,10 @@ class ListNode(BaseNode):
 
 
 class GroupedInputsNode(BaseNode):
-    """ Node for providing a group of input elements, designed with
-    radio or checkbox elements in mind. Requires an attribute that is a
-    list of tuples providing the id for the items and description for
-    labels. """
+    """ Node for providing a group of input elements, designed with radio
+     elements in mind. Requires an attribute that is a list of tuples
+     providing the value for the items and description for labels.
+    """
     template = 'grouped_elements'
     type = 'radio'
     _requires = ['buttons']
