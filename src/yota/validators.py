@@ -1,6 +1,4 @@
-from collections import namedtuple
 import re
-from yota.exceptions import FormDataAccessException
 
 
 class MinLengthValidator(object):
@@ -90,7 +88,7 @@ class EmailValidator(object):
     domain_whitelist = ['localhost']
 
     def __init__(self, message=None):
-        self.message = message if message else "Entered value must be a valid" \
+        self.message = message if message else "Entered value must be a valid"\
                                                " Email address"
         super(EmailValidator, self).__init__()
 
@@ -130,11 +128,18 @@ class Check(object):
     """ This object wraps a validator callable and is intended to be used in
     your `Form` subclass definition.
 
-    :param callable validator: This is required to be a callable object that will carry out the actual validation. Many generic validators exist or you can roll your own.
+    :param callable validator: This is required to be a callable object
+        that will carry out the actual validation. Many generic validators
+        exist or you can roll your own.
 
-    :param list args: A list of strings, or a single string, representing that _attr_name of the `Node` you would like passed into the validator. Once a validator is called this string will get resolved into a NamedTuple that will be passed into the validator callable.
+    :param list args: A list of strings, or a single string,
+        representing that _attr_name of the `Node` you would like passed
+        into the validator. Once a validator is called this string will get
+        resolved into a NamedTuple that will be passed into the validator
+        callable.
 
-    :param dict kwargs: Same as args above except it allows passing in node information as keyword arguments to the validator callable.
+    :param dict kwargs: Same as args above except it allows passing in node
+        information as keyword arguments to the validator callable.
 
     `Check` objects are designed to be declared in your form subclass in one of
     two ways. Explicit.
@@ -152,8 +157,8 @@ class Check(object):
     instance is a bit of magic behind the scenes, but just know that it matches
     up to the attribute name you give the node in the your `Form` class
     definition. If you later add a `Node` dynamically it will need to specify
-    the _attr_name upon declaration explicitly. More on this in :ref:`Dynamically
-    Adding Nodes`.
+    the _attr_name upon declaration explicitly. More on this in
+    :ref:`Dynamically Adding Nodes`.
 
     Implicit declaration is a nice option for simple validators, and is simply
     syntactic sugar for the above syntax.

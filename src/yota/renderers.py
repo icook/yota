@@ -1,11 +1,12 @@
 import os
 
+
 class JinjaRenderer(object):
     from jinja2 import Environment, FileSystemLoader
 
     # a defualt search path for templates
-    search_path = [os.path.dirname(os.path.realpath(__file__)) +
-            "/templates/jinja/"]
+    search_path = [os.path.dirname(os.path.realpath(__file__))
+                   + "/templates/jinja/"]
 
     # allow lazy loading of the enviroment
     _env = None
@@ -17,8 +18,8 @@ class JinjaRenderer(object):
     def env(self):
         """ Simple lazy loader for the Jinja2 enviroment """
         if not self._env:
-            self._env = JinjaRenderer.Environment(
-                    loader=JinjaRenderer.FileSystemLoader(JinjaRenderer.search_path))
+            loader = JinjaRenderer.FileSystemLoader(JinjaRenderer.search_path)
+            self._env = JinjaRenderer.Environment(loader=loader)
         return self._env
 
     def render(self, nodes, g_context):

@@ -1,10 +1,11 @@
-from yota.exceptions import ValidatorNotCallableException, FormDataAccessException
+from yota.exceptions import DataAccessException, NotCallableException
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
 from yota.nodes import LeaderNode, Node
 from yota.validators import Check
 import json
 import copy
+
 
 class TrackingMeta(type):
     def __init__(mcs, name, bases, dict):
@@ -21,7 +22,7 @@ class TrackingMeta(type):
                 if hasattr(value, 'validators'):
                     if not isinstance(value.validator, tuple) and \
                        not isinstance(value.validator, list):
-                        value.validators = [value.validators,]
+                        value.validators = [value.validators, ]
                     for validator in value.validators:
                         # shorthand for adding a validation tuple
                         c = Check(validator, name)
@@ -36,23 +37,35 @@ class TrackingMeta(type):
             # keeps track of the order of items for actual rendering
             mcs._node_list.append(value)
 
+
 class Form(object):
     """ This is the base class that all user defined forms should inherit from,
     and as such it is the main way to access functionality in Yota. It
     provides the core functionality involved with setting up and
     rendering the form.
 
-    :param context: This is a context specifically for the special form open and form close nodes, canonically called start and close.
+    :param context: This is a context specifically for the special form open
+        and form close nodes, canonically called start and close.
 
-    :param g_context: This is a global context that will be passed to all nodes in rendering thorugh their rendering context as 'g' variable.
+    :param g_context: This is a global context that will be passed to all nodes
+        in rendering thorugh their rendering context as 'g' variable.
 
-    :param start_template: The template used when automatically injecting a start Node. See :attr:`yota.Form.auto_start_close` for more information.
+    :param start_template: The template used when automatically
+        injecting a start Node. See :attr:`yota.Form.auto_start_close` for
+        more information.
 
-    :param close_template: The template used when automatically injecting a close Node. See :attr:`yota.Form.auto_start_close` for more information.
+    :param close_template: The template used when automatically
+        injecting a close Node. See :attr:`yota.Form.auto_start_close` for
+        more information.
 
-    :param auto_start_close: Dictates whether or not start and close Nodes will be automatically appended/prepended to your form. Note that this must be set via __init__ or your class definition since it must be set before __init__ for the Form is run.
+    :param auto_start_close: Dictates whether or not start and close
+        Nodes will be automatically appended/prepended to your form. Note
+        that this must be set via __init__ or your class definition since it
+        must be set before __init__ for the Form is run.
 
-    :param hidden: A dictionary of hidden key/value pairs to be injected into the form.  This is frequently used to pass dynamic form parameters into the validator.
+    :param hidden: A dictionary of hidden key/value pairs to be injected
+        into the form.  This is frequently used to pass dynamic form
+        parameters into the validator.
 
     """
 
@@ -68,7 +81,6 @@ class Form(object):
     framework being used to a format that Yota expects. It also allows things
     like filtering stripping characters or encoding all data that enters a
     validator. """
-
 
     def __new__(cls, **kwargs):
         """ We want our created Form to have a copy of the original
@@ -119,19 +131,18 @@ class Form(object):
         # Add our open and close form to the end of the tmp lst
         if not start:
             self.insert(0, LeaderNode(template=self.start_template,
-                         _attr_name='start', css_class=self.form_class,
-                         **self.context))
+                                      _attr_name='start',
+                                      css_class=self.form_class,
+                                      **self.context))
         else:
             self.insert(0, start)
 
         if not close:
             self.insert(-1, LeaderNode(template=self.close_template,
-                       _attr_name='close',
-                       **self.context))
+                                       _attr_name='close',
+                                       **self.context))
         else:
             self.insert(-1, close)
-
-
 
     def render(self):
         """ Runs the renderer to parse templates of nodes and generate the form
@@ -143,12 +154,13 @@ class Form(object):
         return self._renderer().render(self._node_list, self.g_context)
 
     def insert(self, position, new_node_list):
-        """ Inserts a :class:`Node` object or a list of objects at the specified
-        position into the :attr:`Form._node_list` of the form. Index -1 is an
-        alias for the end of the list.  After insertion the
-        :meth:`Node.set_identifiers` will be called to generate identification
-        for the :class:`Node`. For this to function, :attr:`Form._attr_name`
-        must be specified for the node prior to insertion. """
+        """ Inserts a :class:`Node` object or a list of objects at the
+        specified position into the :attr:`Form._node_list` of the form.
+        Index -1 is an alias for the end of the list.  After insertion
+        the :meth:`Node.set_identifiers` will be called to generate
+        identification for the :class:`Node`. For this to function,
+        :attr:`Form._attr_name` must be specified for the node prior to
+        insertion. """
 
         # check to allow passing in just a node
         if isinstance(new_node_list, Node):
@@ -158,20 +170,23 @@ class Form(object):
             if position == -1:
                 self._node_list.append(new_node)
             else:
-                self._node_list.insert(position + i, new_node);
+                self._node_list.insert(position + i, new_node)
             setattr(self, new_node._attr_name, new_node)
             new_node.set_identifiers(self.name)
 
     def insert_after(self, prev_attr_name, new_node_list):
-        """ Runs through the internal node structure attempting to find a
-        :class:`Node` object whos :attr:`Node._attr_name` is prev_attr_name and
-        inserts the passed node after it. If `prev_attr_name` cannot be matched it
-        will be inserted at the end. Internally calls :meth:`Form.insert` and
-        has the same requirements of the :class:`Node`.
+        """ Runs through the internal node structure attempting to find
+        a :class:`Node` object whos :attr:`Node._attr_name` is
+        prev_attr_name and inserts the passed node after it. If
+        `prev_attr_name` cannot be matched it will be inserted at the
+        end. Internally calls :meth:`Form.insert` and has the same
+        requirements of the :class:`Node`.
 
-        :param prev_attr_name: The attribute name of the `Node` that you would like to insert after.
+        :param prev_attr_name: The attribute name of the `Node` that you
+            would like to insert after.
         :type prev_attr_name: string
-        :param new_node_list: The :class:`Node` or list of Nodes to be inserted.
+        :param new_node_list: The :class:`Node` or list of Nodes to be
+            inserted.
         :type new_node_list: Node or list of Nodes """
 
         # check to allow passing in just a node
@@ -183,7 +198,7 @@ class Form(object):
             # found!
             if node._attr_name == prev_attr_name:
                 for i, new_node in enumerate(new_node_list):
-                    self._node_list.insert(index + i + 1, new_node);
+                    self._node_list.insert(index + i + 1, new_node)
                     setattr(self, new_node._attr_name, new_node)
                     new_node.set_identifiers(self.name)
                 break
@@ -203,10 +218,11 @@ class Form(object):
         return None
 
     def error_header_generate(self, errors, block):
-        """ This method is called when any validators on the form fail to pass.
-        The method should generate a dictionary that will be passed to your
-        error renderer, whether that be javascript callbacks or re-rendering the
-        form with error info in the rendering context.
+        """ This method is called when any validators on the form fail
+        to pass.  The method should generate a dictionary that will be
+        passed to your error renderer, whether that be javascript
+        callbacks or re-rendering the form with error info in the
+        rendering context.
 
         :param errors: This will be a list of all other Nodes that have errors.
         :param block: Whether or not the form submission will be blocked.
@@ -216,13 +232,12 @@ class Form(object):
         implementing it may be as follows:
         .. code-block:: python
 
-            self.start.add_error({'message':
-                                  'Please resolve the errors below to continue.'})
+            self.start.add_error(
+                {'message': 'Please resolve the errors below to continue.'})
 
         This will provide a simple error message to your start Node.
         """
         pass
-
 
     def _gen_validate(self, data, piecewise=False):
         """ This is an internal utility function that does the grunt work of
@@ -243,7 +258,7 @@ class Form(object):
             # try to iterate over their validators
             try:
                 check.resolve_attr_names(data, self)
-            except FormDataAccessException as e:
+            except DataAccessException as e:
                 # ignore the exception if we're in piecewise mode
                 if not piecewise:
                     raise e
@@ -255,9 +270,9 @@ class Form(object):
                 # Run our validator
                 check.validate()
             except TypeError as e:
-                raise ValidatorNotCallableException("Validators provided must "
-                "be callable, type '{0}' instead. Caused by {1}". \
-                        format(type(check.validator), e))
+                raise NotCallableException(
+                    "Validators provided must be callable, type '{0}'" +
+                    "instead. Caused by {1}".format(type(check.validator), e))
 
         # a list to hold Nodes that actually have errors
         error_node_list = []
@@ -271,7 +286,7 @@ class Form(object):
                 if node.data == '':
                     try:
                         node.resolve_data(data)
-                    except FormDataAccessException:
+                    except DataAccessException:
                         pass
                 continue
 
@@ -279,16 +294,18 @@ class Form(object):
                 for error in node.errors:
                     block |= error.get('block', True)
 
-
         return block, error_node_list
 
-
     def json_validate(self, data, piecewise=False):
-        """ The same as :meth:`Form.validate_render` except the errors are loaded into
-        a JSON string to be passed back as a query result. This output is
-        designed to be used by the Yota Javascript library.
+        """ The same as :meth:`Form.validate_render` except the errors
+        are loaded into a JSON string to be passed back as a query
+        result. This output is designed to be used by the Yota
+        Javascript library.
 
-        :param piecewise: If set to True, the validator will silently ignore validator for which it has insufficient information. This is designed to be used for the AJAX piecewise validation function, although it does not have to be.
+        :param piecewise: If set to True, the validator will silently
+            ignore validator for which it has insufficient information. This
+            is designed to be used for the AJAX piecewise validation
+            function, although it does not have to be.
         :type piecewise: boolean
         """
 
@@ -322,7 +339,10 @@ class Form(object):
         then this error information is in turn availible through the rendering
         context.
 
-        :param data: The data to be passed through the `Form._processor`. If the data is in the form of a dictionary where the key is the 'name' of the form field and the data is a string then no post-processing is neccessary.
+        :param data: The data to be passed through the
+            `Form._processor`. If the data is in the form of a dictionary
+            where the key is the 'name' of the form field and the data is a
+            string then no post-processing is neccessary.
         :type data: dictionary
         """
 
@@ -336,6 +356,6 @@ class Form(object):
         # run our form validators at the end
         if len(invalid) > 0:
             self.error_header_generate(invalid, block)
-
-        return self.render()
-
+            return self.render()
+        else:
+            return True

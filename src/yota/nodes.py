@@ -1,30 +1,47 @@
-from yota.exceptions import InvalidContextException, FormDataAccessException
+from yota.exceptions import InvalidContextException, DataAccessException
 
 
 class Node(object):
-    """ Nodes are holders of context for rendering and displaying validating for a portion of
-    your :class:`Form`. This default base Node is designed to provide a template
-    along with specific context information to a templating engine such as
-    Jinja2. For validation a Node acts as an information source or an error
-    sink. Essentially Nodes can be used to source data for use in a
-    :class:`Check`, and they can then be delivered some sort of validation error
-    via a the internal :attr:`errors` attribute.
+    """ Nodes are holders of context for rendering and displaying validating
+    for a portion of your :class:`Form`. This default base Node is designed to
+    provide a template along with specific context information to a templating
+    engine such as Jinja2. For validation a Node acts as an information source
+    or an error sink. Essentially Nodes can be used to source data for use in a
+    :class:`Check`, and they can then be delivered some sort of validation
+    error via a the internal :attr:`errors` attribute.
 
-    .. note:: By default all keyword attributes passed to a Node's init function are passed onto the rendering context. To override this, use the :attr:`Node._ignores` attribute.
+    .. note:: By default all keyword attributes passed to a Node's init
+        function are passed onto the rendering context. To override this,
+        use the
+        :attr:`Node._ignores` attribute.
 
-    :param _attr_name: This is how the Node is identified in the Form. If populated automatically if the Node is defined in an a Form class definition, however if the Node is added dynamically it will need to be defined before adding it to the Form.
+    :param _attr_name: This is how the Node is identified in the Form. If
+        populated automatically if the Node is defined in an a Form class
+        definition, however if the Node is added dynamically it will need to be
+        defined before adding it to the Form.
     :type _attr_name: string
 
-    :param _ignores: A List of attribute names to explicity not include in the rendering context. Mostly a niceity for keeping the rendering context clutter free.
+    :param _ignores: A List of attribute names to explicity not include in the
+        rendering context. Mostly a niceity for keeping the rendering context
+        clutter free.
     :type _ignores: list
 
-    :param _requires: A List of attributes that will be required at render time. An exception will be thrown if these attributes are not present. Useful for things like lists that require certain data to render properly.
+    :param _requires: A List of attributes that will be required at
+        render time. An exception will be thrown if these attributes are not
+        present.  Useful for things like lists that require certain data to
+        render properly.
     :type _requires: list
 
-    :param template: String name of the template to be parsed upon rendering. This is passed into the `Form._renderer` so it needs to be whatever that is designed to accept. Jinja2 is looking for a filename like 'node' that occurs in it's search path.
+    :param template: String name of the template to be parsed upon
+        rendering.  This is passed into the `Form._renderer` so it needs to
+        be whatever that is designed to accept. Jinja2 is looking for a
+        filename like 'node' that occurs in it's search path.
     :type template: string
 
-    :param validator: An optional attribute that specifies a :class:`Check` object to be associated with the Node. This is automatically extracted at parse time and cannot be manipulated after Node insertion.
+    :param validator: An optional attribute that specifies a
+        :class:`Check` object to be associated with the Node. This is
+        automatically extracted at parse time and cannot be manipulated
+        after Node insertion.
     :type validator: callable
 
     The default Node init method accepts any keyword arguments and adds them to
@@ -48,17 +65,16 @@ class Node(object):
         # and also have a default
         if _ignores:
             self.ignores = _ignores
-        elif not hasattr(self, '_ignores'):  # careful not to overwrite class attr
+        elif not hasattr(self, '_ignores'):
             self._ignores = ['template', 'validator']
 
         if _requires:
             self._requires = _requires
-        elif not hasattr(self, '_requires'):  # careful not to overwrite class attr
-            self._requires = []  # make sure it's there to prevent errors
+        elif not hasattr(self, '_requires'):
+            self._requires = []
 
-        if not hasattr(self, 'validator'):  # careful not to overwrite class attr
+        if not hasattr(self, 'validator'):
             self.validator = validator
-
 
         if template:
             self.template = template
@@ -89,12 +105,13 @@ class Node(object):
         initialized or inserted. It is designed to set various unique
         identifiers. By default it generates an id for the Node that is
         {parent_name}_{_attr_id}, a title for the Node that is the _attr_name
-        capitalized, and a name for the element that is just the _attr_name. All
-        of these attributes are then passed onto the rendering context of the
-        Node by default. By default all of these attributes will yield to
+        capitalized, and a name for the element that is just the _attr_name.
+        All of these attributes are then passed onto the rendering context of
+        the Node by default. By default all of these attributes will yield to
         attributes passed into the __init__ method.
 
-        :param parent_name: The name of the parent form. Useful in ensuring unique identifiers on your element names.
+        :param parent_name: The name of the parent form. Useful in ensuring
+            unique identifiers on your element names.
         :type parent_name: string
         """
 
@@ -108,26 +125,25 @@ class Node(object):
             self.title = self._attr_name.capitalize().replace('_', ' ')
 
     def resolve_data(self, data):
-        """ This method is called when resolving the data from a form submission
-        and linking it to a specific Node. The return value of this function is
-        passed directly to the Validators data portion for your node. By default
-        this will try and lookup data from the submission using the name
-        attribute. """
+        """ This method is called when resolving the data from a form
+        submission and linking it to a specific Node. The return value of this
+        function is passed directly to the Validators data portion for your
+        node. By default this will try and lookup data from the submission
+        using the name attribute. """
         try:
             self.data = data[self.name]
         except:
-            raise FormDataAccessException
+            raise DataAccessException
 
     def get_context(self, g_context):
-        """ Builds our rendering context for the Node at render time. By default
-        all attributes of the Node are added to the global namespace and the
-        global rendering context is passed in under the variable 'g'. This
-        function is designed to be overridden for customization.
-        :param g_context: The global rendering context passed in from the rendering method.
-        """
+        """ Builds our rendering context for the Node at render time. By
+        default all attributes of the Node are added to the global namespace
+        and the global rendering context is passed in under the variable 'g'.
+        This function is designed to be overridden for customization.  :param
+        g_context: The global rendering context passed in from the rendering
+        method.  """
 
-        # d = {i: getattr(self, i) for i in dir(self) if not i.startswith("_") and i not in self._ignores }
-        # Dat 2.6 compat
+        # Dat 2.6 compat, no dict comprehensions :(
         d = {}
         for key in dir(self):
             if not key.startswith("_") and key not in self._ignores:
@@ -160,22 +176,26 @@ class ListNode(BaseNode):
     template = 'list'
     _requires = ['items']
 
+
 class GroupedInputsNode(BaseNode):
-    """ Node for providing a group of input elements, designed with radio or
-     checkbox elements in mind. Requires an attribute that is a list of
-     tuples providing the id for the items and description for labels.
-    """
+    """ Node for providing a group of input elements, designed with
+    radio or checkbox elements in mind. Requires an attribute that is a
+    list of tuples providing the id for the items and description for
+    labels. """
     template = 'grouped_elements'
     type = 'radio'
     _requires = ['buttons']
+
 
 class ButtonNode(BaseNode):
     """ Creates a simple button in your form.
     """
     template = 'button'
 
+
 class EntryNode(BaseNode):
     template = 'entry'
+
 
 class TextareaNode(BaseNode):
     """ A node with a basic textarea template with defaults provided  """
@@ -183,8 +203,10 @@ class TextareaNode(BaseNode):
     rows = '5'
     columns = '10'
 
+
 class SubmitNode(BaseNode):
     template = 'submit'
+
 
 class LeaderNode(Node):
     """ A Node that simply removes the title attribute from the Node rendering
