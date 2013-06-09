@@ -106,7 +106,6 @@ class Form(object):
                  context=None,
                  start=None,
                  close=None,
-                 form_class=None,
                  **kwargs):
         self.auto_start_close = auto_start_close
         self.start_template = start_template
@@ -117,9 +116,6 @@ class Form(object):
         # set a default for our name to the class name
         self.name = name if name else self.__class__.__name__
 
-        # Set a default form class
-        self.form_class = form_class if form_class else "form-horizontal"
-
         # passes everything to our rendering context and updates params
         self.context.update(kwargs)
 
@@ -128,21 +124,33 @@ class Form(object):
         for n in self._node_list:
             n.set_identifiers(self.name)
 
-        # Add our open and close form to the end of the tmp lst
-        if not start:
+        # Add our open and close form defaults
+        if not start and not hasattr(self, 'start'):
             self.insert(0, LeaderNode(template=self.start_template,
                                       _attr_name='start',
-                                      css_class=self.form_class,
                                       **self.context))
         else:
-            self.insert(0, start)
+            # prefer a parameter over a class attr
+            ins = start if start else self.start
+            if isinstance(ins, Node):
+                self.insert(0, ins)
+            else:
+                raise AttributeError("start attribute is special and should "
+                                     "specify a Node to begin your form")
 
-        if not close:
+        # do the same for close
+        if not close and not hasattr(self, 'close'):
             self.insert(-1, LeaderNode(template=self.close_template,
                                        _attr_name='close',
                                        **self.context))
         else:
-            self.insert(-1, close)
+            # prefer a parameter over a class attr
+            ins = close if close else self.close
+            if isinstance(ins, Node):
+                self.insert(-1, ins)
+            else:  # provide a bit of error notif
+                raise AttributeError("close attribute is special and should "
+                                     "specify a Node to begin your form")
 
     def render(self):
         """ Runs the renderer to parse templates of nodes and generate the form
@@ -243,6 +251,7 @@ class Form(object):
         """ This is an internal utility function that does the grunt work of
         running validation logic for a :class:`Form`. It is called by the other
         primary validation methods. """
+
         # reset all error lists and data
         for node in self._node_list:
             node.errors = []
@@ -332,12 +341,29 @@ class Form(object):
         retval['errors'] = errors
         return json.dumps(retval)
 
+    def validate(self, data):
+        """ Runs all the validators associated with the :class:`Form`.
+
+        :returns: A list of nodes that have errors on failure or True on
+            success
+        """
+
+        # Allows user to set a modular processor on incoming data
+        data = self._processor().filter_post(data)
+        block, invalid = self._gen_validate(data)
+
+        if not block:
+            return True
+        else:
+            return invalid
+
     def validate_render(self, data):
-        """ Runs all the validators on the `data` that is passed in and
-        returns a re-render of the :class:`Form`. Since validators are designed
-        to pass error information in through the :attr:`Node.errors` attribute
-        then this error information is in turn availible through the rendering
-        context.
+        """ Runs all the validators on the `data` that is passed in and returns
+        a re-render of the :class:`Form` if there are validation errors,
+        otherwise it returns True representing a successful submission. Since
+        validators are designed to pass error information in through the
+        :attr:`Node.errors` attribute then this error information is in turn
+        availible through the rendering context.
 
         :param data: The data to be passed through the
             `Form._processor`. If the data is in the form of a dictionary

@@ -1,13 +1,15 @@
 import unittest
-import sys
 import yota
+from yota.validators import *
+from yota.nodes import *
+
 
 class TestValidation(unittest.TestCase):
     def test_min_required(self):
         class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.MinLengthValidator(5,
-                message="Darn"), 't')
+            t = EntryNode()
+            _t_valid = yota.Check(
+                MinLengthValidator(5, message="Darn"), 't')
 
         test = TForm()
         block, invalid = test._gen_validate({'t': 'short'})
@@ -17,9 +19,9 @@ class TestValidation(unittest.TestCase):
 
     def test_max_required(self):
         class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.MaxLengthValidator(5,
-                message="Darn"), 't')
+            t = EntryNode()
+            _t_valid = yota.Check(
+                MaxLengthValidator(5, message="Darn"), 't')
 
         test = TForm()
         block, invalid = test._gen_validate({'t': 'shor'})
@@ -29,8 +31,8 @@ class TestValidation(unittest.TestCase):
 
     def test_email(self):
         class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.EmailValidator(
+            t = EntryNode()
+            _t_valid = yota.Check(EmailValidator(
                 message="Darn"), 't')
 
         test = TForm()
@@ -47,8 +49,8 @@ class TestValidation(unittest.TestCase):
 
     def test_required(self):
         class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), 't')
+            t = EntryNode()
+            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
 
         test = TForm()
         block, invalid = test._gen_validate({'t': 'toolong'})
@@ -58,39 +60,45 @@ class TestValidation(unittest.TestCase):
 
     def test_non_blocking(self):
         class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.NonBlockingDummyValidator(), 't')
+            t = EntryNode()
+            _t_valid = yota.Check(
+                NonBlockingDummyValidator(), 't')
 
         test = TForm()
         block, invalid = test._gen_validate({'t': 'toolong'})
-        assert(block == False)
+        assert(block is False)
+
 
 class TestCheck(unittest.TestCase):
     def test_key_error_args(self):
         class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), 't')
+            t = EntryNode()
+            _t_valid = yota.Check(
+                RequiredValidator(message="Darn"), 't')
 
         test = TForm()
-        self.assertRaises(yota.exceptions.FormDataAccessException,
-                test._gen_validate, {})
+        self.assertRaises(yota.exceptions.DataAccessException,
+                          test._gen_validate, {})
 
-    def test_key_error_args(self):
+    def test_key_error(self):
         class TForm(yota.Form):
-            t = yota.nodes.EntryNode()
-            _t_valid = yota.Check(yota.validators.RequiredValidator(message="Darn"), target='t')
+            t = EntryNode()
+            _t_valid = yota.Check(
+                RequiredValidator(message="Darn"), target='t')
 
         test = TForm()
         block, invalid = test._gen_validate({'t': 'testing'})
-        self.assertRaises(yota.exceptions.FormDataAccessException,
-                test._gen_validate, {})
+        assert(test.t.data == 'testing')
+
 
 class TestNode(unittest.TestCase):
     def test_required(self):
         class TForm(yota.Form):
-            t = yota.nodes.ListNode()
+            t = ListNode()
 
         test = TForm()
         self.assertRaises(yota.exceptions.InvalidContextException, test.render)
+
+
 if __name__ == '__main__':
     unittest.main()

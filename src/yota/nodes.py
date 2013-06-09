@@ -132,7 +132,7 @@ class Node(object):
         using the name attribute. """
         try:
             self.data = data[self.name]
-        except:
+        except KeyError:
             raise DataAccessException
 
     def get_context(self, g_context):
@@ -211,6 +211,8 @@ class SubmitNode(BaseNode):
 class LeaderNode(Node):
     """ A Node that simply removes the title attribute from the Node rendering
     context. Intended for use in the start and end Nodes. """
+
+    form_class = "form-horizontal"
 
     def set_identifiers(self, parent_name):
         # set our start node's id to actually be the name of the form
