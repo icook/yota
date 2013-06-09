@@ -21,6 +21,11 @@ Examples
 
 Checkout the example usages in the project [Yota Examples](https://github.com/icook/yota_examples>). You can also view our examples live [here](http://64.49.234.90/yota_example).
 
+License
+================
+
+Yota is under the new-style BSD license.
+
 Getting Started
 ================
 
