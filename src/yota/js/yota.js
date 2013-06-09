@@ -7,6 +7,10 @@ function ajax_activate(form_id, error_callback, success_callback, piecewise) {
                     error_callback(this.id, false, {});
                 });
                 success_callback();
+                if (jsonObj.redirect) {
+                    // jsonObj.redirect contains a string URL to redirect to
+                    window.location.replace(jsonObj.redirect);
+                }
             } else {
                 $('#' + form_id + " > *").find(":input").each(function() {
                     if (!(this.id in jsonObj.errors)) {
