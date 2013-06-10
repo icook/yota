@@ -234,6 +234,26 @@ class Form(object):
         """
         pass
 
+    def data_by_attr(self):
+        """ Returns a dictionary of currently stored :attr:`Node.data`
+        attributes keyed by :attr:`Node._attr_name`. Used for returning data
+        after its been processed by validators. """
+
+        ret = {}
+        for node in self._node_list:
+            ret[node._attr_name] = node.data
+        return ret
+
+    def data_by_name(self):
+        """ Returns a dictionary of currently stored :attr:`Node.data`
+        attributes keyed by :attr:`Node.name`. Used for returning data
+        after its been processed by validators. """
+
+        ret = {}
+        for node in self._node_list:
+            ret[node.name] = node.data
+        return ret
+
     def _gen_validate(self, data, piecewise=False):
         """ This is an internal utility function that does the grunt work of
         running validation logic for a :class:`Form`. It is called by the other
