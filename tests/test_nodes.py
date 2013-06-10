@@ -2,6 +2,7 @@ import unittest
 import yota
 from yota.validators import *
 from yota.nodes import *
+from yota.exceptions import *
 
 
 class TestValidation(unittest.TestCase):
@@ -44,6 +45,8 @@ class TestValidation(unittest.TestCase):
         assert(len(invalid) > 0)
         block, invalid = test._gen_validate({'t': u'm@t\x80%.com'})
         assert(len(invalid) > 0)
+        block, invalid = test._gen_validate({'t': u'@$%^%&^*m@t\x80%.com'})
+        assert(len(invalid) > 0)
         block, invalid = test._gen_validate({'t': u'm@\xc3.com'})
         assert(len(invalid) == 0)
 
@@ -77,7 +80,7 @@ class TestCheck(unittest.TestCase):
                 RequiredValidator(message="Darn"), 't')
 
         test = TForm()
-        self.assertRaises(yota.exceptions.DataAccessException,
+        self.assertRaises(DataAccessException,
                           test._gen_validate, {})
 
     def test_key_error(self):
@@ -97,8 +100,20 @@ class TestNode(unittest.TestCase):
             t = ListNode()
 
         test = TForm()
-        self.assertRaises(yota.exceptions.InvalidContextException, test.render)
+        self.assertRaises(InvalidContextException, test.render)
 
+    def test_ignores(self):
+        class TForm(yota.Form):
+            t = EntryNode()
+
+        test = TForm()
+        assert('template' not in test.t.get_context({}))
+
+    def test_ignores_requires_override(self):
+        t = EntryNode(_ignores=['something'], _requires=['something_else'])
+
+        assert('something' in t._ignores)
+        assert('something_else' in t._requires)
 
 if __name__ == '__main__':
     unittest.main()

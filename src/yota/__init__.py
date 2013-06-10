@@ -219,7 +219,7 @@ class Form(object):
         """ Safe accessor for looking up a node by :attr:`Node._attr_name` """
         try:
             attr = getattr(self, name)
-        except:
+        except AttributeError:
             return None
         if isinstance(attr, Node):
             return attr

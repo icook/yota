@@ -64,7 +64,7 @@ class Node(object):
         # Allow _ignores and _requires to be overwritten at the instance level,
         # and also have a default
         if _ignores:
-            self.ignores = _ignores
+            self._ignores = _ignores
         elif not hasattr(self, '_ignores'):
             self._ignores = ['template', 'validator']
 

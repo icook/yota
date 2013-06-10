@@ -2,6 +2,7 @@ import unittest
 import yota
 from yota.validators import *
 from yota.nodes import *
+from yota.exceptions import *
 
 
 class TestForms(unittest.TestCase):
@@ -15,8 +16,23 @@ class TestForms(unittest.TestCase):
                 MinLengthValidator(5, message="Darn"), 't')
 
         test = TForm()
-        test.render()
         assert(isinstance(test.start, EntryNode))
+        assert(isinstance(test.close, EntryNode))
+
+    def test_override_start_close_exc(self):
+        # Test the start node
+        class TForm(yota.Form):
+            start = ''
+
+        self.assertRaises(AttributeError,
+                          TForm)
+
+        # and the close node
+        class TForm(yota.Form):
+            close = ''
+
+        self.assertRaises(AttributeError,
+                          TForm)
 
     def test_dynamic_insert(self):
         class TForm(yota.Form):
@@ -52,6 +68,14 @@ class TestForms(unittest.TestCase):
         test.validate_render({'t': ''})
         assert(hasattr(test.start, 'errors'))
 
+    def test_valid_render_success(self):
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
+
+        test = TForm()
+        assert(test.validate_render({'t': 'sdflkm'}) is True)
+
     def test_json_validation(self):
         class TForm(yota.Form):
             t = EntryNode()
@@ -60,6 +84,38 @@ class TestForms(unittest.TestCase):
         test = TForm()
         response = test.json_validate({'t': ''}, piecewise=True)
         assert('Darn' in response)
+
+    def test_piecewise_block(self):
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
+            b = EntryNode()
+            _b_req = yota.Check(MinLengthValidator(5), 'b')
+
+        test = TForm()
+        block, invalid = test._gen_validate({'t': 'toolong'}, piecewise=True)
+        assert(block is True)
+
+    def test_bad_validator(self):
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check('fgsdfg', 't')
+
+        test = TForm()
+        self.assertRaises(NotCallableException,
+                          test._gen_validate, {'t': 'toolong'})
+
+    def test_validate_reg(self):
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(
+                MinLengthValidator(5, message="Darn"), 't')
+
+        test = TForm()
+        ret = test.validate({'t': 'adfasdfasdf'})
+        assert(ret is True)
+        invalid = test.validate({'t': ''})
+        assert(len(invalid) > 0)
 
 
 class TestExtra(unittest.TestCase):
@@ -72,3 +128,4 @@ class TestExtra(unittest.TestCase):
         test = TForm()
         assert(test.get_by_attr('t') is not None)
         assert(test.get_by_attr('g_context') is None)
+        assert(test.get_by_attr('dsfglkn') is None)
