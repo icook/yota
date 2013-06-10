@@ -213,6 +213,7 @@ class LeaderNode(Node):
     context. Intended for use in the start and end Nodes. """
 
     form_class = "form-horizontal"
+    action = ''
 
     def set_identifiers(self, parent_name):
         # set our start node's id to actually be the name of the form
