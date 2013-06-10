@@ -172,17 +172,22 @@ class ListNode(BaseNode):
     """ Node for providing a basic drop down list. Requires an attribute that
      is a list of tuples providing the key and value for the dropdown list
      items.
+
+    :attr items: Must be a list of tuples where the first element is the value
+        of the second is the label.
     """
     template = 'list'
     _requires = ['items']
 
 
-class GroupedInputsNode(BaseNode):
-    """ Node for providing a group of input elements, designed with radio
-     elements in mind. Requires an attribute that is a list of tuples
-     providing the value for the items and description for labels.
+class RadioNode(BaseNode):
+    """ Node for providing a group of radio buttons. Requires buttons
+    attribute.
+
+    :attr buttons: Must be a list of tuples where the first element is the
+        value of the second is the label.
     """
-    template = 'grouped_elements'
+    template = 'radio_group'
     type = 'radio'
     _requires = ['buttons']
 
@@ -219,6 +224,5 @@ class LeaderNode(Node):
         # set our start node's id to actually be the name of the form
         if not hasattr(self, 'id'):
             self.id = parent_name
-
-        super(LeaderNode, self).set_identifiers(parent_name)
-        delattr(self, 'title')
+        if not hasattr(self, 'name'):
+            self.name = self._attr_name

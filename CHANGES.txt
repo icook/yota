@@ -1,0 +1,61 @@
+Next Release
+------------
+
+Features
+~~~~~~~~
+
+- Checkbox node
+- Functions for easily retrieving data
+- Method for passing data to AJAX success callback
+
+Documentation
+~~~~~~~~~~~~~
+
+- Docs included for all default nodes
+
+Maintenance/Stability
+~~~~~~~~~~~~~~~~~~~~~
+
+- Expand functional tests a lot
+
+0.1.5 (2013-06-09)
+------------------
+
+Maintenance/Stability
+~~~~~~~~~~~~~~~~~~~~~
+
+- Put the project under the new-BSD license.
+
+- Some commenting cleanup
+
+- Increased test coverage to 100% and improved quality of assertions.  Caught
+  several bugs in the process, leading to numerous minor bug fixes.
+
+- Fixed PEP8 compliance.
+
+Bug Fixes
+~~~~~~~~~
+
+- JavaScript bugs related to AJAX.
+
+- Fixed several bugs related to operation in Python 2.6. All tests now pass
+  with 2.6.
+
+- Fixed a significant bug in which many class attributes should have been
+  instance attributes, and thus cropping up strange errors.
+
+Features
+~~~~~~~~
+
+- Beginnings of some functional tests
+
+- Added optional redirect on AJAX success
+
+- Added new grouped elements node designed for radio buttons.
+
+- Allowed easily overriding the action of a form with a keyword attribute
+  passed to the start node or the form kwargs.
+
+0.1.0 (2013-06-07)
+----------------
+Initial release.

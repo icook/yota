@@ -117,6 +117,10 @@ class TestForms(unittest.TestCase):
         invalid = test.validate({'t': ''})
         assert(len(invalid) > 0)
 
+    def test_auto_start_close(self):
+        test = yota.Form(auto_start_close=False)
+        assert(hasattr(test, 'start') is False)
+        assert(hasattr(test, 'close') is False)
 
 class TestExtra(unittest.TestCase):
     def test_get_by_attr(self):
