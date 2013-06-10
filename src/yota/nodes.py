@@ -191,6 +191,33 @@ class RadioNode(BaseNode):
     type = 'radio'
     _requires = ['buttons']
 
+class CheckGroupNode(BaseNode):
+    """ Node for providing a group of checkboxes. Requires boxes
+    attribute. Instead of defining an ID value explicitly the
+    :class:`Node.set_identifiers` defines a prefix value to be prefixed to all
+    id elements for checkboxes in the group.
+
+    :attr boxes: Must be a list of (three)ples where the first element is the
+        name, the second is the value of the third is the label.
+    """
+    template = 'checkbox_group'
+    _requires = ['boxes']
+
+    def resolve_data(self, data):
+        # return a list of checked values since we have multiple names
+        ret = []
+        for name, val, desc in self.boxes:
+            if len(data[name]) > 0:
+                ret.append(data[name])
+
+        return ret
+
+    def set_identifiers(self, parent_name):
+        # defines a prefix to be used on all node ids
+        if not hasattr(self, 'prefix'):
+            self.prefix = parent_name + "_"
+        if not hasattr(self, 'title'):
+            self.title = self._attr_name.capitalize().replace('_', ' ')
 
 class ButtonNode(BaseNode):
     """ Creates a simple button in your form.

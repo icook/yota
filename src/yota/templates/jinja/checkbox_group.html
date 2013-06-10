@@ -1,0 +1,11 @@
+{% extends base %}
+{% block control %}
+
+{% for check_name, value, description in boxes %}
+<label class="checkbox {{ css_class }}">
+    <input type="checkbox" name="{{ check_name }}" value="{{ value }}" id="{{ check_name }}" {% if data == value %} selected{% endif %}>
+    {{ description }}
+</label>
+{% endfor %}
+
+{% endblock %}
