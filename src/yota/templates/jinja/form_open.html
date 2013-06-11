@@ -3,29 +3,12 @@
     <script type="text/javascript">
     $(function () {
         {% if g.piecewise %}
-        window.visited = {};
-        // setup our listeners
-        $("#{{ id }}").find("[data-piecewise]").each(function() {
-            var v = $(this).attr("name");
-            visited[v] = false;
-            var type = $(this).attr("data-piecewise")
-            if (type == "blur") {
-                $(this).blur(function() {
-                    window.visited[v] = true;
-                    $("#{{ id }}").ajaxSubmit(window.yota_ajax_options);
-                });
-            } else {
-                $(this).keyup(function() {
-                    window.visited[v] = true;
-                    $("#{{ id }}").ajaxSubmit(window.yota_ajax_options);
-                });
-            }
-        });
         var piecewise = true;
+        alert("test");
         {% else %}
         var piecewise = false;
         {% endif %}
-        ajax_activate("{{ id }}",
+        $('#{{ id }}').yota_activate(
         function (id, error, data) {
             if (error) {
                 if ($('#' + id).attr('data-error') != "true") {

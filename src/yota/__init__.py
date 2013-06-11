@@ -330,7 +330,7 @@ class Form(object):
         # pass our data into the global rendering context for filling in info
         self.g_context['data'] = data
 
-        errors = []
+        errors = {}
         block, invalid = self._gen_validate(data, piecewise=piecewise)
         # auto-disable if this is not the submit action and it's a piecewise to
         # prevent auto-submission
@@ -339,15 +339,15 @@ class Form(object):
 
         # loop over our nodes and insert information for the JS callbacks
         for node in invalid:
-            errors.append({'identifiers': node.json_identifiers(),
-                           'errors': node.errors})
+            errors[node._attr_name] = {'identifiers': node.json_identifiers(),
+                                       'errors': node.errors}
 
         # if needed we should run our all form message generator and return
         # json encoded error message
         retval = {'success': not block}
         if len(errors) > 0:
-            errors.append({'identifiers': self.start.json_identifiers(),
-                           'errors': self.error_header_generate(errors, block)})
+            errors['start'] = {'identifiers': self.start.json_identifiers(),
+                               'errors': self.error_header_generate(errors, block)}
         retval['errors'] = errors
         return json.dumps(retval)
 
