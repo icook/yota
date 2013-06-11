@@ -49,6 +49,18 @@ class TestForms(unittest.TestCase):
         test.insert_after('t4', EntryNode(_attr_name='t3'))
         assert(test._node_list[4]._attr_name == 't3')
 
+    def test_validator_shorthand_list(self):
+        class TForm(yota.Form):
+            t = EntryNode(validators=[MinLengthValidator(5,
+                          message="Darn"), RequiredValidator()])
+
+        test = TForm()
+        assert(len(test._validation_list) > 0)
+        assert(isinstance(test._validation_list[0].validator,
+                          MinLengthValidator))
+        block, invalid = test._gen_validate({'t': ''})
+
+
     def test_error_header(self):
         """ Test that the error header method works as expected """
         class TForm(yota.Form):

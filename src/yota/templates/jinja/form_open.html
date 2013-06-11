@@ -4,28 +4,32 @@
     $(function () {
         {% if g.piecewise %}
         var piecewise = true;
-        alert("test");
         {% else %}
         var piecewise = false;
         {% endif %}
         $('#{{ id }}').yota_activate(
         function (id, error, data) {
+            // exit if there wasn't a proper id given
+            if (id.elements[0] == undefined) {
+                console.log("There are no elements defined to deliver this error to!");
+                return;
+            }
+            // else, start tagging or removing respectively
             if (error) {
-                if ($('#' + id).attr('data-error') != "true") {
-                    $('#' + id).tooltip({title: data[0]['message'],
-                                          placement: 'right',
-                                          trigger: 'manual'});
-                    $('#' + id).tooltip('show');
-                    $('#' + id).attr('data-error', "true");
+                target_id = id.elements[0];
+                if ($('#' + target_id).attr('data-error') != "true") {
+                    $('#' + target_id).tooltip({title: data[0]['message'],
+                                        placement: 'right',
+                                        trigger: 'manual'});
+                    $('#' + target_id).tooltip('show');
                 }
             } else {
-                $('#' + id).tooltip('destroy');
-                $('#' + id).attr('data-error', "false");
+                $('#' + target_id).tooltip('destroy');
             }
         },
         function () {
             $('#{{ id }}_success').show();
-        }, piecewise);
+            }, {% if g.piecewise %}true{% else %}false{% endif %});
 
     });
     </script>
