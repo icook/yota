@@ -100,6 +100,16 @@ class Node(object):
         :doc:`Validators` section. """
         self.errors.append(error)
 
+    def json_identifiers(self):
+        """ Allows passing arbitrary identification information to your JSON
+        error rendering callback. For instance, a common use case is the display
+        an error message in a pre-defined div with a specific id. Well you may
+        perhaps pass in an 'error_div_id' attribute to the JSON callback to use
+        when trying to render this error. The default for Yota builtin nodes is
+        to pass 'error_id' indicating the id of the error container in addition
+        to a list containing all input elements in the Node's ids. """
+        return {'error_id': self.id + '_error', 'elements': [self.id, ]}
+
     def set_identifiers(self, parent_name):
         """ This function gets called by the parent `Form` when it is
         initialized or inserted. It is designed to set various unique
@@ -123,6 +133,7 @@ class Node(object):
             self.name = self._attr_name
         if not hasattr(self, 'title'):
             self.title = self._attr_name.capitalize().replace('_', ' ')
+
 
     def resolve_data(self, data):
         """ This method is called when resolving the data from a form
@@ -212,10 +223,19 @@ class CheckGroupNode(BaseNode):
 
         return ret
 
+    def json_identifiers(self):
+        ids = []
+        for name, val, desc in self.boxes:
+            ids.append(self.prefix + name)
+        return {'error_id': self.id + "_error", 'elements': ids}
+
     def set_identifiers(self, parent_name):
-        # defines a prefix to be used on all node ids
+        # defines a prefix to be used on all the different checkbox ids
         if not hasattr(self, 'prefix'):
             self.prefix = parent_name + "_"
+        # defines a generic id to be used for generating things like error ids
+        if not hasattr(self, 'id'):
+            self.id = parent_name + "_" + self._attr_name
         if not hasattr(self, 'title'):
             self.title = self._attr_name.capitalize().replace('_', ' ')
 

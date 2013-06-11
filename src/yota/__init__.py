@@ -20,8 +20,8 @@ class TrackingMeta(type):
                 value._attr_name = name
                 t[value._create_counter] = value
                 if hasattr(value, 'validators'):
-                    if not isinstance(value.validator, tuple) and \
-                       not isinstance(value.validator, list):
+                    if not isinstance(value.validators, tuple) and \
+                       not isinstance(value.validators, list):
                         value.validators = [value.validators, ]
                     for validator in value.validators:
                         # shorthand for adding a validation tuple
@@ -330,21 +330,24 @@ class Form(object):
         # pass our data into the global rendering context for filling in info
         self.g_context['data'] = data
 
-        errors = {}
+        errors = []
         block, invalid = self._gen_validate(data, piecewise=piecewise)
         # auto-disable if this is not the submit action and it's a piecewise to
         # prevent auto-submission
         if data.get('submit_action', 'false') != 'true' and piecewise:
             block = True
-        # loop over our nodes
+
+        # loop over our nodes and insert information for the JS callbacks
         for node in invalid:
-            errors[node.id] = node.errors
+            errors.append({'identifiers': node.json_identifiers(),
+                           'errors': node.errors})
 
         # if needed we should run our all form message generator and return
         # json encoded error message
         retval = {'success': not block}
         if len(errors) > 0:
-            errors['start'] = self.error_header_generate(errors, block)
+            errors.append({'identifiers': self.start.json_identifiers(),
+                           'errors': self.error_header_generate(errors, block)})
         retval['errors'] = errors
         return json.dumps(retval)
 
