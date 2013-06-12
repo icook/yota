@@ -1,4 +1,5 @@
 import re
+from yota.exceptions import NotCallableException
 
 
 class MinLengthValidator(object):
@@ -264,4 +265,4 @@ class Check(object):
         except TypeError as e:
             raise NotCallableException(
                 "Validators provided must be callable, type '{0}'" +
-                "instead. Caused by {1}".format(type(check.validator), e))
+                "instead. Caused by {1}".format(type(self.validator), e))
