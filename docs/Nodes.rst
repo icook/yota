@@ -87,6 +87,21 @@ like a different semantic for automatically titling your date pickers?
 
 .. py:currentmodule:: yota
 
+Builtin Nodes
+=====================
+
+
+.. autoclass:: yota.nodes.BaseNode
+.. autoclass:: yota.nodes.NonDataNode
+.. autoclass:: yota.nodes.ListNode
+.. autoclass:: yota.nodes.RadioNode
+.. autoclass:: yota.nodes.CheckGroupNode
+.. autoclass:: yota.nodes.ButtonNode
+.. autoclass:: yota.nodes.EntryNode
+.. autoclass:: yota.nodes.TextareaNode
+.. autoclass:: yota.nodes.SubmitNode
+.. autoclass:: yota.nodes.LeaderNode
+
 Node API
 ===========
 

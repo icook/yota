@@ -76,6 +76,19 @@ Special Key Values
 
 .. py:module:: yota
 
+Builtin Validators
+=====================
+
+The default pattern for builtin Validators in Yota is to return a dictionary
+with a key 'message' containing the error. This is also the pattern that the
+builtin :class:`Nodes`'s except when rendering errors, and therefore is the
+recommended format when building your own validators.
+
+.. autoclass:: yota.validators.MinLengthValidator
+.. autoclass:: yota.validators.MaxLengthValidator
+.. autoclass:: yota.validators.RequiredValidator
+.. autoclass:: yota.validators.EmailValidator
+
 Check API
 ===========
 

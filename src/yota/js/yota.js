@@ -19,7 +19,8 @@
             render_error: function (id, error, data) {
                 // exit if there wasn't a proper id given
                 if (id.elements[0] == undefined) {
-                    console.log("There are no elements defined to deliver this error to!");
+                    console.log("There are no elements defined to deliver " +
+                                "this error to!");
                     return;
                 }
                 // else, start tagging or removing respectively

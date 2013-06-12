@@ -3,7 +3,7 @@ from yota.exceptions import NotCallableException
 
 
 class MinLengthValidator(object):
-    """ Checks to see if data is at least :length long.
+    """ Checks to see if data is at least length long.
 
     :param length: The minimum length of the data.
     :type length: integer
@@ -25,7 +25,7 @@ class MinLengthValidator(object):
 
 
 class MaxLengthValidator(object):
-    """ Checks to see if data is at most :length long.
+    """ Checks to see if data is at most length long.
 
     :param length: The maximum length of the data.
     :type length: integer

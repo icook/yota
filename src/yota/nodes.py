@@ -179,17 +179,20 @@ class Node(object):
 
 
 class BaseNode(Node):
-    """ This base Node supplies the name of the base rendering template the
-    is used for standard form elements. This base template provides error
-    divs and the horizontal form layout for Bootstrap.
-    """
+    """ This base Node supplies the name of the base rendering template that
+    is used for standard form elements. This base template provides error divs
+    and the horizontal form layout for Bootstrap by default through the
+    `horiz.html` base template. """
     base = "horiz.html"
     css_class = ''
     css_style = ''
 
 
 class NonDataNode(Node):
-    """ A Node base for Nodes that aren't designed to generate output """
+    """ A base to inherit from for Nodes that aren't designed to generate
+    output, such as the SubmitNode or the LeaderNode. It must override
+    resolve_data, otherwise a DataAccessException will be raised upon
+    validation time. """
     def resolve_data(self, data):
         pass
 
@@ -216,6 +219,7 @@ class RadioNode(BaseNode):
     template = 'radio_group'
     type = 'radio'
     _requires = ['buttons']
+
 
 class CheckGroupNode(BaseNode):
     """ Node for providing a group of checkboxes. Requires boxes
@@ -262,11 +266,16 @@ class ButtonNode(BaseNode):
 
 
 class EntryNode(BaseNode):
+    """ Creates an input box for your form. """
     template = 'entry'
 
 
 class TextareaNode(BaseNode):
-    """ A node with a basic textarea template with defaults provided  """
+    """ A node with a basic textarea template with defaults provided.
+
+    :attr rows: The number of rows to make the textarea
+    :attr columns: The number of columns to make the textarea
+    """
     template = 'textarea'
     rows = '5'
     columns = '10'
@@ -277,8 +286,8 @@ class SubmitNode(NonDataNode, BaseNode):
 
 
 class LeaderNode(NonDataNode):
-    """ A Node that simply removes the title attribute from the Node rendering
-    context. Intended for use in the start and end Nodes. """
+    """ A Node that does few special things to setup and close the form.
+    Intended for use in the start and end Nodes. """
 
     form_class = "form-horizontal"
     action = ''
