@@ -227,25 +227,44 @@ class Form(object):
             return attr
         return None
 
+    def success_header_generate(self):
+        """ Please see the documentation for :meth:`Form.error_header_generate`
+        as it covers this function as well as itself. """
+        pass
+
     def error_header_generate(self, errors, block):
-        """ This method is called when any validators on the form fail
-        to pass.  The method should generate a dictionary that will be
-        passed to your error renderer, whether that be javascript
-        callbacks or re-rendering the form with error info in the
-        rendering context.
+        """ This function, along with success_header_generate allow you to give
+        form wide information back to the user for both AJAX validated forms
+        and conventionally validated forms, although the mechanisms are
+        slightly different. Both functions are run at the end of a successful
+        or failed validation call in order to give more information for
+        rendering.
 
-        :param errors: This will be a list of all other Nodes that have errors.
-        :param block: Whether or not the form submission will be blocked.
-        :type block: boolean
+        For passing information to AJAX rendering, simply return a dictionary,
+        or any python object that can be serialized to JSON. This information
+        gets passed back to the JavaScript callbacks of yota_activate in
+        slightly different ways. success_header_generate's information will get
+        passed to the render_success callback, while error_header_generate will
+        get sent as an error to the render_error callback under the context
+        start.
 
-        By default this function does nothing, but a common method of
-        implementing it may be as follows:
+        For passing information into a regular rendering context simply access
+        the attribute manually similar to below.
+
         .. code-block:: python
 
             self.start.add_error(
                 {'message': 'Please resolve the errors below to continue.'})
 
-        This will provide a simple error message to your start Node.
+        This will provide a simple error message to your start Node. In
+        practice these functions could also be used to trigger events and other
+        interesting things, although that was not their intended function.
+
+        :param errors: This will be a list of all other Nodes that have errors.
+        :param block: Whether or not the form submission will be blocked.
+        :type block: boolean
+
+        .. note: By default this function does nothing.
         """
         pass
 
@@ -274,36 +293,32 @@ class Form(object):
         running validation logic for a :class:`Form`. It is called by the other
         primary validation methods. """
 
+        # Allows user to set a modular processor on incoming data
+        data = self._processor().filter_post(data)
+
         # reset all error lists and data
         for node in self._node_list:
             node.errors = []
             node.data = ''
+            node.resolve_data(data)
 
-        # Allows user to set a modular processor on incoming data
-        data = self._processor().filter_post(data)
+        # try to load our visited list of it's piecewise validation
+        if '_visited_names' not in data and piecewise:
+            raise AttributeError("No _visited_names present in data submission"
+                                 ". Data is required for piecewise validation")
+        elif piecewise:
+            visited = json.loads(data['_visited_names'])
 
         # assume to be not blocking
         block = False
         # loop over our checks and run our validators
         for check in self._validation_list:
-            # try to iterate over their validators
-            try:
-                check.resolve_attr_names(data, self)
-            except DataAccessException as e:
-                # ignore the exception if we're in piecewise mode
-                if not piecewise:
-                    raise e
-                else:
-                    # make sure no success until all validators can run
-                    block = True
-                    continue
-            try:
-                # Run our validator
+            check.resolve_attr_names(data, self)
+            if piecewise is False or check.node_visited(visited):
                 check.validate()
-            except TypeError as e:
-                raise NotCallableException(
-                    "Validators provided must be callable, type '{0}'" +
-                    "instead. Caused by {1}".format(type(check.validator), e))
+            else:
+                # If even a single check can't be run, we need to block
+                block = True
 
         # a list to hold Nodes that actually have errors
         error_node_list = []
@@ -312,18 +327,9 @@ class Form(object):
             # default
             if node.errors:
                 error_node_list.append(node)
-            else:
-                # if the data field is blank, try and populate it
-                if node.data == '':
-                    try:
-                        node.resolve_data(data)
-                    except DataAccessException:
-                        pass
-                continue
 
-            if not block:  # no sense in checking if already blocking
-                for error in node.errors:
-                    block |= error.get('block', True)
+            for error in node.errors:
+                block |= error.get('block', True)
 
         return block, error_node_list
 
@@ -342,15 +348,16 @@ class Form(object):
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
-        # pass our data into the global rendering context for filling in info
-        self.g_context['data'] = data
 
         errors = {}
-        block, invalid = self._gen_validate(data, piecewise=piecewise)
-        # auto-disable if this is not the submit action and it's a piecewise to
-        # prevent auto-submission
+        """ We want to automatically block the form from actually submitting
+        if this is piecewise validation. In addition if they are actually
+        submitting then we want to run it as non-piecewise validation """
         if data.get('submit_action', 'false') != 'true' and piecewise:
+            block, invalid = self._gen_validate(data, piecewise=piecewise)
             block = True
+        else:
+            block, invalid = self._gen_validate(data, piecewise=False)
 
         # loop over our nodes and insert information for the JS callbacks
         for node in invalid:
@@ -359,12 +366,17 @@ class Form(object):
 
         # if needed we should run our all form message generator and return
         # json encoded error message
-        retval = {'success': not block}
+        retval = {'block': block}
         if len(errors) > 0:
             header_err = self.error_header_generate(errors, block)
             if header_err:
                 errors['start'] = {'identifiers': self.start.json_identifiers(),
-                                'errors': header_err}
+                                   'errors': header_err}
+
+        if not block:
+            blob = self.success_header_generate()
+            if blob:
+                retval['success_blob'] = blob
 
         retval['errors'] = errors
         return json.dumps(retval)

@@ -2,35 +2,9 @@
     {% if g.ajax %}
     <script type="text/javascript">
     $(function () {
-        {% if g.piecewise %}
-        var piecewise = true;
-        {% else %}
-        var piecewise = false;
-        {% endif %}
-        $('#{{ id }}').yota_activate(
-        function (id, error, data) {
-            // exit if there wasn't a proper id given
-            if (id.elements[0] == undefined) {
-                console.log("There are no elements defined to deliver this error to!");
-                return;
-            }
-            // else, start tagging or removing respectively
-            if (error) {
-                target_id = id.elements[0];
-                if ($('#' + target_id).attr('data-error') != "true") {
-                    $('#' + target_id).tooltip({title: data[0]['message'],
-                                        placement: 'right',
-                                        trigger: 'manual'});
-                    $('#' + target_id).tooltip('show');
-                }
-            } else {
-                $('#' + target_id).tooltip('destroy');
-            }
-        },
-        function () {
-            $('#{{ id }}_success').show();
-            }, {% if g.piecewise %}true{% else %}false{% endif %});
-
+        $('#{{ id }}').yota_activate({message_id: '{{ id }}_message'
+                                      {% if g.piecewise %},piecewise: true{% endif %}
+                                    });
     });
     </script>
     <input type="hidden" name="_ajax_" value="True"/>
@@ -43,9 +17,7 @@
     <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
     {% endfor %}
     {% endif %}
-    <div class="alert alert-success" style="display:none;" id="{{ id }}_success">
-
-        Thank you for your submission!
+    <div class="alert alert-success" style="display:none;" id="{{ id }}_message">
     </div>
     {% if title %}
     <h2>{{ title }}</h2>

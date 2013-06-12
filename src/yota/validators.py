@@ -209,28 +209,59 @@ class Check(object):
         resolved to.
         :param data: The full form data dictionary submitted for validation.
         """
-
+        if self.resolved:
+            return
 
         # Process args
         for key, arg in enumerate(self.args):
-            # We need to get our node information.
-            # If already resolved, just pull from arg
-            if not self.resolved:
-                self.args[key] = form.get_by_attr(arg)
-            self.args[key].resolve_data(data)
+            self.args[key] = form.get_by_attr(arg)
 
         # Process kwargs
         for key, val in self.kwargs.iteritems():
-            # We need to get our node information. If already resolved, just
-            # pull from arg
-            if not self.resolved:
-                self.kwargs[key] = form.get_by_attr(val)
-            self.kwargs[key].resolve_data(data)
+            self.kwargs[key] = form.get_by_attr(val)
 
         self.resolved = True
+
+    def node_visited(self, visited):
+        """ Used by piecewise validation to determine if all the Nodes involved
+        in the validator have been "visited" and thus are ready for the
+        validator to be run """
+
+        if not self.resolved:
+            raise ValueError("Check args are not resolved. This should not happen")
+
+        """ Loop through the args. for each node, check if it's represented in
+        the visited node list. if it is then then we're good to go"""
+        for node in self.args:
+            for name in node.get_list_names():
+                if name in visited:
+                    break
+            else:  # if we didn't break, not enough info
+                return False
+
+        # Process kwargs
+        for node in self.kwargs.itervalues():
+            for name in node.get_list_names():
+                if name in visited:
+                    break
+            else:  # if we didn't break
+                return False
+
+        # we identified at least one name in each node's collection of names
+        return True
 
     def validate(self):
         """ Called by the validation routines. Allows the Check to specify
         parameters that will be passed to our Validation method.
         """
-        return self.validator(*self.args, **self.kwargs)
+
+        if not self.resolved:
+            raise ValueError("Check args are not resolved. This should not happen")
+
+        try:
+            # Run our validator
+            return self.validator(*self.args, **self.kwargs)
+        except TypeError as e:
+            raise NotCallableException(
+                "Validators provided must be callable, type '{0}'" +
+                "instead. Caused by {1}".format(type(check.validator), e))

@@ -144,7 +144,8 @@ class Node(object):
         try:
             self.data = data[self.name]
         except KeyError:
-            raise DataAccessException
+            raise DataAccessException("Node {0} cannot find name {1} in "
+                                      "submission data.".format(self._attr_name, self.name))
 
     def get_context(self, g_context):
         """ Builds our rendering context for the Node at render time. By
@@ -168,6 +169,14 @@ class Node(object):
         d['g'] = g_context
         return d
 
+    def get_list_names(self):
+        """ As the title suggests this needs to return an iterable of names. These
+        should be names corresponding to form elements that the Node will
+        generate. This list is uesed by piecewise validation to determine if a
+        Node has been visisted base on a list of names that have been visited,
+        attempting to bridge the concepts of Nodes and Elements. """
+        return (self.name, )
+
 
 class BaseNode(Node):
     """ This base Node supplies the name of the base rendering template the
@@ -177,6 +186,12 @@ class BaseNode(Node):
     base = "horiz.html"
     css_class = ''
     css_style = ''
+
+
+class NonDataNode(Node):
+    """ A Node base for Nodes that aren't designed to generate output """
+    def resolve_data(self, data):
+        pass
 
 
 class ListNode(BaseNode):
@@ -239,6 +254,7 @@ class CheckGroupNode(BaseNode):
         if not hasattr(self, 'title'):
             self.title = self._attr_name.capitalize().replace('_', ' ')
 
+
 class ButtonNode(BaseNode):
     """ Creates a simple button in your form.
     """
@@ -256,11 +272,11 @@ class TextareaNode(BaseNode):
     columns = '10'
 
 
-class SubmitNode(BaseNode):
+class SubmitNode(NonDataNode, BaseNode):
     template = 'submit'
 
 
-class LeaderNode(Node):
+class LeaderNode(NonDataNode):
     """ A Node that simply removes the title attribute from the Node rendering
     context. Intended for use in the start and end Nodes. """
 
