@@ -108,18 +108,49 @@ Jinja will look for the template sequentially in each of the paths specified in
 it's search path property. See more about setting this in the [not yet
 created..].
 
+The majority of Node attributes may be overridden either through initialization
+of the function, like so:
+
+.. code-block:: python
+    
+    my_node = EntryNode(name="Something else", template="custom_entry")
+
+Or by setting it as a class attribute in your Node definition like so:
+
+.. code-block:: python
+    
+    class EntryNode(BaseNode):
+        template = 'entry'
+        _ignores = ['template']
+
+However, keep in mind that attributes that are auto-generated, such as name,
+id, and title should not be set as class attributes since they will get
+overriden when they are generated.
+
 Custom Nodes
 ===============================
 Most Node definitions are quite simple, with the majority simply changing the template being used. More complex Node semantics are availible by overriding some of their built in methods, such as :meth:`Node.resolve_data` or :meth:`Node.set_identifiers`. These are all described in the API documentation, but some examples will be given here of how you might wish to use these methods.
 
-resolve_data
+Changing data resolution
 ****************************
 The default Node implementation assumes that your Node only contains one input,
 and as such its data output is assumed to be tied directly to this single input.
-The :meth:`Node.set_identifiers` method defines a defualt implementation for naming
-your input field. This name is then used to pick out the data that is associated
-with this Node. But say your Node includes multiple input fields, perhaps you
-have a date picker. A simple template may look like this:
+The :meth:`Node.set_identifiers` method defines a defualt implementation for
+naming your input field that looks something like this:
+
+.. code-block:: python
+
+        try:
+            self.data = data[self.name]
+        except KeyError:
+            raise DataAccessException("Node {0} cannot find name {1} in "
+                                      "submission data.".format(self._attr_name, self.name))
+
+You may notice notice that self.data is set explicitly. This represents the
+overall theme of Yota where explicit configuration makes the library extremely
+flexible. You can see above that the Node name is used to pick out the data
+that is associated with this Node. But say your Node includes multiple input
+fields, perhaps you have a date picker. A simple template may look like this:
 
 .. code-block:: html
 
@@ -144,20 +175,27 @@ something like this.
         except KeyError:
             raise FormDataAccessException
 
-        """ In case they enter something out of bounds """
-        try:
-            return datetime.date(year, month, day)
-        except ValueError:
-            return None
+        # set data to a tuple of values for validatoin
+        self.data = (year, month, day)
 
-Now aside from our crappy looking form, and some lack of bound specificity
-everything is peachy.
+Now aside from our crappy looking form, and some lack of bounds checking
+everything is good. Now say we wanted to make this form work with AJAX, and we
+wanted to make the border of each of the form elements red when there was an
+error. Well this is a problem, because our JavaScript doesn't implicity know
+how to find the elements. Certainly you could use a jQuery selector to find the
+inputs, but modifying what is passed to your JavaScript presents a slightly
+more resiliant option. This is done through the json_identifiers method.
+
+json_identifiers
+****************************
 
 set_identifiers
 ****************************
-This should be pretty self explanatory. When the Node is created set_identifiers
-is called to setup some unique names to be used in the template. Perhaps you'd
-like a different semantic for automatically titling your date pickers?
+When the Node is added to a Form set_identifiers is called to setup some unique
+names to be used in the template. Perhaps you'd like a different semantic for
+automatically titling your date pickers? Overriding this function may also be
+wanted if you're writing a Node with multiple form elements in it. This all
+depends on your preference.
 
 .. code-block:: python
 
