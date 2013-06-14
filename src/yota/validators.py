@@ -54,6 +54,74 @@ class NonBlockingDummyValidator(object):
         target.add_error({'message': "I'm not blocking!", 'block': False})
 
 
+class MatchingValidator(object):
+    """ Checks if two nodes values match eachother. The error is delivered to
+    the first node.
+
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+    """
+    __slots__ = ["message"]
+
+    def __init__(self, message=None):
+        self.message = message if message else "Fields must match"
+        super(MatchingValidator, self).__init__()
+
+    def __call__(self, target1, target2):
+        if target1.data != target2.data:
+            target1.add_error({'message': self.message})
+
+
+class IntegerValidator(object):
+    """ Checks if the value is an integer and converts it to one if it is
+
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+    """
+    __slots__ = ["message"]
+
+    def __init__(self, message=None):
+        self.message = message if message else "Value must only contain numbers"
+        super(IntegerValidator, self).__init__()
+
+    def __call__(self, target):
+        try:
+            target.data = int(target.data)
+        except ValueError:
+            target.add_error({'message': self.message})
+
+
+class MinMaxValidator(object):
+    """ Checks if the value is between the min and max values given
+
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+
+    :param min: The minimum length of the data.
+    :type length: integer
+
+    :param max: The maximum length of the data.
+    :type length: integer
+    """
+    __slots__ = ["message", "max", "min"]
+
+    def __init__(self, min, max, message=None):
+        if message:
+            self.message = message
+        else:
+            self.message = ("Must not be less than {0} characters and more "
+                           "than {1} characters long.").format(min, max)
+        self.min = min
+        self.max = max
+        super(MinMaxValidator, self).__init__()
+
+    def __call__(self, target):
+        if len(target.data) < self.min or len(target.data) > self.max:
+            target.add_error({'message': self.message})
+
+
+
+
 class RequiredValidator(object):
     """ Checks to make sure the user entered something.
 

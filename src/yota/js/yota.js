@@ -16,7 +16,7 @@
                     $("#" + options.message_id).html(data.message);
                 }
             },
-            render_error: function (id, error, data) {
+            render_error: function (ids, status, data) {
                 // exit if there wasn't a proper id given
                 if (id.elements[0] == undefined) {
                     console.log("There are no elements defined to deliver " +
@@ -26,7 +26,7 @@
                 // else, start tagging or removing respectively
                 target_id = id.elements[0];
                 if (error == "update") {
-                } else if (error) {
+                } else if (error == "error") {
                     if ($('#' + target_id).attr('data-error') != "true") {
                         $('#' + target_id).tooltip({title: data[0]['message'],
                                             placement: 'right',
@@ -59,7 +59,7 @@
                         } else {
                             // new error
                             settings.render_error(error_obj[key].identifiers,
-                                        true,
+                                        "error",
                                         error_obj[key].errors);
                             // register the error in our bookkeeping system
                             errors_present[key] = error_obj[key].identifiers;
@@ -69,7 +69,7 @@
                     // remove the errors that weren't updated
                     for (var key in errors_present) {
                         if (!(key in error_obj)) {
-                            settings.render_error(errors_present[key], false, {});
+                            settings.render_error(errors_present[key], "no_error", {});
                             delete errors_present[key];
                         }
                     }
@@ -77,7 +77,7 @@
                     // remove all the errors. Either we just got new ones, or there
                     // were none.
                     for (var key in errors_present) {
-                        settings.render_error(errors_present[key], false, {});
+                        settings.render_error(errors_present[key], "no_error", {});
                         delete errors_present[key];
                     }
                     // if a redirect was requested...

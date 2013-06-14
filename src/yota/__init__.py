@@ -100,23 +100,42 @@ class Form(object):
     def __init__(self,
                  name=None,
                  auto_start_close=True,
-                 start_template='form_open',
-                 close_template='form_close',
+                 start_template=None,
+                 close_template=None,
                  g_context=None,
                  context=None,
                  start=None,
                  close=None,
                  **kwargs):
-        self.auto_start_close = auto_start_close
-        self.start_template = start_template
-        self.close_template = close_template
-        self.g_context = g_context if g_context else {}
-        self.context = context if context else {}
+
+        """ Basically, set the instance attribute to one of the following in
+        order of preference:
+        1. Passed in parameter
+        2. Class attribute
+        3. Set default """
+        def override(value, attr, default):
+            if value:
+                setattr(self, attr, value)
+            elif not hasattr(self, attr):
+                setattr(self, attr, default)
+
+        # override semantics
+        override(auto_start_close, 'auto_start_close', True)
+        override(start_template, 'start_template', 'form_open')
+        override(close_template, 'close_template', 'form_close')
+        override(g_context, 'g_context', {})
+        override(context, 'context', {})
 
         # set a default for our name to the class name
         self.name = name if name else self.__class__.__name__
+        self.context['name'] = self.name  # pass it to start/close
 
-        # passes everything to our rendering context and updates params
+        # pass some special keywords to our context if they're defined as class
+        # attributes
+        if hasattr(self, 'title'):
+            self.context['title'] = self.title
+        # passes everything to our rendering context and updates params.
+        # Overwrites class attributes
         self.context.update(kwargs)
 
         # since our default id is based off of the parent id

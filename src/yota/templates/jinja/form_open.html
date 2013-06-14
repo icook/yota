@@ -1,21 +1,21 @@
 <form method="post" class="{{ form_class }}" id="{{ id }}" action="{{action}}">
     {% if g.ajax %}
-    <script type="text/javascript">
-    $(function () {
-        $('#{{ id }}').yota_activate({message_id: '{{ id }}_message'
-                                      {% if g.piecewise %},piecewise: true{% endif %}
-                                    });
-    });
-    </script>
-    <input type="hidden" name="_ajax_" value="True"/>
-    {% endif %}
-    {% if g.piecewise %}
-    <input type="hidden" name="_piecewise_" value="True"/>
+        <script type="text/javascript">
+        $(function () {
+            $('#{{ id }}').yota_activate({message_id: '{{ id }}_message'
+                                          {% if g.piecewise %},piecewise: true{% endif %}
+                                        });
+        });
+        </script>
+        {% if g.piecewise %}
+            <input type="hidden" name="_piecewise_" value="True"/>
+        {% endif %}
+        <input type="hidden" name="_ajax_" value="True"/>
     {% endif %}
     {% if hidden %}
-    {% for key, val in hidden.iteritems() %}
-    <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
-    {% endfor %}
+        {% for key, val in hidden.iteritems() %}
+            <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
+        {% endfor %}
     {% endif %}
     <div class="alert alert-success" style="display:none;" id="{{ id }}_message">
     </div>

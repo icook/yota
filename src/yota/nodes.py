@@ -50,6 +50,7 @@ class Node(object):
     """
 
     _create_counter = 0
+    piecewise_trigger = 'blur'
     """ Allows tracking the order of Node creation """
 
     def __init__(self,
@@ -225,10 +226,11 @@ class CheckGroupNode(BaseNode):
     """ Node for providing a group of checkboxes. Requires boxes
     attribute. Instead of defining an ID value explicitly the
     :class:`Node.set_identifiers` defines a prefix value to be prefixed to all
-    id elements for checkboxes in the group.
+    id elements for checkboxes in the group. The output data is a list
+    containing the names of the checkboxes that were checked.
 
-    :attr boxes: Must be a list of (three)ples where the first element is the
-        name, the second is the value of the third is the label.
+    :attr boxes: Must be a list of tuples where the first element is the
+        name, the second is the label.
     """
     template = 'checkbox_group'
     _requires = ['boxes']
@@ -236,15 +238,18 @@ class CheckGroupNode(BaseNode):
     def resolve_data(self, data):
         # return a list of checked values since we have multiple names
         ret = []
-        for name, val, desc in self.boxes:
-            if len(data[name]) > 0:
-                ret.append(data[name])
+        for name, desc in self.boxes:
+            try:
+                if len(data[name]) > 0:
+                    ret.append(name)
+            except KeyError:
+                pass
 
         return ret
 
     def json_identifiers(self):
         ids = []
-        for name, val, desc in self.boxes:
+        for name, desc in self.boxes:
             ids.append(self.prefix + name)
         return {'error_id': self.id + "_error", 'elements': ids}
 
@@ -268,6 +273,11 @@ class ButtonNode(BaseNode):
 class EntryNode(BaseNode):
     """ Creates an input box for your form. """
     template = 'entry'
+
+
+class PasswordNode(BaseNode):
+    """ Creates an input box for your form. """
+    template = 'password'
 
 
 class TextareaNode(BaseNode):
