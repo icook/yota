@@ -109,8 +109,8 @@ class MinMaxValidator(object):
         if message:
             self.message = message
         else:
-            self.message = ("Must not be less than {0} characters and more "
-                           "than {1} characters long.").format(min, max)
+            self.message = "Length must be between {0} and {1} characters.". \
+                            format(min, max)
         self.min = min
         self.max = max
         super(MinMaxValidator, self).__init__()

@@ -241,10 +241,12 @@ class Form(object):
         try:
             attr = getattr(self, name)
         except AttributeError:
-            return None
+            raise AttributeError('Form attribute {0} couldn\'t be resolved to'
+                                 'a Node'.format(name))
         if isinstance(attr, Node):
             return attr
-        return None
+        raise AttributeError('Form attribute {0} couldn\'t be resolved to'
+                                'a Node'.format(name))
 
     def success_header_generate(self):
         """ Please see the documentation for :meth:`Form.error_header_generate`

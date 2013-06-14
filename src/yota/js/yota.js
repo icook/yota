@@ -16,7 +16,7 @@
                     $("#" + options.message_id).html(data.message);
                 }
             },
-            render_error: function (ids, status, data) {
+            render_error: function (id, status, data) {
                 // exit if there wasn't a proper id given
                 if (id.elements[0] == undefined) {
                     console.log("There are no elements defined to deliver " +
@@ -25,16 +25,24 @@
                 }
                 // else, start tagging or removing respectively
                 target_id = id.elements[0];
-                if (error == "update") {
-                } else if (error == "error") {
-                    if ($('#' + target_id).attr('data-error') != "true") {
-                        $('#' + target_id).tooltip({title: data[0]['message'],
-                                            placement: 'right',
-                                            trigger: 'manual'});
-                        $('#' + target_id).tooltip('show');
-                    }
-                } else {
+                if (status == "update" || status == "no_error")
                     $('#' + target_id).tooltip('destroy');
+
+                if (status == "update" || status == "error") {
+                    if (data.length > 1) {
+                        var tip = '<ul>';
+                        for (var key in data) {
+                            tip += '<li>' + data[key]['message'] + '</li>';
+                        }
+                        tip += '</ul>';
+                    } else
+                        var tip = data[0]['message'];
+
+                    $('#' + target_id).tooltip({title: tip,
+                                        placement: 'right',
+                                        trigger: 'manual',
+                                        html: true});
+                    $('#' + target_id).tooltip('show');
                 }
             },
             piecewise: false
