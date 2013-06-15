@@ -99,8 +99,11 @@ recommended format when building your own validators.
 
 .. autoclass:: yota.validators.MinLengthValidator
 .. autoclass:: yota.validators.MaxLengthValidator
+.. autoclass:: yota.validators.MinMaxValidator
 .. autoclass:: yota.validators.RequiredValidator
 .. autoclass:: yota.validators.EmailValidator
+.. autoclass:: yota.validators.MatchingValidator
+.. autoclass:: yota.validators.IntegerValidator
 
 Check API
 ===========

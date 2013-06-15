@@ -15,7 +15,8 @@ asynchronous server call is made and the validation results are rendererd or a
 success action is executed. These features allow you to give your user faster
 feedback on what mistakes they made to ease the form filling process.
 
-.. note:: The AJAX validator examples below rely on using the `id` value that is set by the default :meth:`Node.set_identifiers` as a way to find the Nodes.
+.. note:: The AJAX validator examples below rely on using the `id` value that
+    is set by the default :meth:`Node.set_identifiers` as a way to find the Nodes.
 
 Server side implementation for AJAX validation is designed to be used with 
 :meth:`Form.json_validate`. When a submission is detected (usually by detecting
@@ -77,8 +78,14 @@ Whether or no this form should be processed in a piecewise fashion.
 On-Submit Validation
 =======================
 A simple on submit validation should be very simple if you're sticking with the
-default Nodes. These Nodes are already setup to interact with the default
-render_error function in Yota's JavaScript library, so all you really need to
+default Nodes. These Nodes are already setup to pass the required error div ids
+and element ids to the client using the default render_error function in Yota's
+JavaScript library, so all you really need to do is set the global context key
+'ajax' to equal True. This activates the JavaScript library.
+
+By default the render_success function will look for a 'message' key in the
+return value of :meth:`Form.success_header_generate` so this method should be
+overriden to pass apropriate information if that action is desired.
 
 Piecewise Validation
 =======================
@@ -88,42 +95,7 @@ allows us to fire off a server request to validate the form as we're filling it
 out based on any JavaScript based trigger.
 
 The server side of this implementation is almost identical to On-Submit
-validation except that you want to pass :meth:`Form.json_validate` the keyword
-argument piecewise=True.
-
-The client side is a bit more tricky. When the page is first loaded, a
-JavaScript object is constructed that tracks the state of each input field.
-That is, it tracks whether or not the user has tried to modify the field.
-Whenever the trigger event for a field is executed then the fields state is
-updated and a partial submission is performed. The partial submission submits
-data only for fields that have been flagged as modified. Then the server side
-proceeds to execute all the validators that it can and then returns the result
-exactly like On-Submit validation does.
-
-Below is a simple example of how you might use the piecewise validation in your start :class:`Form` Node.
-
-.. code-block:: javascript
-
-    // onload of our page
-    $(function () {
-        // initialize our tracking object
-        window.visited = {};
-
-        // setup our listeners
-        $("#{{ id }}").find("[data-piecewise]").each(function() {
-            var v = $(this).attr("name");
-            visited[v] = false;
-            var type = $(this).attr("data-piecewise")
-            if (type == "blur") {
-                $(this).blur(function() {
-                    window.visited[v] = true;
-                    $("#{{ id }}").ajaxSubmit(window.yota_ajax_options);
-                });
-            } else {
-                $(this).keyup(function() {
-                    window.visited[v] = true;
-                    $("#{{ id }}").ajaxSubmit(window.yota_ajax_options);
-                });
-            }
-        });
-    });
+validation except that you want to alos pass the key piecewise to the
+g_context. Again, this simply triggers the JavaScript library to behave
+slightly different. All builtin Nodes are designed to work out of the box with
+the default AJAX callback functions.
