@@ -120,6 +120,115 @@ class MinMaxValidator(object):
             target.add_error({'message': self.message})
 
 
+class RegexValidator(object):
+    """ Quick and easy check to see if the input
+    matches the given regex.
+
+    :param regex: (optional) The regex to run against the input.
+    :type regeg: string
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+    """
+    __slots__ = ["message", "regex"]
+
+    def __init__(self, regex=None, message=None):
+        self.message = message if message else "Input does not match regex"
+        self.regex = regex
+        super(RegexValidator, self).__init__()
+
+    def __call__(self, target=None):
+        if re.match(self.regex, target.data) == None:
+            target.add_error({'message': self.message})
+
+class PasswordValidator(RegexValidator):
+    """ Quick and easy check to see if a field
+    matches a stamdard password regex. This regex
+    matches a string at least 7 characters long which
+    contains an upper and lowercase letter, a special
+    character, a number, and no blanks/returns.
+
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+    """
+    __slots__ = ["message"]
+
+    def __init__(self, message=None):
+        self.message = message if message else "Must be 7 characters or longer, contain at least one upper and lower case letter, a number and a special character"
+        self.regex = '^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{,}$'
+
+class UsernameValidator(RegexValidator):
+    """ Quick and easy check to see if a field
+    matches a stamdard username regex. This regex
+    matches a string from 3-20 characters long and
+    composed only of numbers, letters, hyphens, and
+    underscores.
+
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+    """
+    __slots__ = ["message"]
+
+    def __init__(self, message=None):
+        self.message = message if message else "Must be 3-20 characters and only contain letters, numbers, hyphens and underscores"
+        self.regex = '^[a-zA-Z0-9-_]{3,20}$'
+
+
+class StrongPasswordValidator(object):
+    """ A validator to check the password strength.
+
+    :param regex: (optional) The regex to run against the input.
+    :type regex: list or tuple
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+
+    """
+    __slots__ = ["message", "regex"]
+
+    def __init__(self, regex=None, message=None):
+        self.message = message
+        if not isinstance(regex, tuple) and\
+           not isinstance(regex, list):
+            self.regex = [
+                 "(?=.*[A-Z].*[A-Z])", # Matches 2 uppercase letters
+                 "(?=.*[!@#$&*])", # Matches 1 Special character
+                 "(?=.*[0-9].*[0-9])", # Matches 2 numbers
+                 ".{7}" # Has at least 7 characters
+             ]
+        else:
+            self.regex = regex
+        super(StrongPasswordValidator, self).__init__()
+
+    def __call__(self, target=None):
+        strength = 0
+
+        # Loop through the regex and increment
+        # strength for each successful match
+        for regex in self.regex:
+            if re.match(regex, target.data):
+                strength += 1
+        target.add_error({'message': "Password strength is " + str(strength),
+                          'block': False})
+
+
+class MatchingFieldsValidator(object):
+    """ Checks this field against another to make sure
+    that they match
+
+    :param match: (required) The name of the field to match against
+    :type match: string
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+    """
+    __slots__ = ["message", "field"]
+
+    def __init__(self, field, message=None):
+        self.message = message if message else "Fields do no match!"
+        super(MatchingFieldsValidator, self).__init__()
+
+    def __call__(self, target=None):
+        if target.data == field.data:
+            target.add_error({'message': self.message})
+
 
 
 class RequiredValidator(object):
