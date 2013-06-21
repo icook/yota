@@ -2,8 +2,8 @@
 {% block control %}
 
 {% for value, description in buttons %}
-<label class="{{type}} {{ css_class }}">
-    <input type="{{type}}" name="{{name}}" value="{{value}}" id="{{ id }}_{{value}}"{% if data == value %} selected{% endif %}>
+<label class="radio {{ css_class }}">
+    <input type="radio" name="{{name}}" value="{{value}}" id="{{ id }}_{{value}}"{% if data == value %} selected{% endif %}>
     {{description}}
 </label>
 {% endfor %}

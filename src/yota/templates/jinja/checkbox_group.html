@@ -3,7 +3,7 @@
 
 {% for check_name, description in boxes %}
 <label class="checkbox {{ css_class }}">
-    <input type="checkbox" name="{{ check_name }}" value="true" id="{{ check_name }}" {% if data == value %} selected{% endif %}>
+    <input type="checkbox" name="{{ check_name }}" value="true" id="{{ check_name }}" {% if data == value %} checked{% endif %}>
     {{ description }}
 </label>
 {% endfor %}

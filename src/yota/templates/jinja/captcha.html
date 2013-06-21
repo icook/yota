@@ -1,0 +1,11 @@
+{% extends base %}
+{% block control %}
+<input type="hidden" name="__captcha_id__" value="{{ g.captcha_id }}"/>
+<img src="/captcha_images/{{ g.captcha_id }}"/><br>
+<input data-piecewise="{{ piecewise_trigger }}"
+       type="text"
+       id="{{ id }}"
+       value="{{ data }}"
+       name="{{ name }}"
+       placeholder="{{ placeholder }}">
+{% endblock %}

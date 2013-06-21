@@ -218,9 +218,19 @@ class RadioNode(BaseNode):
         value of the second is the label.
     """
     template = 'radio_group'
-    type = 'radio'
     _requires = ['buttons']
 
+class CheckNode(BaseNode):
+    """ Creates a simple checkbox for your form. """
+    template = 'checkbox'
+
+    def resolve_data(self, data):
+        if self.name in data:
+            self.data = data[self.name]
+        else:
+            # Unchecked checkboxes don't submit any data so we'll set the
+            # value to false if there is no post data
+            self.data = False
 
 class CheckGroupNode(BaseNode):
     """ Node for providing a group of checkboxes. Requires boxes
@@ -289,6 +299,22 @@ class TextareaNode(BaseNode):
     template = 'textarea'
     rows = '5'
     columns = '10'
+
+class CaptchaNode(BaseNode):
+    """ A node designed for basic captcha support. It expects
+    to recieve a captcha id through the global context and uses
+    the id to reference a captcha image.
+    """
+    template = 'captcha'
+
+    def resolve_data(self, data):
+        try:
+            captcha = data['__captcha_id__']
+            captcha_attempt = data[self.name]
+        except KeyError:
+            raise DataAccessException("Node {0} cannot find name {1} in "
+                                      "submission data.".format(self._attr_name, self.name))
+        self.data = {'captcha': captcha, 'captcha_attempt':captcha_attempt}
 
 
 class SubmitNode(NonDataNode, BaseNode):

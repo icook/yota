@@ -114,7 +114,7 @@
 
         if (settings.piecewise) {
             // Setup the listeners that will track nodes that have been "triggered"
-            // This is what keeps piecewise validation from just flodding the user
+            // This is what keeps piecewise validation from just flooding the user
             // with errors the instant they start typing
             var visited = {};
             $(this).data('yota_visited', visited);

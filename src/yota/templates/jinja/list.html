@@ -1,6 +1,6 @@
 {% extends base %}
 {% block control %}
-<select data-piecewise="blur" id="{{ id }}" name="{{ name }}">
+<select data-piecewise="{{ piecewise_trigger }}" id="{{ id }}" name="{{ name }}">
     {% for value, description in items %}
     <option value="{{value}}"{% if data == value %} selected{% endif %}>{{description}}</option>
     {% endfor %}

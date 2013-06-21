@@ -6,7 +6,6 @@ from yota.validators import Check
 import json
 import copy
 
-
 class TrackingMeta(type):
     def __init__(mcs, name, bases, dict):
         """ Process all of the attributes in the `Form` (or subclass)
@@ -181,6 +180,21 @@ class Form(object):
         """
 
         return self._renderer().render(self._node_list, self.g_context)
+
+    def insert_validator(self, new_validator):
+        """ Inserts a validator to the validator list.
+
+        :param validator: The :class:`Check` to be inserted.
+        :type validator: Check """
+
+        # check to allow passing in just a node
+        if not isinstance(new_validator, Check):
+            raise TypeError
+
+        new_validator._attr_name = new_validator.args[0]
+        self._validation_list.append(new_validator)
+        setattr(self, new_validator._attr_name, str(new_validator.args))
+
 
     def insert(self, position, new_node_list):
         """ Inserts a :class:`Node` object or a list of objects at the
