@@ -302,10 +302,11 @@ class TextareaNode(BaseNode):
 
 class CaptchaNode(BaseNode):
     """ A node designed for basic captcha support. It expects
-    to recieve a captcha id through the global context and uses
+    to receive a captcha id through the global context and uses
     the id to reference a captcha image.
     """
     template = 'captcha'
+    placeholder = 'Are you human?'
 
     def resolve_data(self, data):
         try:

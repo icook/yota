@@ -414,6 +414,12 @@ class Form(object):
                 retval['success_blob'] = blob
 
         retval['errors'] = errors
+
+        # Throw back a variable in the json if there is both a submit
+        # and no blocking errors. The main purpose here is the allow
+        # easy catching of success in the view code.
+        if data.get('submit_action', 'false') == 'true' and not block:
+            retval['final_success'] = 'true'
         return json.dumps(retval)
 
     def validate(self, data):

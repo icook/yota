@@ -157,7 +157,7 @@ class PasswordValidator(RegexValidator):
         self.message = message if message else "Must be 7 characters or longer, contain " \
                                                "at least one upper and lower case letter, " \
                                                "a number, a special character, and no spaces"
-        self.regex = '^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{7}$'
+        self.regex = '^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{7,}$'
 
 class UsernameValidator(RegexValidator):
     """ Quick and easy check to see if a field
@@ -232,7 +232,10 @@ class PyCaptchaValidator(object):
 
     def __call__(self, target=None):
         if 'captcha_attempt' in target.data:
-            if not self.pycaptcha_solutions == target.data['captcha_attempt']:
+            for solution in self.pycaptcha_solutions:
+                if target.data['captcha_attempt'] == solution:
+                    solved = True
+            if not 'solved' in locals():
                 target.add_error({'message': self.message})
 
 
