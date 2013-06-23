@@ -13,12 +13,12 @@ class TestBuiltinNodes(unittest.TestCase):
                TextareaNode()]
 
     def test_radio_node(self):
-        """ Test radio button for actually generating the radio buttons """
+        """ Test radio node for actually generating the radio buttons """
         class TForm(yota.Form):
             t = RadioNode(buttons=[('1', 'something'),
-                                   ('2', 'else'),
-                                   ('3', 'is')
-                                   ])
+                                      ('2', 'else'),
+                                      ('3', 'is')
+            ])
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
@@ -27,19 +27,30 @@ class TestBuiltinNodes(unittest.TestCase):
         assert(len(bs.findAll('input', {'value': '2'})) == 1)
         assert(len(bs.findAll('input')) == 3)
 
-    def test_check_group(self):
-        """ Test radio button for actually generating the radio buttons """
+    def test_check_node(self):
+        """ Test check box node for actually generating the check box """
         class TForm(yota.Form):
-            t = CheckGroupNode(boxes=[('test', '1', 'something'),
-                                   ('this', '2', 'else'),
-                                   ('one', '3', 'is')
+            t = CheckNode(name='test')
+
+        test = TForm(auto_start_close=False).render()
+        bs = BeautifulSoup(test)
+        assert(len(bs.findAll('input', {'name': 'test'})) == 1)
+        assert(len(bs.findAll('input', {'type': 'checkbox'})) == 1)
+        assert(len(bs.findAll('input')) == 1)
+
+    def test_check_group(self):
+        """ Test grouped checkboxes for actually generating the check boxes """
+        class TForm(yota.Form):
+            t = CheckGroupNode(boxes=[('test_name1', 'something'),
+                                   ('test_name2', 'else'),
+                                   ('3', 'is')
                                    ])
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
-        assert(len(bs.findAll('input', {'value': '1'})) == 1)
-        assert(len(bs.findAll('input', {'value': '2'})) == 1)
-        assert(len(bs.findAll('input', {'value': '2'})) == 1)
+        assert(len(bs.findAll('input', {'name': 'test_name1'})) == 1)
+        assert(len(bs.findAll('input', {'name': 'test_name2'})) == 1)
+        assert(len(bs.findAll('input', {'type': 'checkbox'})) == 3)
         assert(len(bs.findAll('input')) == 3)
 
     def test_list_node(self):
