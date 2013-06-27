@@ -11,6 +11,71 @@ structured, reusable callables. Validators can be supplied an arbitrary number o
 inputs as well as dispatch information (errors, warnings, etc) to an arbitrary
 number of output Nodes.
 
+Using Validators In Your Form
+=============================
+
+Validators are generally added into your Form schema in a way similar to adding
+Nodes; that is, by declaring attributes in your Form definition. There is a
+long syntax that is more explicit as well as a shorthand that can add
+convenience for simple validators. The explicit declaration can be seen below
+through the definition of a Check.
+
+.. code-block:: python
+    :emphasize-lines: 5
+
+    class MyForm(yota.Form):
+        # This syntax shortens up the above explicit syntax for simple
+        # validators
+        first = EntryNode(title='First name')
+        _first_valid = Check(MinLengthValidator(5), 'first')
+
+The syntax above defines a single EntryNode and an associated validator that
+ensures the entered value is at least 5 characters long. This is done through
+the declaration of a :class:`Check` object. The Check accepts the actual
+validator as its first argument, followed by the names of Nodes that you will
+be validating. The above example binds our `MinLengthValidator` to a Node with
+the attribute name 'first'. Later when we try to validate the Form the string
+'first' will be used to lookup our Node and supply the appropriate information
+to the validator method. Nodes in Yota are identified by their attribute name
+as given in the class declaration. However, If you later add a `Node`
+dynamically it will need to specify the _attr_name attribute upon declaration
+explicitly. More on this in :ref:`Dynamically Adding Nodes`.
+
+The above syntax gives us some nice power. We can supply that validation method
+with as many Nodes as we would like in a clear way. But what if we want to
+write a bunch of validators that only validate a single Node? Then the above is
+quite verbose, and below shows an implicit declaration that is a nice option
+for simple validators, and is just syntactic sugar for the above syntax.
+
+.. code-block:: python
+    :emphasize-lines: 6, 10, 15, 19
+
+    class MyForm(yota.Form):
+        # This syntax shortens up the above explicit syntax for simple
+        # validators. An arg of 'first' will automatically be added to the
+        # Check object for you.
+        first = EntryNode(title='First name',
+                            validator=Check(MinLengthValidator(5)))
+
+        # This even more brief syntax will automatically build the Check
+        # object for you since it's just boilerplate at this point
+        last = EntryNode(title='Last name', validator=MinLengthValidator(5)
+
+        # This syntax however is just like above. Be aware that your
+        # attribute name will not be automatically added since your
+        # explicitly defining args
+        address = EntryNode(validator=
+                    Check(MinLengthValidator(9), 'address'))
+
+        # In addition, you can specify a list of validators, or a tuple
+        addr = EntryNode(title='Address', validator=[MinLengthValidator(5),
+                                                     MaxLengthValidator(25)])
+
+.. note:: If neither kwargs or args are specified and cannot be implicitly determined
+    an exception will be thrown.
+
+Making Custom Validators
+========================
 A validator should be a Python callable. The callable will be accessed through a
 Check object that provides context on how you would like your validator to be
 executed *in this given instance*. Checks are what provide your validation
@@ -19,7 +84,8 @@ resolvers, which is part of what allows Yota to be so dynamic.
 
 When the validation callable is run it is supplied with a reference to a Node.
 The submitted data that is associated with that :class:`Node` will be loaded
-into the data attribute automatically. At this point, perhaps an example will help clarify.
+into the data attribute automatically. At this point, perhaps an example will
+help clarify.
 
 .. code-block:: python
 
