@@ -20,8 +20,8 @@ class TrackingMeta(type):
                 value._attr_name = name
                 t[value._create_counter] = value
                 if hasattr(value, 'validators'):
-                    if not isinstance(value.validator, tuple) and \
-                       not isinstance(value.validator, list):
+                    if not isinstance(value.validators, tuple) and \
+                       not isinstance(value.validators, list):
                         value.validators = [value.validators, ]
                     for validator in value.validators:
                         # shorthand for adding a validation tuple
