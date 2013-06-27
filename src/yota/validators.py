@@ -20,7 +20,7 @@ class MinLengthValidator(object):
         super(MinLengthValidator, self).__init__()
 
     def __call__(self, target):
-        if len(target.data) < self.min_length:
+        if len(str(target.data)) < self.min_length:
             target.add_error({'message': self.message})
 
 
@@ -42,7 +42,7 @@ class MaxLengthValidator(object):
         super(MaxLengthValidator, self).__init__()
 
     def __call__(self, target):
-        if len(target.data) > self.max_length:
+        if len(str(target.data)) > self.max_length:
             target.add_error({'message': self.message})
 
 
@@ -117,7 +117,7 @@ class MinMaxValidator(object):
         super(MinMaxValidator, self).__init__()
 
     def __call__(self, target):
-        if len(target.data) < self.min or len(target.data) > self.max:
+        if len(str(target.data)) < self.min or len(str(target.data)) > self.max:
             target.add_error({'message': self.message})
 
 

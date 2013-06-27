@@ -3,17 +3,14 @@
     // The primary activator method for Yota. Is a wrapper around jQuery Form
     // plugin
     $.fn.yota_activate = function (options) {
-        // configuration options to go to jQuery Form plugin
-        //   more information about the plugin can be found at:
-        //   http://www.malsup.com/jquery/form/
         
         // This is the easiest way to have default options.
         var settings = $.extend({
             // These are the defaults.
-            render_success: function (data) {
-                if (options.message_id != undefined) {
-                    $("#" + options.message_id).show();
-                    $("#" + options.message_id).html(data.message);
+            render_success: function (data, ids) {
+                if (ids.error_id != undefined) {
+                    $("#" + ids.error_id).show();
+                    $("#" + ids.error_id).html(data.message);
                 }
             },
             render_error: function (id, status, data) {
@@ -52,6 +49,9 @@
         var errors_present = {};
         $(this).data('yota_errors_present', errors_present);
 
+        // configuration options to go to jQuery Form plugin
+        //   more information about the plugin can be found at:
+        //   http://www.malsup.com/jquery/form/
         var ajax_options = { 
             // Called upon successful return of the AJAX call
             success: function (jsonObj)  {
@@ -93,7 +93,7 @@
                         window.location.replace(jsonObj.redirect);
                     } else {
                         // run the success callback and pass it details from yota
-                        settings.render_success(jsonObj.success_blob);
+                        settings.render_success(jsonObj.success_blob, jsonObj.success_ids);
                     }
                 }
             },

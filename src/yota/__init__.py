@@ -256,11 +256,11 @@ class Form(object):
             attr = getattr(self, name)
         except AttributeError:
             raise AttributeError('Form attribute {0} couldn\'t be resolved to'
-                                 'a Node'.format(name))
+                                 ' a Node'.format(name))
         if isinstance(attr, Node):
             return attr
         raise AttributeError('Form attribute {0} couldn\'t be resolved to'
-                                'a Node'.format(name))
+                                ' a Node'.format(name))
 
     def success_header_generate(self):
         """ Please see the documentation for :meth:`Form.error_header_generate`
@@ -412,6 +412,8 @@ class Form(object):
             blob = self.success_header_generate()
             if blob:
                 retval['success_blob'] = blob
+                if hasattr(self, 'start'):
+                    retval['success_ids'] = self.start.json_identifiers()
 
         retval['errors'] = errors
 
