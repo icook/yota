@@ -56,6 +56,18 @@ class TestForms(unittest.TestCase):
         assert(isinstance(test._validation_list[0].validator,
                           MinLengthValidator))
 
+    def test_validator_shorthand_list(self):
+        class TForm(yota.Form):
+            t = EntryNode(validators=[MinLengthValidator(5,
+                          message="Darn"), RequiredValidator()])
+
+        test = TForm()
+        assert(len(test._validation_list) > 0)
+        assert(isinstance(test._validation_list[0].validator,
+                          MinLengthValidator))
+        block, invalid = test._gen_validate({'t': ''})
+
+
     def test_error_header(self):
         class TForm(yota.Form):
             t = EntryNode()

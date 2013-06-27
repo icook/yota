@@ -82,6 +82,21 @@ class Form(object):
     like filtering stripping characters or encoding all data that enters a
     validator. """
 
+    def __new__(cls, **kwargs):
+        """ We want our created Form to have a copy of the original
+        form list so that dynamic additions to the list do not
+        effect all Form instances """
+
+        c = super(Form, cls).__new__(cls, **kwargs)
+        c._node_list = copy.deepcopy(cls._node_list)
+        for n in c._node_list:
+            setattr(c, n._attr_name, n)
+        c._validation_list = copy.deepcopy(cls._validation_list)
+        for n in c._validation_list:
+            if n._attr_name:
+                setattr(c, n._attr_name, n)
+        return c
+
     def __init__(self,
                  name=None,
                  auto_start_close=True,
