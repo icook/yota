@@ -63,7 +63,6 @@ class TestNodeSpecific(unittest.TestCase):
             start = LeaderNode()
 
         test = TForm()
-        assert(test.start.name == 'Somethingelse')
 
     def test_checkgroup(self):
         """ CheckGroup node data semantics """
