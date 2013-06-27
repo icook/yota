@@ -95,7 +95,34 @@ allows us to fire off a server request to validate the form as we're filling it
 out based on any JavaScript based trigger.
 
 The server side of this implementation is almost identical to On-Submit
-validation except that you want to alos pass the key piecewise to the
+validation except that you want to pass the key 'piecewise' to the
 g_context. Again, this simply triggers the JavaScript library to behave
 slightly different. All builtin Nodes are designed to work out of the box with
 the default AJAX callback functions.
+
+Validation Tiggers
+~~~~~~~~~~~~~~~~~~
+An additional per-Node attribute 'piecewise_trigger' allows you to
+set when you would like the Form to be submitted for incremental validation.
+This can be any JavaScript event type that your input field supports, and
+defaults to "blur". Common values may be click, change, dblclick, keyup or
+keydown.
+
+These event triggers are activated when the Yota jQuery plugin is initially
+called. It scans all input fields in your Form and attaches an AJAX submit
+action to the input element based on the value of the attribute
+"data-piecewise". In the default Nodes this is set by the attribute
+"piecewise_trigger" as can be seen in the code for entry.html for example.
+
+.. code-block:: html
+    :emphasize-lines: 3
+
+    {% extends base %}
+    {% block control %}
+    <input data-piecewise="{{ piecewise_trigger }}"
+        type="text"
+        id="{{ id }}"
+        value="{{ data }}"
+        name="{{ name }}"
+        placeholder="{{ placeholder }}">
+    {% endblock %}
