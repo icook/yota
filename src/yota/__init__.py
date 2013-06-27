@@ -379,6 +379,11 @@ class Form(object):
             is designed to be used for the AJAX piecewise validation
             function, although it does not have to be.
         :type piecewise: boolean
+
+        :return: A boolean whether or not the form submission is valid and the
+        json string to pass back to the javascript side. The boolean is an
+        anding of submission (whether the submit button was actually pressed)
+        and the block parameter (whether or not any blocking validators passed)
         """
 
         # Allows user to set a modular processor on incoming data
@@ -421,24 +426,22 @@ class Form(object):
         # and no blocking errors. The main purpose here is the allow
         # easy catching of success in the view code.
         if data.get('submit_action', 'false') == 'true' and not block:
-            retval['final_success'] = 'true'
-        return json.dumps(retval)
+            valid = True
+        else:
+            valid = False
+        return valid, json.dumps(retval)
 
     def validate(self, data):
         """ Runs all the validators associated with the :class:`Form`.
 
-        :returns: A list of nodes that have errors on failure or True on
-            success
-        """
+        :return: Whether the validators are blocking submission and a list of
+        nodes that have validation messages """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
         block, invalid = self._gen_validate(data)
 
-        if not block:
-            return True
-        else:
-            return invalid
+        return (not block), invalid
 
     def validate_render(self, data):
         """ Runs all the validators on the `data` that is passed in and returns
@@ -453,7 +456,9 @@ class Form(object):
             where the key is the 'name' of the form field and the data is a
             string then no post-processing is neccessary.
         :type data: dictionary
-        """
+
+        :return: Whether the validators are blocking submission and a re-render
+        of the form with the validation data passed in """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
@@ -463,8 +468,5 @@ class Form(object):
         self.g_context['block'] = block
 
         # run our form validators at the end
-        if len(invalid) > 0:
-            self.error_header_generate(invalid, block)
-            return self.render()
-        else:
-            return True
+        self.error_header_generate(invalid, block)
+        return (not block), self.render()
