@@ -34,6 +34,20 @@ class TestValidators(unittest.TestCase):
         block, invalid = test._gen_validate({'t': 'toolong'})
         assert(len(invalid) > 0)
 
+    def test_regex_valid(self):
+        """ regex validator testing, pos and neg """
+        t_node = EntryNode()
+        t_node.data = 'some'
+        t = RegexValidator(regex='^[a-z]*$', message='darn')
+
+        t(t_node)
+        assert(len(t_node.errors) == 0)
+
+        # negative
+        t_node.data = 'Asdflknasdflkn '
+        t(t_node)
+        assert(len(t_node.errors) > 0)
+
     def test_email(self):
         """ The email validator testing, all branches """
         class TForm(yota.Form):

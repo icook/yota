@@ -74,7 +74,7 @@ class TestForms(unittest.TestCase):
             _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
 
         test = TForm()
-        assert(test.validate_render({'t': 'sdflkm'}) is True)
+        assert(test.validate_render({'t': 'sdflkm'})[0] is True)
 
     def test_json_validation(self):
         class TForm(yota.Form):
@@ -82,7 +82,7 @@ class TestForms(unittest.TestCase):
             _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
 
         test = TForm()
-        response = test.json_validate({'t': '', '_visited_names': '{"t": true}'},
+        success, response = test.json_validate({'t': '', '_visited_names': '{"t": true}'},
                                       piecewise=True)
         assert('Darn' in response)
 
@@ -113,8 +113,8 @@ class TestForms(unittest.TestCase):
                 MinLengthValidator(5, message="Darn"), 't')
 
         test = TForm()
-        ret = test.validate({'t': 'adfasdfasdf'})
-        assert(ret is True)
+        success, ret = test.validate({'t': 'adfasdfasdf'})
+        assert(success is True)
         invalid = test.validate({'t': ''})
         assert(len(invalid) > 0)
 

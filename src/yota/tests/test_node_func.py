@@ -121,7 +121,7 @@ class TestBuiltinNodes(unittest.TestCase):
         class TForm(yota.Form):
             t = TextareaNode(rows='15', columns='20')
             _t_long = Check(MinLengthValidator(5), 't')
-        test = TForm(auto_start_close=False).validate_render({'t': 'test'})
+        success, test = TForm(auto_start_close=False).validate_render({'t': 'test'})
         bs = BeautifulSoup(test)
         assert('test' in bs.findAll('textarea')[0].contents[0].strip())
 
