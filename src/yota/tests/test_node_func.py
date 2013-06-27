@@ -41,16 +41,16 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_check_group(self):
         """ Test grouped checkboxes for actually generating the check boxes """
         class TForm(yota.Form):
-            t = CheckGroupNode(boxes=[('test_name1', 'something'),
-                                   ('test_name2', 'else'),
-                                   ('3', 'is')
+            t = CheckGroupNode(boxes=[('test', 'something'),
+                                   ('this', 'else'),
+                                   ('one', 'is')
                                    ])
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
-        assert(len(bs.findAll('input', {'name': 'test_name1'})) == 1)
-        assert(len(bs.findAll('input', {'name': 'test_name2'})) == 1)
-        assert(len(bs.findAll('input', {'type': 'checkbox'})) == 3)
+        assert(len(bs.findAll('input', {'name': 'test'})) == 1)
+        assert(len(bs.findAll('input', {'name': 'this'})) == 1)
+        assert(len(bs.findAll('input', {'name': 'one'})) == 1)
         assert(len(bs.findAll('input')) == 3)
 
     def test_list_node(self):

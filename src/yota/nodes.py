@@ -56,31 +56,30 @@ class Node(object):
     def __init__(self,
                  template=None,
                  validator=None,
-                 label=True,
+                 label=None,
                  _requires=None,
                  _ignores=None,
                  _attr_name=None,
                  **kwargs):
 
-        # Allow _ignores and _requires to be overwritten at the instance level,
-        # and also have a default
-        if _ignores:
-            self._ignores = _ignores
-        elif not hasattr(self, '_ignores'):
-            self._ignores = ['template', 'validator']
+        """ Basically, set the instance attribute to one of the following in
+        order of preference:
+        1. Passed in parameter
+        2. Class attribute
+        3. Set default """
+        def override(value, attr, default):
+            if value:
+                setattr(self, attr, value)
+            elif not hasattr(self, attr):
+                setattr(self, attr, default)
 
-        if _requires:
-            self._requires = _requires
-        elif not hasattr(self, '_requires'):
-            self._requires = []
+        override(_ignores, '_ignores', ['template', 'validator'])
+        override(_requires, '_requires', [])
+        override(template, 'template', None)
+        override(validator, 'validator', None)
+        override(label, 'label', True)
 
-        if not hasattr(self, 'validator'):
-            self.validator = validator
-
-        if template:
-            self.template = template
         self._attr_name = _attr_name
-        self.label = label
 
         # Allows the parent form to keep track of attribute order
         self._create_counter = Node._create_counter

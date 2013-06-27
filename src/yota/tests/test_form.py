@@ -118,6 +118,26 @@ class TestForms(unittest.TestCase):
         invalid = test.validate({'t': ''})
         assert(len(invalid) > 0)
 
+    def test_validate_class_attr(self):
+        """ Test whether setting validator as class attributes of Nodes gets
+        correctly passed """
+        class TForm(yota.Form):
+            class MyNode(yota.nodes.EntryNode):
+                validators = MinLengthValidator(5, message="Darn")
+            t = MyNode()
+
+        test = TForm()
+        assert(len(test._validation_list) > 0)
+
+        # ensure that we can still add multiples through iterable types
+        class TForm2(yota.Form):
+            class MyNode(yota.nodes.EntryNode):
+                validators = [MinLengthValidator(5, message="Darn"),
+                                MaxLengthValidator(5, message="Darn")]
+            t = MyNode()
+
+        test = TForm2()
+        assert(len(test._validation_list) > 1)
 
 class TestExtra(unittest.TestCase):
     def test_get_by_attr(self):
@@ -128,5 +148,5 @@ class TestExtra(unittest.TestCase):
 
         test = TForm()
         assert(test.get_by_attr('t') is not None)
-        assert(test.get_by_attr('g_context') is None)
-        assert(test.get_by_attr('dsfglkn') is None)
+        self.assertRaises(AttributeError, test.get_by_attr, 'g_context')
+        self.assertRaises(AttributeError, test.get_by_attr, 'dsafkjnasdf')

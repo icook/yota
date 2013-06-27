@@ -98,7 +98,7 @@ class Form(object):
 
     def __init__(self,
                  name=None,
-                 auto_start_close=True,
+                 auto_start_close=None,
                  start_template=None,
                  close_template=None,
                  g_context=None,
