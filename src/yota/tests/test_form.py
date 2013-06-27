@@ -139,6 +139,70 @@ class TestForms(unittest.TestCase):
         test = TForm2()
         assert(len(test._validation_list) > 1)
 
+    def test_data_by_attr_name(self):
+        """ Data by attr and by name functions as expected """
+        class TForm(yota.Form):
+            t = EntryNode()
+
+        test = TForm()
+        test.t.data = 'something'
+        test.t.name = 'two'
+
+        assert('t' in test.data_by_attr())
+        assert('two' in test.data_by_name())
+
+    def test_piecewise_exc(self):
+        """ Data by attr and by name functions as expected """
+
+        test = yota.Form()
+        self.assertRaises(AttributeError, test._gen_validate, {}, piecewise=True)
+
+    def test_piecewise_novisit(self):
+        """ Test that a non-visited node operates correctly """
+
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(
+                MinLengthValidator(5, message="Darn"), 't')
+
+        test = TForm()
+        block, invalid = test._gen_validate({'t': '', '_visited_names': '{}'}, piecewise=True)
+
+        assert(block is True)
+        assert(len(invalid) == 0)
+
+    def test_piecewise_submit(self):
+        """ Make sure a submit that is failing validators won't pass """
+
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(
+                MinLengthValidator(5, message="Darn"), 't')
+
+        test = TForm()
+        success, invalid = test.json_validate({'t': '',
+                                             '_visited_names': '("t")',
+                                             'submit_action': 'true'},
+                                            piecewise=True)
+        assert(success is False)
+        assert(len(invalid) > 0)
+
+    def test_piecewise_success_header(self):
+        """ Piecewise success header generation """
+
+        class TForm(yota.Form):
+            t = EntryNode()
+
+            def success_header_generate(self):
+                return {'message': 'something....'}
+
+        test = TForm()
+        success, json = test.json_validate({'t': 'something',
+                                             '_visited_names': '("t")',
+                                             'submit_action': 'true'},
+                                            piecewise=True)
+        assert(success is True)
+
 class TestExtra(unittest.TestCase):
     def test_get_by_attr(self):
         class TForm(yota.Form):

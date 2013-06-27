@@ -254,7 +254,7 @@ class CheckGroupNode(BaseNode):
             except KeyError:
                 pass
 
-        return ret
+        self.data = ret
 
     def json_identifiers(self):
         ids = []

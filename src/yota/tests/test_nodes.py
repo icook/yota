@@ -46,5 +46,45 @@ class TestNode(unittest.TestCase):
         assert(t.something is True)
         assert(t.label is False)
 
+class TestNodeSpecific(unittest.TestCase):
+    def test_checknode(self):
+        """ Check node data semantics """
+        class TForm(yota.Form):
+            t = CheckNode()
+
+        test = TForm()
+        block, invalid = test._gen_validate(
+            {'_visited_names': '{}'}, piecewise=True)
+        assert(test.t.data is False)
+
+    def test_leadernode_override(self):
+        """ Leader node simple """
+        class TForm(yota.Form):
+            start = LeaderNode()
+
+        test = TForm()
+        assert(test.start.name == 'Somethingelse')
+
+    def test_checkgroup(self):
+        """ CheckGroup node data semantics """
+        class TForm(yota.Form):
+            t = CheckGroupNode(boxes=[('test', 'something'),
+                                   ('this', 'else'),
+                                   ('one', 'is')
+                                   ])
+
+        test = TForm()
+        block, invalid = test._gen_validate(
+            {'_visited_names': '["test", "this"]',
+             'test': 'checked',
+             'this': 'checked'},
+            piecewise=True)
+
+        assert(len(test.t.data) == 2)
+
+        ident = test.t.json_identifiers()
+        assert(len(ident['elements']) == 3)
+
+
 if __name__ == '__main__':
     unittest.main()
