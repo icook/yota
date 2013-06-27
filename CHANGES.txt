@@ -1,22 +1,15 @@
-Next Release
-------------
+0.1.6 (2013-06-26)
+------------------
 
-Features
-~~~~~~~~
+Bug fixes
+~~~~~~~~~
 
-- Checkbox node
-- Functions for easily retrieving data
-- Method for passing data to AJAX success callback
+- Fixed textarea node not passing data properly
 
-Documentation
-~~~~~~~~~~~~~
+- Bug related to passing lists of validators into the shorthand for nodes
 
-- Docs included for all default nodes
-
-Maintenance/Stability
-~~~~~~~~~~~~~~~~~~~~~
-
-- Expand functional tests a lot
+- Minor issue removing the deep copy with new breaking multi-form pages with
+  dynamic options
 
 0.1.5 (2013-06-09)
 ------------------
@@ -33,7 +26,7 @@ Maintenance/Stability
 
 - Fixed PEP8 compliance.
 
-Bug Fixes
+Bug fixes
 ~~~~~~~~~
 
 - JavaScript bugs related to AJAX.
