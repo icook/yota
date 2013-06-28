@@ -172,6 +172,13 @@ class Form(object):
                 raise AttributeError("close attribute is special and should "
                                      "specify a Node to begin your form")
 
+        # Add some useful global variables for templates
+        default_globals = {'form_id': self.name}
+        # Let our globals be overridden
+        default_globals.update(self.g_context)
+        self.g_context = default_globals
+
+
     def render(self):
         """ Runs the renderer to parse templates of nodes and generate the form
         HTML.
@@ -466,5 +473,8 @@ class Form(object):
         self.g_context['block'] = block
 
         # run our form validators at the end
-        self.error_header_generate(invalid, block)
+        if not block:
+            self.success_header_generate()
+        else:
+            self.error_header_generate(invalid, block)
         return (not block), self.render()
