@@ -187,13 +187,11 @@ class Form(object):
         :param validator: The :class:`Check` to be inserted.
         :type validator: Check """
 
-        # check to allow passing in just a node
+        # check to allow passing in just a check
         if not isinstance(new_validator, Check):
             raise TypeError
 
-        new_validator._attr_name = new_validator.args[0]
         self._validation_list.append(new_validator)
-        setattr(self, new_validator._attr_name, str(new_validator.args))
 
 
     def insert(self, position, new_node_list):

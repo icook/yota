@@ -331,46 +331,7 @@ class Check(object):
     `Check` objects are designed to be declared in your form subclass in one of
     two ways. Explicit.
 
-    .. code-block:: python
-
-        class MyForm(yota.Form):
-            # This syntax shortens up the above explicit syntax for simple
-            # validators
-            first = EntryNode(title='First name')
-            _first_valid = Check(MinLengthValidator(5), 'first')
-
-    The syntax above binds our `MinLengthValidator` to a Node with attribute
-    name 'first'. How it matches up your string 'first' to the correct `Node`
-    instance is a bit of magic behind the scenes, but just know that it matches
-    up to the attribute name you give the node in the your `Form` class
-    definition. If you later add a `Node` dynamically it will need to specify
-    the _attr_name upon declaration explicitly. More on this in
-    :ref:`Dynamically Adding Nodes`.
-
-    Implicit declaration is a nice option for simple validators, and is simply
-    syntactic sugar for the above syntax.
-
-    .. code-block:: python
-
-        class MyForm(yota.Form):
-            # This syntax shortens up the above explicit syntax for simple
-            # validators. An args of 'first' will automatically be added to the
-            # Check object for you.
-            first = EntryNode(title='First name',
-                              validator=Check(MinLengthValidator(5)))
-
-            # This even more brief syntax will automatically built the Check
-            # object for you
-            last = EntryNode(title='Last name', validator=MinLengthValidator(5)
-
-            # This syntax however is just like above. Be aware that your
-            # attribute name will not be automatically added since your
-            # explicitly defining args
-            address = EntryNode(validator=
-                        Check(MinLengthValidator(9), 'address'))
-
-    If neither kwargs or args are specified and cannot be implicitly determined
-    an exception will be thrown. """
+    """
 
     def __init__(self, validator, *args, **kwargs):
         self.validator = validator
