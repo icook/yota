@@ -31,6 +31,10 @@ however it is important that sensible default be easy to use and implement,
 making the creation of common forms trivial and lowering the inital learning
 curve.
 
+**Note: Release of 0.2 has made changes that will minorly break reverse
+compatibility. This should be the last time as this code base is maturing, but
+be cautious if upgrading any production code to the latest release.**
+
 Getting Started
 ================
 
