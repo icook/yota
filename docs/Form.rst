@@ -136,54 +136,8 @@ considerations that need to be made. There are of course many ways to try and
 solve this synchronization problem, but here is a straightforward solution that
 should apply to most situations.
 
-For our example below we will make a :class:`Form` that changes the number of
-input fields present in the Form based on a parameter. The general idea is to
-store the parameters that drives the creation of the Form in hidden input fields
-and intercept them on re-submission to recreate the correct Form object for
-validating.
-
-.. code-block:: python
-
-    class DynamicForm(Form):
-        @classmethod
-        def get_form_from_data(cls, data):
-            """ This method is used for reproducing the Form object as it was
-            originally. This method has the advantage of allowing the hidden
-            input field to be modified by JavaScript and still maintain
-            correctness. """
-            args = []
-            for key, val in data.iteritems():
-                if key.startswith('_arg_'):
-                    args.append(val)
-            return cls.get_form(args)
-
-        @classmethod
-        def get_form(cls, count=1):
-            """ This method builds a DynamicForm object taking a count
-            parameter to drive the insertion of the other input fields. """
-
-            # Make a list of Nodes to add into the Form nodelist
-            append_list = []
-            for i in xrange(int(count)):
-                """ Note that dynamically inserted Nodes need their _attr_name to
-                be explicitly defined """
-                append_list.append(
-                    EntryNode(title="Item {}".format(i), _attr_name='item{}'.format(i)))
-
-            form = DynamicForm(name=name,
-                            id=name,
-                            g_context=g_context,
-                            hidden={'count': count})
-            # Add in our dynamic elements
-            form.insert(0, append_list)
-            return form
-
-        submit = SubmitNode(title="Submit")
-
-The default templates for Yota support the hidden parameter being passed into
-the Form's start Node, and this is of course required to pass the data back to
-the get_from_from_data method. A complete example of how to perform this can be
-found in the yota_examples project on Github.
+This section currently needs expansion, however a thoroughly commented example
+can be found in the yota_examples github repository.
 
 Form API
 ===========

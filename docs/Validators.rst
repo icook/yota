@@ -48,7 +48,7 @@ quite verbose, and below shows an implicit declaration that is a nice option
 for simple validators, and is just syntactic sugar for the above syntax.
 
 .. code-block:: python
-    :emphasize-lines: 6, 10, 15, 19
+    :emphasize-lines: 6, 10, 15, 19, 20
 
     class MyForm(yota.Form):
         # This syntax shortens up the above explicit syntax for simple
@@ -122,12 +122,37 @@ Return Semantics
 
 Validators need not return anything explicitly, but instead provide output by
 appending error information to one of their supplied Node's errors list
-attribute via the :meth:`Node.add_error`. This method is simply a wrapper
+attribute via the method :meth:`Node.add_error`. This method is simply a wrapper
 around appending to a list so that different ordering or filtering semantics
 may be used if desired. The data can be put into this list is fairly flexible,
 although a dictionary is recommended. If you are running a JSON based
 validation method the data must by serializable, otherwise it may be anything
-since it is merely passed into the rendering context of your templates. 
+since it is merely passed into the rendering context of your templates. The
+default templates are setup to look for a dictionary with a single key
+'message' which will be printed. Looking at a builtin validator should provide
+additional clarity.
+
+.. code-block:: python
+
+    class IntegerValidator(object):
+        """ Checks if the value is an integer and converts it to one if it is
+
+        :param message: (optional) The message to present to the user upon failure.
+        :type message: string
+        """
+        # A minor optimization that is borderline silly
+        __slots__ = ["message"]
+
+        def __init__(self, message=None):
+            self.message = message if message else "Value must only contain numbers"
+            super(IntegerValidator, self).__init__()
+
+        def __call__(self, target):
+            # This provides a conversion as well as a validation
+            try:
+                target.data = int(target.data)
+            except ValueError:
+                target.add_error({'message': self.message})
 
 .. note:: If you wish to make use of `Special Key Values`_ you will be required to use dictionaries to return errors.
 
@@ -145,6 +170,11 @@ method the data will get translated into JSON. This JSON string is designed to
 be passed back via an AJAX request and fed into Yota's JacaScript jQuery plugin,
 although it could be used in other ways. Details about this functionality are in
 the AJAX documentation section.
+
+This section is currenly in need of expansion, however examples of common
+validator execution patterns can be found in the Flask section of the
+yota_examples repository on github. The critical sections are located in the
+view methods.
 
 Special Key Values
 =====================
