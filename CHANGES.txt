@@ -1,22 +1,69 @@
-Next Release
-------------
+0.2.0 (2013-06-28)
+------------------
 
 Features
 ~~~~~~~~
 
-- Checkbox node
-- Functions for easily retrieving data
-- Method for passing data to AJAX success callback
+- Added some more built-in Nodes and Validators such as
+  StrongPasswordValidator, MatchingValidator, RegexValidator, CheckboxNode,
+  etc.
+
+- Refactored all validation functions to return both a success bool value
+  alongside its output, making post-validation logic more clear and concise.
+
+Refactor for Client Side Funcionality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Completely re-wrote the JavaScript library into a jQuery plugin.
+
+- Moved the selection loigc for Nodes that are "ready" to be validated into
+  server side, incurring marginal overheads.
+
+- Changed the error_render call semantics to track which Nodes have errors and
+  intelligently call the function.
+
+- Improved error rendering to support multiple errors.
+
+- Re-designed the semantic which finds the HTML node in which to place errors
+  on a per Node basis. json_identifiers function now passes these details to
+  the client side code allowing more flexible rendering.
+
+- Allowed per-Node logic for deciding if the Node is ready to be validated
+  based on a list of visited Nodes.
+
+- Added a more robust render_success method that allows passing arbitrary
+  information to drive things like redirects, etc.
 
 Documentation
 ~~~~~~~~~~~~~
 
-- Docs included for all default nodes
+- Large expansions in the documentation in almost all areas. More should be
+  coming steadily in the next few weeks.
+
+- Re-wrote the yota_examples repository for improved clarity and commenting.
 
 Maintenance/Stability
 ~~~~~~~~~~~~~~~~~~~~~
 
-- Expand functional tests a lot
+- Introduced simple functional tests to attempt coverage for behaviour that
+  cannot be unit tested
+
+- Added commenting and specificity to existing unit tests
+
+- Added more unit tests to regain near 100% coverage. Touch ups to come soon.
+
+0.1.6 (2013-06-26)
+------------------
+
+Bug fixes
+~~~~~~~~~
+
+- Fixed textarea node not passing data properly
+
+- Bug related to passing lists of validators into the shorthand for nodes
+
+- Minor issue removing the deep copy with new breaking multi-form pages with
+  dynamic options
 
 0.1.5 (2013-06-09)
 ------------------
@@ -33,7 +80,7 @@ Maintenance/Stability
 
 - Fixed PEP8 compliance.
 
-Bug Fixes
+Bug fixes
 ~~~~~~~~~
 
 - JavaScript bugs related to AJAX.
