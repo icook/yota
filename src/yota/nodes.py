@@ -278,6 +278,16 @@ class ButtonNode(BaseNode):
     """
     template = 'button'
 
+class ExtendedButtonNode(BaseNode):
+    """ Creates a block button in your form that submits
+    no data.
+    """
+    template = 'extended_button'
+    button_title = 'Click me!'
+
+    def resolve_data(self, data):
+        pass
+
 
 class EntryNode(BaseNode):
     """ Creates an input box for your form. """

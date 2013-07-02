@@ -188,17 +188,24 @@ class Form(object):
 
         return self._renderer().render(self._node_list, self.g_context)
 
-    def insert_validator(self, new_validator):
+    def insert_validator(self, new_validators):
         """ Inserts a validator to the validator list.
 
         :param validator: The :class:`Check` to be inserted.
         :type validator: Check """
 
-        # check to allow passing in just a check
-        if not isinstance(new_validator, Check):
-            raise TypeError
+        # Check to make sure the passed in value is a list/tuple
+        if not isinstance(new_validators, tuple) and\
+           not isinstance(new_validators, list):
+            new_validators = [new_validators,]
 
-        self._validation_list.append(new_validator)
+        for validator in new_validators:
+            # check to allow passing in just a check
+            if not isinstance(validator, Check):
+                raise TypeError
+
+            # append the validator to the list
+            self._validation_list.append(validator)
 
 
     def insert(self, position, new_node_list):

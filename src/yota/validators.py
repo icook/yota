@@ -239,7 +239,6 @@ class PyCaptchaValidator(object):
                 target.add_error({'message': self.message})
 
 
-
 class RequiredValidator(object):
     """ Checks to make sure the user entered something.
 
