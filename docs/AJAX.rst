@@ -27,12 +27,12 @@ that you can design. To a user of the library, the implementation differeneces
 of on-submit and piecewise are minor.
 
 .. note:: This is a good place to mention that Yota's JavaScript library has a 
-built in redirect function, accessed by placing a 'redirect' key in your 
-post-validation response. This is a useful tool if you are using ajax for 
-something similar to a login form. Typically you would want to return an HTTP 
-302 for redirection; however, most browsers request the new page in the same 
-method they obtained the last page, in this case utilizing XML is probably not 
-very useful.
+	built in redirect function, accessed by placing a 'redirect' key in your 
+	post-validation response. This is a useful tool if you are using ajax for 
+	something similar to a login form. Typically you would want to return an HTTP 
+	302 for redirection; however, most browsers request the new page in the same 
+	method they obtained the last page, in this case utilizing XML is probably not 
+	very useful.
 
 .. note:: Yota's JavaScript library is desinged as a jQuery plugin, and as such jQuery is
     also required to use these features.
@@ -91,10 +91,15 @@ and element ids to the client using the default render_error function in Yota's
 JavaScript library, so all you really need to do is set the global context key
 'ajax' to equal True. This activates the JavaScript library.
 
-By default the render_success function will look for either a 'message' or 
-'custom_success' key in the return value of :meth:`Form.success_header_generate`
-so this method should be overriden to pass apropriate information if displaying
-a message or defining a custom success function is desired.
+After successful validation if you want to provide some customized actions this
+is best achieved by overriding the :meth:`Form.success_header_generate`. On the 
+JavaScript side of things render_success will look for either a 'message' or a 
+'custom_success' key in the return value of :meth:`Form.success_header_generate`.
+The idea is to provide either a simple message upon successful completion 
+(formated as a string), or allow injecting your own JavaScript function to 
+execute after completion. If returning a JS function it should be an eval-able 
+string. 
+
 
 Piecewise Validation
 =======================

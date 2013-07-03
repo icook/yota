@@ -90,6 +90,26 @@ The constructor prototype may help provide some reference for the explaination:
 
 When you define a Check object you are essentially specifying a Validator that needs to be run when the Form data is validated, and the information that needs to be passed to said Validator. Attr_args and attr_kwargs should be strings that define what data will get passed into the Validator at validation time. For instance in the above example that data that was entered for the 'first' Node will get passed to the validator. More information on Checks and Validators can be found on the :doc:`Validators` page.
 
+.. _template_path:
+
+Custom Templates
+==========================
+Most people end up needing to design templates different from the ones built in
+at some point. Because of this Yota is setup for specifying a search path for
+custom templates, and of course by default Yota will only look at its own 
+template directory. It is typical to add a search path that points somewhere
+within your project. Yota will take the first template it finds that matches, so 
+a simple way to ensure your custom templates are prioritized is to insert your path
+first in the list. A typical example might look something like this:
+
+.. code-block:: python
+
+	import os
+	from yota.renderers import JinjaRenderer
+
+	JinjaRenderer.search_path.insert(0, os.path.dirname(os.path.realpath(__file__)) +
+                                    "/assets/yota/templates/")
+
 .. _renderers:
 
 Rendering Engines
