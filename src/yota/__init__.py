@@ -373,7 +373,7 @@ class Form(object):
 
         return block, error_node_list
 
-    def json_validate(self, data, piecewise=False):
+    def json_validate(self, data, piecewise=False, raw=False):
         """ The same as :meth:`Form.validate_render` except the errors
         are loaded into a JSON string to be passed back as a query
         result. This output is designed to be used by the Yota
@@ -385,11 +385,14 @@ class Form(object):
             function, although it does not have to be.
         :type piecewise: boolean
 
+        :param raw: If set to True then the second return parameter will be a
+        Python dictionary instead of a JSON string
+
         :return: A boolean whether or not the form submission is valid and the
-        json string to pass back to the javascript side. The boolean is an
-        anding of submission (whether the submit button was actually pressed)
-        and the block parameter (whether or not any blocking validators passed)
-        """
+        json string (or raw dictionary) to pass back to the javascript side.
+        The boolean is an anding of submission (whether the submit button was
+        actually pressed) and the block parameter (whether or not any blocking
+        validators passed) """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
@@ -434,7 +437,13 @@ class Form(object):
             valid = True
         else:
             valid = False
-        return valid, json.dumps(retval)
+
+        # Return our raw dictionary if requested, otherwise serialize for
+        # convenience...
+        if raw:
+            return valid, retval
+        else:
+            return valid, json.dumps(retval)
 
     def validate(self, data):
         """ Runs all the validators associated with the :class:`Form`.
