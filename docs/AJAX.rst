@@ -26,6 +26,14 @@ parsed by Yota's JavaScript library which can then execute callback functions
 that you can design. To a user of the library, the implementation differeneces
 of on-submit and piecewise are minor.
 
+.. note:: This is a good place to mention that Yota's JavaScript library has a 
+built in redirect function, accessed by placing a 'redirect' key in your 
+post-validation response. This is a useful tool if you are using ajax for 
+something similar to a login form. Typically you would want to return an HTTP 
+302 for redirection; however, most browsers request the new page in the same 
+method they obtained the last page, in this case utilizing XML is probably not 
+very useful.
+
 .. note:: Yota's JavaScript library is desinged as a jQuery plugin, and as such jQuery is
     also required to use these features.
 
@@ -64,7 +72,7 @@ in the Validators section.
 
     :param object data: This is information directly generated from your
         :meth:`Form.success_header_generate` function. It is freqently a message to
-        display.
+        display, or a custom success function.
 
     :param object ids: This is the return information from the
         :meth:`Node.json_identifiers` function **for the start Node**. It was
@@ -83,9 +91,10 @@ and element ids to the client using the default render_error function in Yota's
 JavaScript library, so all you really need to do is set the global context key
 'ajax' to equal True. This activates the JavaScript library.
 
-By default the render_success function will look for a 'message' key in the
-return value of :meth:`Form.success_header_generate` so this method should be
-overriden to pass apropriate information if that action is desired.
+By default the render_success function will look for either a 'message' or 
+'custom_success' key in the return value of :meth:`Form.success_header_generate`
+so this method should be overriden to pass apropriate information if displaying
+a message or defining a custom success function is desired.
 
 Piecewise Validation
 =======================
