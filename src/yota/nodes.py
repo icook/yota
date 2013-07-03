@@ -274,15 +274,10 @@ class CheckGroupNode(BaseNode):
 
 
 class ButtonNode(BaseNode):
-    """ Creates a simple button in your form.
-    """
-    template = 'button'
-
-class ExtendedButtonNode(BaseNode):
-    """ Creates a block button in your form that submits
+    """ Creates a button in your form that submits
     no data.
     """
-    template = 'extended_button'
+    template = 'button'
     button_title = 'Click me!'
 
     def resolve_data(self, data):
