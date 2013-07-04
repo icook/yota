@@ -16,7 +16,7 @@ except:
     README = ''
 
 setup(name='yota',
-      version='0.2.0',
+      version='0.2.1',
       description='A form library with a focus on simplicity',
       long_description=README,
       classifiers=[

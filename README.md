@@ -35,6 +35,13 @@ curve.
 compatibility. This should be the last time as this code base is maturing, but
 be cautious if upgrading any production code to the latest release.**
 
+**Breaking Changes Are:**
++ Validation methods now return a tuple containing (1) Success value (2) Data
+  (Json or rendered form).
+
++ Semantics with which Nodes interact with piecewise validation have changed
+  with the re-write, but this only effects people writing custom Nodes.
+
 Getting Started
 ================
 
@@ -55,62 +62,41 @@ Get Involved
 
 Any and all contributions to Yota are gladly welcomed. Simply fork the
 repository and make a pull request with your addition or open an issue for the
-maintainers to consider. If you're looking to help out, there are several
-tickets tagged with "maintinance" that can be completed. Adding yourself to the
+maintainers to consider. Please include 100% test coverage with all pull
+requests. If you're looking to help out, there are several tickets tagged with
+"maintinance" that should be easy starting point. Adding yourself to the
 CONTRIBUTORS.txt list when making a pull request is also encouraged.
 
 Latest Changes
 ================
 
-0.2.0 (2013-06-28)
+0.2.1 (2013-07-03)
 ------------------
 
 ### Features
 
-- Added some more built-in Nodes and Validators such as
-  StrongPasswordValidator, MatchingValidator, RegexValidator, CheckboxNode,
-  etc.
+- Added a method to easily change error statuses after validation methods are
+  run
 
-- Refactored all validation functions to return both a success bool value
-  alongside its output, making post-validation logic more clear and concise.
+### Bug Fixes
 
-### Refactor for Client Side Funcionality
+- Textarea template whitespace was causing undesirable rendering
 
-- Completely re-wrote the JavaScript library into a jQuery plugin.
+- Updated the Button Node to use the proper template inheritence
 
-- Moved the selection loigc for Nodes that are "ready" to be validated into
-  server side, incurring marginal overheads.
+- Modified insert_validator to accept iterables as the other insert function
+  does
 
-- Changed the error_render call semantics to track which Nodes have errors and
-  intelligently call the function.
-
-- Improved error rendering to support multiple errors.
-
-- Re-designed the semantic which finds the HTML node in which to place errors
-  on a per Node basis. json_identifiers function now passes these details to
-  the client side code allowing more flexible rendering.
-
-- Allowed per-Node logic for deciding if the Node is ready to be validated
-  based on a list of visited Nodes.
-
-- Added a more robust render_success method that allows passing arbitrary
-  information to drive things like redirects, etc.
-
-### Documentation
-
-- Large expansions in the documentation in almost all areas. More should be
-  coming steadily in the next few weeks.
-
-- Re-wrote the yota_examples repository for improved clarity and commenting.
+- Fixed a documentation bug giving the wrong attribute name for an action
 
 ### Maintenance/Stability
 
-- Introduced simple functional tests to attempt coverage for behaviour that
-  cannot be unit tested
+- Wrote tests for all new features
 
-- Added commenting and specificity to existing unit tests
+- Expanded details in minor places in documentation
 
-- Added more unit tests to regain near 100% coverage. Touch ups to come soon.
+- Added checking on attribute name collisions with Nodes to make the mistakes
+  easier to debug
 
 Installation
 ================
