@@ -26,14 +26,6 @@ parsed by Yota's JavaScript library which can then execute callback functions
 that you can design. To a user of the library, the implementation differeneces
 of on-submit and piecewise are minor.
 
-.. note:: This is a good place to mention that Yota's JavaScript library has a 
-	built in redirect function, accessed by placing a 'redirect' key in your 
-	post-validation response. This is a useful tool if you are using ajax for 
-	something similar to a login form. Typically you would want to return an HTTP 
-	302 for redirection; however, most browsers request the new page in the same 
-	method they obtained the last page, in this case utilizing XML is probably not 
-	very useful.
-
 .. note:: Yota's JavaScript library is desinged as a jQuery plugin, and as such jQuery is
     also required to use these features.
 
