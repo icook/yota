@@ -220,6 +220,21 @@ class TestForms(unittest.TestCase):
                                             piecewise=True)
         assert(success is True)
 
+    def test_node_attr_safety(self):
+        """ Ensure safe node _attr_names """
+
+        def stupid_2_6():
+            class TForm(yota.Form):
+                name = EntryNode()
+
+        self.assertRaises(AttributeError, stupid_2_6)
+        f = yota.Form()
+        self.assertRaises(AttributeError, f.insert, 0, EntryNode())
+        self.assertRaises(AttributeError,
+                          f.insert,
+                          0,
+                          EntryNode(_attr_name='g_context'))
+
 class TestExtra(unittest.TestCase):
     def test_get_by_attr(self):
         class TForm(yota.Form):

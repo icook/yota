@@ -7,6 +7,10 @@ import json
 import copy
 
 class TrackingMeta(type):
+    reserved_attr_names = ('context', 'hidden', 'g_context', 'start_template',
+                           'close_template', 'auto_start_close', '_renderer',
+                           '_processor', 'name')
+
     def __init__(mcs, name, bases, dict):
         """ Process all of the attributes in the `Form` (or subclass)
         declaration and place them accordingly. This builds the internal
@@ -16,6 +20,10 @@ class TrackingMeta(type):
         mcs._validation_list = []
         for name, value in dict.items():
             if isinstance(value, Node):
+                if name in TrackingMeta.reserved_attr_names:
+                    raise AttributeError(
+                        '{0} is a forbidden attribute name for a Node because'
+                        ' it overlaps with a Form attribute. Please rename.')
                 value._attr_name = name
                 t[value._create_counter] = value
                 if hasattr(value, 'validators'):
@@ -226,6 +234,17 @@ class Form(object):
             new_node_list = (new_node_list,)
 
         for i, new_node in enumerate(new_node_list):
+
+            # Check to prevent shooting yourself in the foot
+            if new_node._attr_name in TrackingMeta.reserved_attr_names:
+                raise AttributeError('{0} is a forbidden attribute name for a'
+                    'Node because it overlaps with a Form attribute. Please rename.')
+
+            # Another clarity error message
+            if not new_node._attr_name:
+                raise AttributeError('Dynamically added nodes should have an '
+                                     '_attr_name attribute.')
+
             if position == -1:
                 self._node_list.append(new_node)
             else:
