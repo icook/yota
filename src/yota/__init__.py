@@ -510,7 +510,19 @@ class Form(object):
         that are passed to the start Node rendering context, or passed back in
         JSON. It automatically recalls whether the last validation call was to
         json_validate or validate_render and modifys the correct dictionary
-        accordingly. """
+        accordingly.
+
+        :param update_dict: The dictionary of values to update/add.
+        :type data: dictionary
+
+        :param raw: Whether you would like a pre-compiled JSON
+            string returned, or the raw dictionary.
+        :type raw: bool
+
+        :return: Return value is either the new JSON string (or raw dict if
+        requested) if json_validate was your last validation call, or a
+        re-render of the form with updated error messages if validate_render
+        was your last call.  """
 
         if self._last_valid == 'render':
             try:

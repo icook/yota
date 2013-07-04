@@ -74,6 +74,81 @@ for simple validators, and is just syntactic sugar for the above syntax.
 .. note:: If neither kwargs or args are specified and cannot be implicitly determined
     an exception will be thrown.
 
+Validator Execution
+=====================
+
+With the regular form validation method :meth:`Form.validate_render` the error
+values after validation are maintained in `errors` and passed into the rendering
+context. In your :class:`Node` template, the error can then be used for
+anything related to rendering and will contain exactly what was returned by
+your validator.
+
+With either the piecewise JSON validation method or the regular JSON validation
+method the data will get translated into JSON. This JSON string is designed to
+be passed back via an AJAX request and fed into Yota's JacaScript jQuery plugin,
+although it could be used in other ways. Details about this functionality are in
+the AJAX documentation section.
+
+To continue our example series above, we may now try and execute a validation
+action on our Form. For this example we will use a Flask view, although the
+concepts should be fairly obvious and transfer to most frameworks easily.
+
+.. code-block:: python
+    :emphasize-lines: 6, 10, 15, 19, 20
+
+    class MyForm(yota.Form):
+        # Our same form definition as above but stripped of the now un-needed
+        # comments
+        first = EntryNode(title='First name',
+                            validator=Check(MinLengthValidator(5)))
+        last = EntryNode(title='Last name', validator=MinLengthValidator(5)
+        address = EntryNode(validator=
+                    Check(MinLengthValidator(9), 'address'))
+
+    # In Flask routes are declared with annotations. Basically mapping a URL to
+    # this method
+    @app.route("/ourform", methods=['GET', 'POST'])
+    def basic():
+        # Create an instance of our Form class
+        form = MyForm()
+    
+        # When the form is submitted to this URL (by default forms submit to
+        # themselves)
+        if request.method == 'POST':
+            # Run our convenience method designed for regular forms
+            # 'success' if validation passed, 'out' is the re-rendering of the form
+            success, out = form.validate_render(request.form)
+
+            # if validation passed, we should be doing something
+            if success:
+                # Load up our validated data
+                data = form.get_by_attribute()
+
+                # Create a pretend SQLAlchemy object. Basically, we want to try
+                # and save the data somehow...
+                res = User(first=data['first'],
+                           last=data['last'],
+                           address=data['address']) 
+
+                # Attempt to save our changes
+                try:
+                    DBSession.add(new_user)
+                    DBSession.commit()
+                except (sqlalchemy.exc, sqlalchemy.orm.exc) as e:
+                    # An error with our query has occurred, change the message
+                    # and update our rendered output
+                    out = form.update_success(
+                        {'message': ('An error with our database occurred!')})
+        else:
+            # By default we just render an empty form
+            out = form.render()
+    
+        def success_header_generate(self):
+            return {'message': 'Thanks for your submission!'}
+    
+        return render_template('basic.html',
+                                form=out)
+
 Making Custom Validators
 ========================
 A validator should be a Python callable. The callable will be accessed through a
@@ -155,26 +230,6 @@ additional clarity.
                 target.add_error({'message': self.message})
 
 .. note:: If you wish to make use of `Special Key Values`_ you will be required to use dictionaries to return errors.
-
-Validator Execution
-=====================
-
-With the regular form validation method :meth:`Form.validate_render` the error
-values after validation are maintained in `errors` and passed into the rendering
-context. In your :class:`Node` template, the error can then be used for
-anything related to rendering and will contain exactly what was returned by
-your validator.
-
-With either the piecewise JSON validation method or the regular JSON validation
-method the data will get translated into JSON. This JSON string is designed to
-be passed back via an AJAX request and fed into Yota's JacaScript jQuery plugin,
-although it could be used in other ways. Details about this functionality are in
-the AJAX documentation section.
-
-This section is currenly in need of expansion, however examples of common
-validator execution patterns can be found in the Flask section of the
-yota_examples repository on github. The critical sections are located in the
-view methods.
 
 Special Key Values
 =====================
