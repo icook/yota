@@ -55,7 +55,7 @@ for simple validators, and is just syntactic sugar for the above syntax.
         # validators. An arg of 'first' will automatically be added to the
         # Check object for you.
         first = EntryNode(title='First name',
-                            validator=Check(MinLengthValidator(5)))
+                            validators=Check(MinLengthValidator(5)))
 
         # This even more brief syntax will automatically build the Check
         # object for you since it's just boilerplate at this point
@@ -64,11 +64,11 @@ for simple validators, and is just syntactic sugar for the above syntax.
         # This syntax however is just like above. Be aware that your
         # attribute name will not be automatically added since your
         # explicitly defining args
-        address = EntryNode(validator=
+        address = EntryNode(validators=
                     Check(MinLengthValidator(9), 'address'))
 
         # In addition, you can specify a list of validators, or a tuple
-        addr = EntryNode(title='Address', validator=[MinLengthValidator(5),
+        addr = EntryNode(title='Address', validators=[MinLengthValidator(5),
                                                      MaxLengthValidator(25)])
 
 .. note:: If neither kwargs or args are specified and cannot be implicitly determined
@@ -100,9 +100,9 @@ concepts should be fairly obvious and transfer to most frameworks easily.
         # Our same form definition as above but stripped of the now un-needed
         # comments
         first = EntryNode(title='First name',
-                            validator=Check(MinLengthValidator(5)))
-        last = EntryNode(title='Last name', validator=MinLengthValidator(5)
-        address = EntryNode(validator=
+                            validators=Check(MinLengthValidator(5)))
+        last = EntryNode(title='Last name', validators=MinLengthValidator(5)
+        address = EntryNode(validators=
                     Check(MinLengthValidator(9), 'address'))
 
     # In Flask routes are declared with annotations. Basically mapping a URL to
