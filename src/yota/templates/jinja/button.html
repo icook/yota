@@ -1,1 +1,4 @@
-<input type="button" placeholder="{{ placeholder }}" value="{{ title }}" id="{{ id }}" name="{{ name }}"/>
+{% extends base %}
+{% block control %}
+<input type="button" class="{{ css_class }}" stlye="{{ css_style }}" value="{{ button_title }}" id="{{ id }}" name="{{ name }}"/>
+{% endblock %}

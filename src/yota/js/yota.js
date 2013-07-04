@@ -8,9 +8,13 @@
         var settings = $.extend({
             // These are the defaults.
             render_success: function (data, ids) {
-                if (ids.error_id != undefined) {
-                    $("#" + ids.error_id).show();
-                    $("#" + ids.error_id).html(data.message);
+                if (data.custom_success != undefined) {
+                    eval(data.custom_success);
+                } else {
+                    if (ids.error_id != undefined) {
+                        $("#" + ids.error_id).show();
+                        $("#" + ids.error_id).html(data.message);
+                    }
                 }
             },
             render_error: function (id, status, data) {

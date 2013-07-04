@@ -64,7 +64,7 @@ in the Validators section.
 
     :param object data: This is information directly generated from your
         :meth:`Form.success_header_generate` function. It is freqently a message to
-        display.
+        display, or a custom success function.
 
     :param object ids: This is the return information from the
         :meth:`Node.json_identifiers` function **for the start Node**. It was
@@ -83,9 +83,15 @@ and element ids to the client using the default render_error function in Yota's
 JavaScript library, so all you really need to do is set the global context key
 'ajax' to equal True. This activates the JavaScript library.
 
-By default the render_success function will look for a 'message' key in the
-return value of :meth:`Form.success_header_generate` so this method should be
-overriden to pass apropriate information if that action is desired.
+After successful validation if you want to provide some customized actions this
+is best achieved by overriding the :meth:`Form.success_header_generate`. On the 
+JavaScript side of things render_success will look for either a 'message' or a 
+'custom_success' key in the return value of :meth:`Form.success_header_generate`.
+The idea is to provide either a simple message upon successful completion 
+(formated as a string), or allow injecting your own JavaScript function to 
+execute after completion. If returning a JS function it should be an eval-able 
+string. 
+
 
 Piecewise Validation
 =======================
