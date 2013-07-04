@@ -178,6 +178,10 @@ class Form(object):
         default_globals.update(self.g_context)
         self.g_context = default_globals
 
+        # Initialize some general state variable
+        self._last_valid = None
+        self._last_raw_json = None
+
 
     def render(self):
         """ Runs the renderer to parse templates of nodes and generate the form
@@ -445,6 +449,9 @@ class Form(object):
         else:
             valid = False
 
+        # Hold our return dictionary in memeory for easy editing later
+        self._last_raw_json = retval
+
         # Return our raw dictionary if requested, otherwise serialize for
         # convenience...
         if raw:
@@ -488,9 +495,48 @@ class Form(object):
 
         self.g_context['block'] = block
 
+        # update our state var for later update_success calls
+        self._last_valid = 'render'
+
         # run our form validators at the end
         if not block:
             self.success_header_generate()
         else:
             self.error_header_generate(invalid, block)
         return (not block), self.render()
+
+    def update_success(self, update_dict, raw=False):
+        """ This method serves as an easy way to update your success attributes
+        that are passed to the start Node rendering context, or passed back in
+        JSON. It automatically recalls whether the last validation call was to
+        json_validate or validate_render and modifys the correct dictionary
+        accordingly. """
+
+        if self._last_valid == 'render':
+            try:
+                self.start.errors[-1].update(update_dict)
+            except KeyError:
+                raise KeyError("Error updating your error dictionary for the "
+                               "start Node. There were no errors to modify.")
+            except AttributeError:
+                raise AttributeError("This method is designed to update an "
+                                     "error dictionary, yet your errors are "
+                                     "not dictionaries")
+
+            return self.render()
+
+        # We're going to default to json render
+        else:
+            # Modify our last json dict
+            try:
+                self._last_raw_json['success_blob'].update(update_dict)
+            except KeyError:
+                raise KeyError("Either your json_validate method has not been "
+                               "run yet, or your success_header_generate does"
+                               " not produce output")
+
+            # Continue the raw semantic...
+            if raw:
+                return self._last_raw_json
+            else:
+                return json.dumps(self._last_raw_json)

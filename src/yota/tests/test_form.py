@@ -86,6 +86,23 @@ class TestForms(unittest.TestCase):
                                       piecewise=True)
         assert('Darn' in response)
 
+    def test_json_validation_update(self):
+        test = yota.Form()
+        test._last_raw_json = {'success_blob': {}}
+        ret = test.update_success({'add': 'me'}, raw=True)
+        assert('add' in ret['success_blob'])
+        ret = test.update_success({'those': 'are'})
+        assert('those' in ret)
+        assert('success_blob' in ret)
+
+    def test_render_validation_update(self):
+        test = yota.Form()
+        test.start.add_error({})
+        test._last_valid = 'render'
+        ret = test.update_success({'message': 'something'})
+        print ret
+        assert('something' in ret)
+
     def test_piecewise_block(self):
         class TForm(yota.Form):
             t = EntryNode()
