@@ -304,21 +304,21 @@ class Form(object):
 
     def error_header_generate(self, errors, block):
         """ This function, along with success_header_generate allow you to give
-        form wide information back to the user for both AJAX validated forms
+        form wide information back to the user for both AJAJ validated forms
         and conventionally validated forms, although the mechanisms are
         slightly different. Both functions are run at the end of a successful
         or failed validation call in order to give more information for
         rendering.
 
-        For passing information to AJAX rendering, simply return a dictionary,
-        or any python object that can be serialized to JSON. This information
-        gets passed back to the JavaScript callbacks of yota_activate in
+        For passing information to AJAJ rendering, simply return a dictionary,
+        or any Python object that can be serialized to JSON. This information
+        gets passed back to the JavaScript callbacks of yota_activate, however each in
         slightly different ways. success_header_generate's information will get
         passed to the render_success callback, while error_header_generate will
         get sent as an error to the render_error callback under the context
         start.
 
-        For passing information into a regular rendering context simply access
+        For passing information into a regular, non AJAJ context simply access
         the attribute manually similar to below.
 
         .. code-block:: python
@@ -411,7 +411,7 @@ class Form(object):
 
         :param piecewise: If set to True, the validator will silently
             ignore validator for which it has insufficient information. This
-            is designed to be used for the AJAX piecewise validation
+            is designed to be used for the AJAJ piecewise validation
             function, although it does not have to be.
         :type piecewise: boolean
 

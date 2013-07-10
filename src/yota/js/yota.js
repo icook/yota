@@ -4,12 +4,11 @@
     // plugin
     $.fn.yota_activate = function (options) {
         
-        // This is the easiest way to have default options.
-        var settings = $.extend({
-            // These are the defaults.
+        // default settings
+        var settings = $.extend({  
+            // Show errors with a bootstrap tooltip by default
             render_success: function (data, ids) {
                 if (data.custom_success != undefined) {
-                    eval(data.custom_success);
                 } else {
                     if (ids.error_id != undefined) {
                         $("#" + ids.error_id).show();
@@ -46,7 +45,8 @@
                     $('#' + target_id).tooltip('show');
                 }
             },
-            piecewise: false
+            piecewise: false,
+            process_builtins: true
         }, options);
 
         // A book-keeping system to track currently displayed errors
@@ -57,7 +57,7 @@
         //   more information about the plugin can be found at:
         //   http://www.malsup.com/jquery/form/
         var ajax_options = { 
-            // Called upon successful return of the AJAX call
+            // Called upon successful return of the AJAJ call
             success: function (jsonObj)  {
                 // upon failure, deliver our error messages
                 if (jsonObj.block == true) {
@@ -92,13 +92,21 @@
                         settings.render_error(errors_present[key], "no_error", {});
                         delete errors_present[key];
                     }
-                    // if a redirect was requested...
-                    if (jsonObj.redirect != undefined) {
-                        window.location.replace(jsonObj.redirect);
-                    } else {
-                        // run the success callback and pass it details from yota
-                        settings.render_success(jsonObj.success_blob, jsonObj.success_ids);
+                    if (settings.process_builtins == true) {
+                        // Catch some builtin keys that and perform actions
+                        // with them
+                        opts = jsonObj.success_blob;
+                        if (opts.custom_success)
+                            eval(opts.custom_success);
+                        if (opts.redidrect)
+                            window.location.replace(opts.redirect);
+                        if (opts.ga_run) {
+                            if (typeof(ga) === 'function')
+                                ga('send', 'event', opts.ga_run[0], opts.ga_run[1], opts.ga_run[2], opts.ga_run[3]);
+                        }
                     }
+                    // run the success callback and pass it details from yota
+                    settings.render_success(jsonObj.success_blob, jsonObj.success_ids);
                 }
             },
             beforeSubmit: function(arr, form, options) {

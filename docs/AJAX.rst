@@ -15,8 +15,8 @@ asynchronous server call is made and the validation results are rendererd or a
 success action is executed. These features allow you to give your user faster
 feedback on what mistakes they made to ease the form filling process.
 
-.. note:: The AJAX validator examples below rely on using the `id` value that
-    is set by the default :meth:`Node.set_identifiers` as a way to find the Nodes.
+.. note:: The AJAX validator examples below rely on using the `id` attribute
+    for a Node. This value is set by the default in :meth:`Node.set_identifiers`.
 
 Server side implementation for AJAX validation is designed to be used with 
 :meth:`Form.json_validate`. When a submission is detected (usually by detecting
@@ -63,8 +63,12 @@ succeeds, or rather it doesn't block. More information on blocking can be found
 in the Validators section.
 
     :param object data: This is information directly generated from your
-        :meth:`Form.success_header_generate` function. It is freqently a message to
-        display, or a custom success function.
+        :meth:`Form.success_header_generate` function. It is setup to display
+        some sort of message that applies to the entire form such as an error
+        working with the database, or proper submission of the data. In
+        addition, some special key values can be set to trigger the execution
+        of builtin convenience methods, such as redirection of the browser.
+        More on this in Success Actions.
 
     :param object ids: This is the return information from the
         :meth:`Node.json_identifiers` function **for the start Node**. It was
@@ -73,7 +77,34 @@ in the Validators section.
 
 .. js:data:: options.piecewise 
 
-Whether or no this form should be processed in a piecewise fashion.
+Whether or not this form should be processed in a piecewise fashion. The
+default Node teamplte form_open will automatically populate this option when
+you put 'piecewise' in your global context.
+
+Success Actions
+=======================
+As was touched on in the JavaScript render_success function above, the method
+:meth:`Form.success_header_generate` can be used to perform common post commit
+actions. All of these actions happen upon successful submission, but prior to
+the ``render_success`` method being called.
+
+Redirection
+~~~~~~~~~~~~~~~~~~~~~~
+Simply return a dictionary with the key 'redirect' in it and the browser will
+be sent to the url specified via ``window.location.replace``.
+
+Google Analytics Logging
+~~~~~~~~~~~~~~~~~~~~~~~~
+Under the key 'ga_run' return a list or tuple of four values, matching the four
+values used in Google Analytics API function ``ga``. More information can be
+found at the URL below.
+
+https://developers.google.com/analytics/devguides/collection/analyticsjs/events
+
+Custom Action
+~~~~~~~~~~~~~~~~~~~~~~~~
+Include the key 'custom_success' as a string of valid JavaScript and it will be
+evaled for you.
 
 On-Submit Validation
 =======================
@@ -132,3 +163,4 @@ action to the input element based on the value of the attribute
         name="{{ name }}"
         placeholder="{{ placeholder }}">
     {% endblock %}
+
