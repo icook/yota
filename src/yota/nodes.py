@@ -68,7 +68,7 @@ class Node(object):
         2. Class attribute
         3. Set default """
         def override(value, attr, default):
-            if value in not None:
+            if value is not None:
                 setattr(self, attr, value)
             elif not hasattr(self, attr):
                 setattr(self, attr, default)
