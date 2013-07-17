@@ -3,7 +3,8 @@
     // The primary activator method for Yota. Is a wrapper around jQuery Form
     // plugin
     $.fn.yota_activate = function (options) {
-        
+        // set up a var to use when our form changes scope
+        var form_obj = this;
         // default settings
         var settings = $.extend({  
             // Show errors with a bootstrap tooltip by default
@@ -97,21 +98,27 @@
                         window.location.replace(jsonObj.redirect);
                         return;
                     }
-                    if (settings.process_builtins == true) {
-                        // Catch some builtin keys that and perform actions
-                        // with them
+                    if ('success_blob' in jsonObj) {
                         opts = jsonObj.success_blob;
-                        if (opts.custom_success)
-                            eval(opts.custom_success);
-                        if (opts.redidrect)
-                            window.location.replace(opts.redirect);
-                        if (opts.ga_run) {
-                            if (typeof(ga) === 'function')
-                                ga('send', 'event', opts.ga_run[0], opts.ga_run[1], opts.ga_run[2], opts.ga_run[3]);
+                        if (settings.process_builtins == true) {
+                            // Catch some builtin keys that and perform actions
+                            // with them
+                            if (opts.custom_success)
+                                eval(opts.custom_success);
+                            if (opts.reset_form == true)
+                                $(form_obj)[0].reset();
+                            if (opts.redirect)
+                                window.location.replace(opts.redirect);
+                            if (opts.ga_run) {
+                                if (typeof(ga) === 'function')
+                                    ga('send', 'event', opts.ga_run[0], opts.ga_run[1], opts.ga_run[2], opts.ga_run[3]);
+                            }
                         }
+                    } else {
+                        opts = ''
                     }
                     // run the success callback and pass it details from yota
-                    settings.render_success(jsonObj.success_blob, jsonObj.success_ids);
+                    settings.render_success(opts, jsonObj.success_ids);
                 }
             },
             beforeSubmit: function(arr, form, options) {
@@ -122,8 +129,8 @@
                 arr.push({name: '_visited_names', value: json});
             },
             // ask the plugin to automatically give us an object on return
-            dataType: 'json'  
-        }; 
+            dataType: 'json'
+        };
 
         // attach the options to the form node for easy triggering of submit
         // later
@@ -136,7 +143,6 @@
             var visited = {};
             $(this).data('yota_visited', visited);
             // loop over all elements in the form
-            var form_obj = this;
             $(this).find(":input").each(function() {
                 // preload our vars
                 var trigger = $(this).data("piecewise");

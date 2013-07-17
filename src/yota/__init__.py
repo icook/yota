@@ -23,7 +23,8 @@ class TrackingMeta(type):
                 if name in TrackingMeta.reserved_attr_names:
                     raise AttributeError(
                         '{0} is a forbidden attribute name for a Node because'
-                        ' it overlaps with a Form attribute. Please rename.')
+                        ' it overlaps with a Form attribute. Please rename.'
+                        .format(name))
                 value._attr_name = name
                 t[value._create_counter] = value
                 if hasattr(value, 'validators'):
@@ -238,7 +239,8 @@ class Form(object):
             # Check to prevent shooting yourself in the foot
             if new_node._attr_name in TrackingMeta.reserved_attr_names:
                 raise AttributeError('{0} is a forbidden attribute name for a'
-                    'Node because it overlaps with a Form attribute. Please rename.')
+                    'Node because it overlaps with a Form attribute. Please '
+                                     'rename.'.format(new_node._attr_name))
 
             # Another clarity error message
             if not new_node._attr_name:
@@ -457,8 +459,8 @@ class Form(object):
             blob = self.success_header_generate()
             if blob:
                 retval['success_blob'] = blob
-                if hasattr(self, 'start'):
-                    retval['success_ids'] = self.start.json_identifiers()
+            if hasattr(self, 'start'):
+                retval['success_ids'] = self.start.json_identifiers()
 
         retval['errors'] = errors
 
