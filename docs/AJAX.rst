@@ -84,14 +84,42 @@ you put 'piecewise' in your global context.
 Success Actions
 =======================
 As was touched on in the JavaScript render_success function above, the method
-:meth:`Form.success_header_generate` can be used to perform common post commit
-actions. All of these actions happen upon successful submission, but prior to
-the ``render_success`` method being called.
+:meth:`Form.success_header_generate` can be overriden to perform common post
+submission actions, or to pass information that you may want to use in your
+render_success function. The default render_success method will look for a
+'message' key in the return value and display this in a Bootstrap success
+alert, or do nothing if this key is not present. All actions are performed upon
+successful submission, but prior to the ``render_success`` method being called.
+A simple example is shown below.
+
+.. code-block:: python
+    :emphasize-lines: 5,6
+
+    class MyForm(yota.Form):
+        first = EntryNode(title='First name',
+                            validator=Check(MinLengthValidator(5)))
+
+        def success_header_generate(self):
+            return {'message': 'Thanks for your submission!'}
+
+Or if we wanted to redirect the user after submitting the form:
+
+.. code-block:: python
+    :emphasize-lines: 5,6
+
+    class MyForm(yota.Form):
+        first = EntryNode(title='First name',
+                            validator=Check(MinLengthValidator(5)))
+
+        def success_header_generate(self):
+            return {'redirect': 'http://google.com/'}
+
+Information on the avilible special post-submission actions are below.
 
 Redirection
 ~~~~~~~~~~~~~~~~~~~~~~
-Simply return a dictionary with the key 'redirect' in it and the browser will
-be sent to the url specified via ``window.location.replace``.
+Include the key 'redirect' in your return dictionary and the browser will
+be sent to the url specified via method ``window.location.replace``.
 
 Google Analytics Logging
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,6 +128,11 @@ values used in Google Analytics API function ``ga``. More information can be
 found at the URL below.
 
 https://developers.google.com/analytics/devguides/collection/analyticsjs/events
+
+Clear Form Elements
+~~~~~~~~~~~~~~~~~~~~~~~~
+Pass the key 'clear_element' equal to True and upon submission all input fields
+in the form will be reset.
 
 Custom Action
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,16 +146,6 @@ default Nodes. These Nodes are already setup to pass the required error div ids
 and element ids to the client using the default render_error function in Yota's
 JavaScript library, so all you really need to do is set the global context key
 'ajax' to equal True. This activates the JavaScript library.
-
-After successful validation if you want to provide some customized actions this
-is best achieved by overriding the :meth:`Form.success_header_generate`. On the 
-JavaScript side of things render_success will look for either a 'message' or a 
-'custom_success' key in the return value of :meth:`Form.success_header_generate`.
-The idea is to provide either a simple message upon successful completion 
-(formated as a string), or allow injecting your own JavaScript function to 
-execute after completion. If returning a JS function it should be an eval-able 
-string. 
-
 
 Piecewise Validation
 =======================
@@ -139,7 +162,7 @@ the default AJAX callback functions.
 
 Validation Tiggers
 ~~~~~~~~~~~~~~~~~~
-An additional per-Node attribute 'piecewise_trigger' allows you to
+A per-Node attribute 'piecewise_trigger' allows you to
 set when you would like the Form to be submitted for incremental validation.
 This can be any JavaScript event type that your input field supports, and
 defaults to "blur". Common values may be click, change, dblclick, keyup or
@@ -149,7 +172,7 @@ These event triggers are activated when the Yota jQuery plugin is initially
 called. It scans all input fields in your Form and attaches an AJAX submit
 action to the input element based on the value of the attribute
 "data-piecewise". In the default Nodes this is set by the attribute
-"piecewise_trigger" as can be seen in the code for entry.html for example.
+"piecewise_trigger" as can be seen in the code of the entry.html default template.
 
 .. code-block:: html
     :emphasize-lines: 3

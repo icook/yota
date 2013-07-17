@@ -416,13 +416,15 @@ class Form(object):
         :type piecewise: boolean
 
         :param raw: If set to True then the second return parameter will be a
-        Python dictionary instead of a JSON string
+            Python dictionary instead of a JSON string
+        :type raw: boolean
 
         :return: A boolean whether or not the form submission is valid and the
-        json string (or raw dictionary) to pass back to the javascript side.
-        The boolean is an anding of submission (whether the submit button was
-        actually pressed) and the block parameter (whether or not any blocking
-        validators passed) """
+            json string (or raw dictionary) to pass back to the javascript side.
+            The boolean is an anding of submission (whether the submit button was
+            actually pressed) and the block parameter (whether or not any blocking
+            validators passed)
+        """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
@@ -482,7 +484,8 @@ class Form(object):
         """ Runs all the validators associated with the :class:`Form`.
 
         :return: Whether the validators are blocking submission and a list of
-        nodes that have validation messages """
+            nodes that have validation messages.
+        """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
@@ -505,7 +508,8 @@ class Form(object):
         :type data: dictionary
 
         :return: Whether the validators are blocking submission and a re-render
-        of the form with the validation data passed in """
+            of the form with the validation data passed in.
+        """
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
@@ -539,9 +543,10 @@ class Form(object):
         :type raw: bool
 
         :return: Return value is either the new JSON string (or raw dict if
-        requested) if json_validate was your last validation call, or a
-        re-render of the form with updated error messages if validate_render
-        was your last call.  """
+            requested) if json_validate was your last validation call, or a
+            re-render of the form with updated error messages if validate_render
+            was your last call.
+        """
 
         if self._last_valid == 'render':
             try:

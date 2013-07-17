@@ -92,6 +92,11 @@
                         settings.render_error(errors_present[key], "no_error", {});
                         delete errors_present[key];
                     }
+                    // DEPRECATED - Scheduled for removal ~0.2.5
+                    if (jsonObj.redirect != undefined) {
+                        window.location.replace(jsonObj.redirect);
+                        return;
+                    }
                     if (settings.process_builtins == true) {
                         // Catch some builtin keys that and perform actions
                         // with them
