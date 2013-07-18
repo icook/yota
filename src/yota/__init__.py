@@ -22,7 +22,7 @@ class TrackingMeta(type):
         nodes = {}
         mcs._validation_list = []
         mcs._node_list = []
-        for name, attribute in dict.items():
+        for name, attribute in dct.items():
             if isinstance(attribute, Node):
                 attribute._attr_name = name
                 nodes[attribute._create_counter] = attribute

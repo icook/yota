@@ -7,11 +7,11 @@ import copy
 
 
 class TestForms(unittest.TestCase):
+    """ Covers core Form functionality with the exception of validator logic """
 
     ####################################################################
     # Testing for passing of values being copied/not copied properly between
     # attributes, arguments and parameters
-
     def test_class_override(self):
         """ ensure that a class attribute can be overriden by kwarg. Also
         ensure mutable class attributes are copied on init """
@@ -67,24 +67,74 @@ class TestForms(unittest.TestCase):
         assert(isinstance(test.start, EntryNode))
         assert(isinstance(test.close, EntryNode))
 
+    def test_node_order_prev(self):
+        """ is node order being properly preserved, attr preserved, _node_list populated """
+        one = EntryNode()
+        two = EntryNode()
+        three = EntryNode()
+        class TForm(yota.Form):
+            something = one
+            other = two
+            thing = three
+
+        test = TForm()
+        # In the class object
+        assert(TForm._node_list[1] is one)
+        assert(TForm._node_list[2] is two)
+        assert(TForm._node_list[3] is three)
+
+        # In its instances
+        assert(test._node_list[1] == one)
+        assert(test._node_list[2] == two)
+        assert(test._node_list[3] == three)
+
+        # attribute preservation
+        assert(test.something == one)
+        assert(test.other == two)
+        assert(test.thing == three)
+
     #################################################################
     # Test core functionality of Form class
+    def test_error_header(self):
+        """ tests the validate_render methods use of success_header_generate """
+        class TForm(yota.Form):
+            t = EntryNode(validators=RequiredValidator())
 
-    def test_piecewise_success_header(self):
-        """ Piecewise success header generation """
+            def error_header_generate(self, errors, block):
+                self.start.add_error({'message': 'This is a very specific error'})
+
+        test = TForm()
+        block, err_node_list = test._gen_validate({'t': ''})
+        assert(block is True)
+        assert(test.start in err_node_list)
+        assert(len(err_node_list) == 2)
+
+    def test_success_header(self):
+        """ success header generation """
 
         class TForm(yota.Form):
             t = EntryNode()
 
             def success_header_generate(self):
+                self.start.add_error({'message': 'something else entirely'})
                 return {'message': 'something....'}
 
         test = TForm()
-        success, json = test.json_validate({'t': 'something',
-                                             '_visited_names': '("t")',
-                                             'submit_action': 'true'},
-                                            piecewise=True)
+        success, json = test.json_validate({
+            't': 'something',
+            '_visited_names': '("t")',
+            'submit_action': 'true'},
+            raw=True)
         assert(success is True)
+        assert('success_blob' in json)
+        assert('something..' in json['success_blob']['message'])
+        assert('success_ids' in json)
+
+        # testing validate render portion
+        success, render = test.validate_render({'t': 'something'})
+        assert(success is True)
+        assert('success_blob' in json)
+        assert('something else entirely' in render)
 
     def test_validator_shorthand(self):
         """ Properly test many flexible shorthands """
@@ -112,157 +162,8 @@ class TestForms(unittest.TestCase):
             else:
                 assert(len(err_list) == 0)
 
-    def test_error_header(self):
-        """ tests the validate_render methods use of success_header_generate """
-        class TForm(yota.Form):
-            t = EntryNode(validators=RequiredValidator())
-
-            def error_header_generate(self, errors, block):
-                self.start.add_error({'message': 'This is a very specific error'})
-
-        test = TForm()
-        success, node_list = test.validate_render({'t': ''})
-        assert(hasattr(test.start, 'errors'))
-        assert('This is a very specific error' in node_list)
-
-    ######################################################################
-    # Test facets of the validation methods in the Form class
-
-    def test_piecewise_novisit(self):
-        """ any non-visited nodes cause submission to block """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(
-                MinLengthValidator(5, message="Darn"), 't')
-
-        test = TForm()
-        block, invalid = test._gen_validate({'t': '', '_visited_names': '{}'}, piecewise=True)
-
-        assert(block is True)
-        assert(len(invalid) == 0)
-
-    def test_non_blocking(self):
-        """ ensure that a non-blocking validators validation is successful """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(
-                NonBlockingDummyValidator(), 't')
-
-        test = TForm()
-        block, invalid = test._gen_validate({'t': 'toolong'})
-        assert(block is False)
-
-    def test_piecewise_submit(self):
-        """ Make sure a submit that is failing validators won't pass """
-
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(
-                MinLengthValidator(5, message="Darn"), 't')
-
-        test = TForm()
-        success, invalid = test.json_validate({'t': '',
-                                             '_visited_names': '("t")',
-                                             'submit_action': 'true'},
-                                            piecewise=True)
-        assert(success is False)
-        assert(len(invalid) > 0)
-
-    def test_valid_render_success(self):
-        """ validate render method returns true for success when it's supposed to """
-        assert(yota.Form().validate_render({})[0] is True)
-
-    def test_piecewise_block(self):
-        """ piecewise needs to block when any validators don't pass """
-        # TODO: Should be expanded a fair bit
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
-            _t_length = yota.Check(MaxLengthValidator(4), 't')
-
-        test = TForm()
-        block, invalid = test._gen_validate({'t': 'toolong', '_visited_names': '{"t": true}'},
-                                            piecewise=True)
-        assert(block is True)
-
-    def test_validate_reg(self):
-        """ regular validate meth works properly """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(
-                MinLengthValidator(5, message="Darn"), 't')
-
-        test = TForm()
-        success, ret = test.validate({'t': 'adfasdfasdf'})
-        assert(success is True)
-        assert(len(ret) == 0)
-        success, ret = test.validate({'t': ''})
-        assert(len(ret) > 0)
-        assert(success is False)
-
-    def test_json_validation(self):
-        """ json piecewise works properly """
-        # TODO: Needs significant expansion. Severl more assertions at least,
-        # and probably a few more scenarios
-
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
-
-        test = TForm()
-        success, response = test.json_validate({'t': '', '_visited_names': '{"t": true}'},
-                                      piecewise=True)
-        assert('Darn' in response)
-
-    ###############################################################
-    # Testing Exceptions / Checking
-
-    def test_override_start_close_exc(self):
-        # Test the start node
-        class TForm(yota.Form):
-            start = ''
-        self.assertRaises(AttributeError, TForm)
-
-        # and the close node
-        class TForm(yota.Form):
-            close = ''
-        self.assertRaises(AttributeError, TForm)
-
-    def test_bad_validator(self):
-        """ malformed checks need to throw an exception """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check('fgsdfg', 't')
-
-        test = TForm()
-        self.assertRaises(NotCallableException,
-                          test._gen_validate, {'t': 'toolong'})
-
-    def test_node_attr_safety(self):
-        """ Ensure safe node _attr_names """
-
-        def stupid_2_6():
-            class TForm(yota.Form):
-                name = EntryNode()
-            TForm()
-
-        self.assertRaises(AttributeError, stupid_2_6)
-        f = yota.Form()
-        self.assertRaises(AttributeError, f.insert, 0, EntryNode())
-        self.assertRaises(AttributeError, f.insert, 0, EntryNode(_attr_name='name'))
-        self.assertRaises(AttributeError,
-                          f.insert,
-                          0,
-                          EntryNode(_attr_name='g_context'))
-
-    def test_piecewise_exc(self):
-        """ validation will throw an exception without passing visited nodes """
-        test = yota.Form()
-        self.assertRaises(AttributeError, test._gen_validate, {}, piecewise=True)
-
     ##################################################################
     # Coverage for utility functions, helpers
-
     def test_json_validation_update(self):
         """ updating of json return values to the header works properly """
         test = yota.Form()
@@ -293,6 +194,18 @@ class TestForms(unittest.TestCase):
         assert('t' in test.data_by_attr())
         assert('two' in test.data_by_name())
 
+    def test_get_by_attr(self):
+        """ get_by_attr data function """
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(
+                MinLengthValidator(5, message="Darn"), 't')
+
+        test = TForm()
+        assert(test.get_by_attr('t') is not None)
+        self.assertRaises(AttributeError, test.get_by_attr, 'g_context')
+        self.assertRaises(AttributeError, test.get_by_attr, 'dsafkjnasdf')
+
     def test_dynamic_insert(self):
         """ insert_after test, and subsequently insert itself """
         class TForm(yota.Form):
@@ -306,13 +219,172 @@ class TestForms(unittest.TestCase):
         test.insert_after('t4', EntryNode(_attr_name='t3'))
         assert(test._node_list[4]._attr_name == 't3')
 
-    def test_get_by_attr(self):
+    def test_insert_validator(self):
+        """ insert functions test plus special cases """
+        test = yota.Form()
+        tch = Check(RequiredValidator(), 't')
+        tch2 = Check(MinLengthValidator(5), 't')
+        tch3 = Check(MaxLengthValidator(5), 't')
+        self.assertRaises(AttributeError, test.insert_validator, '')
+        test.insert_validator(tch)
+        assert(test._validation_list[0] is tch)
+
+        # make sure lists work as well
+        test.insert_validator([tch2, tch3])
+        assert(test._validation_list[1] is tch2)
+        assert(test._validation_list[2] is tch3)
+
+        # And tuples just to be over-thorough...
+        test = yota.Form()
+        test.insert_validator((tch, tch3))
+        assert(test._validation_list[0] is tch)
+        assert(test._validation_list[1] is tch3)
+
+    def test_insert_special(self):
+        """ insert functions test plus special cases """
+        test = yota.Form()
+        test.insert(0, EntryNode(_attr_name='test1'))
+        assert(hasattr(test, test1))
+        assert(test._node_list[0]._attr_name == 'test1')
+        test.insert(-1, EntryNode(_attr_name='test2'))
+        assert(hasattr(test, test2))
+        assert(test._node_list[3]._attr_name == 'test2')
+        test.insert(2, EntryNode(_attr_name='test3'))
+        assert(hasattr(test, test3))
+        assert(test._node_list[2]._attr_name == 'test3')
+
+
+class TestFormValidation(unittest.TestCase):
+    """ Coverage for the 4 main validation functions in Form """
+
+    ######################################################################
+    # JSON/Piecewise specific methods
+    def test_json_validation(self):
+        """ json piecewise works properly """
+        # TODO: Needs significant expansion. Severl more assertions at least,
+        # and probably a few more scenarios
+
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
+
+        test = TForm()
+        success, response = test.json_validate({'t': '', '_visited_names': '{"t": true}'},
+                                      piecewise=True)
+        assert('Darn' in response)
+
+    def test_piecewise_submit(self):
+        """ a piecewise submit that is failing visited validators won't pass on
+        submit"""
+
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(MinLengthValidator(5), 't')
+
+        test = TForm()
+        success, json = test.json_validate({'t': '',
+            '_visited_names': '("t")',
+            'submit_action': 'true'},
+            piecewise=True)
+        assert(success is False)
+        assert(len(invalid) == 1)
+
+    def test_piecewise_novisit(self):
+        """ any non-visited nodes cause submission to block """
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(MinLengthValidator(5), 't')
+
+        test = TForm()
+        block, invalid = test._gen_validate(
+            {'t': '', '_visited_names': '{}'},
+            piecewise=True)
+
+        assert(block is True)
+        assert(len(invalid) == 0)
+
+    def test_piecewise_nosubmit(self):
+        """ even with no errors and all visited, piecewise fails without submit """
+        test = yota.Form()
+        block, invalid = test._gen_validate(
+            {'_visited_names': '{}', 'submit_action': False},
+            piecewise=True)
+
+        assert(block is True)
+        assert(len(invalid) == 0)
+
+    def test_piecewise_exc(self):
+        """ validation will throw an exception without passing visited nodes """
+        test = yota.Form()
+        self.assertRaises(AttributeError, test._gen_validate, {}, piecewise=True)
+
+    ######################################################################
+    # Regular validation
+    def test_valid_render_success(self):
+        """ validate render method returns true for success when it's supposed to """
+        assert(yota.Form().validate_render({})[0] is True)
+
+    def test_validate_reg(self):
+        """ regular validate meth works properly """
         class TForm(yota.Form):
             t = EntryNode()
             _t_valid = yota.Check(
                 MinLengthValidator(5, message="Darn"), 't')
 
         test = TForm()
-        assert(test.get_by_attr('t') is not None)
-        self.assertRaises(AttributeError, test.get_by_attr, 'g_context')
-        self.assertRaises(AttributeError, test.get_by_attr, 'dsafkjnasdf')
+        success, ret = test.validate({'t': 'adfasdfasdf'})
+        assert(success is True)
+        assert(len(ret) == 0)
+        success, ret = test.validate({'t': ''})
+        assert(len(ret) > 0)
+        assert(success is False)
+
+    def test_non_blocking(self):
+        """ ensure that a non-blocking validators validation is successful """
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(
+                NonBlockingDummyValidator(), 't')
+
+        test = TForm()
+        block, invalid = test._gen_validate({'t': 'toolong'})
+        assert(block is False)
+
+    def test_bad_validator(self):
+        """ malformed checks need to throw an exception """
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check('fgsdfg', 't')
+
+        test = TForm()
+        self.assertRaises(
+            NotCallableException, test._gen_validate, {'t': 'toolong'})
+
+    ###############################################################
+    # Testing Exceptions / Checking For core form functions
+    def test_override_start_close_exc(self):
+        # Test the start node
+        class TForm(yota.Form): start = ''
+        self.assertRaises(AttributeError, TForm)
+
+        # and the close node
+        class TForm(yota.Form): close = ''
+        self.assertRaises(AttributeError, TForm)
+
+    def test_node_attr_safety(self):
+        """ Ensure safe node _attr_names """
+
+        def stupid_2_6():
+            class TForm(yota.Form):
+                name = EntryNode()
+            TForm()
+
+        self.assertRaises(AttributeError, stupid_2_6)
+        f = yota.Form()
+        self.assertRaises(AttributeError, f.insert, 0, EntryNode())
+        self.assertRaises(
+            AttributeError, f.insert, 0, EntryNode(_attr_name='name'))
+        self.assertRaises(AttributeError,
+                          f.insert,
+                          0,
+                          EntryNode(_attr_name='g_context'))
