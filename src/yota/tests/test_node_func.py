@@ -16,9 +16,10 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_radio_node(self):
         """ radio node generating the radio buttons """
         class TForm(yota.Form):
-            t = RadioNode(buttons=[('1', 'something'),
-                                      ('2', 'else'),
-                                      ('3', 'is')
+            t = RadioNode(buttons=[
+                ('1', 'something'),
+                ('2', 'else'),
+                ('3', 'is')
             ])
 
         test = TForm(auto_start_close=False).render()
@@ -42,10 +43,11 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_check_group(self):
         """ grouped checkboxes generating check boxes """
         class TForm(yota.Form):
-            t = CheckGroupNode(boxes=[('test', 'something'),
-                                   ('this', 'else'),
-                                   ('one', 'is')
-                                   ])
+            t = CheckGroupNode(boxes=[
+                ('test', 'something'),
+                ('this', 'else'),
+                ('one', 'is')
+            ])
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)

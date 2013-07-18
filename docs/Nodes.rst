@@ -125,11 +125,27 @@ Or by setting it as a class attribute in your Node definition like so:
 
 However, keep in mind that attributes that are auto-generated, such as name,
 id, and title should not be set as class attributes since they will get
-overriden when they are generated.
+overriden when they are generated. By default, the following attributes are
+reserved:
+
++ name
++ id
++ title
++ errors
++ data
++ _attr_name
++ _ignores
++ _requires
++ _create_counter
 
 Custom Nodes
 ===============================
-Most Node definitions are quite simple, with the majority simply changing the template being used. More complex Node semantics are availible by overriding some of their built in methods, such as :meth:`Node.resolve_data` or :meth:`Node.set_identifiers`. These are all described in the API documentation, but some examples will be given here of how you might wish to use these methods.
+Most Node definitions are quite simple, with the majority simply changing the
+template being used. More complex Node semantics are availible by overriding
+some of their built in methods, such as :meth:`Node.resolve_data` or
+:meth:`Node.set_identifiers`. These are all described in the API documentation,
+but some examples will be given here of how you might wish to use these
+methods.
 
 Changing data resolution
 ****************************
@@ -186,16 +202,17 @@ how to find the elements. Certainly you could use a jQuery selector to find the
 inputs, but modifying what is passed to your JavaScript presents a slightly
 more resiliant option. This is done through the json_identifiers method.
 
-json_identifiers
+Modifying AJAX rendering
 ****************************
+
 
 set_identifiers
 ****************************
-When the Node is added to a Form set_identifiers is called to setup some unique
-names to be used in the template. Perhaps you'd like a different semantic for
-automatically titling your date pickers? Overriding this function may also be
-wanted if you're writing a Node with multiple form elements in it. This all
-depends on your preference.
+When the Node is added to a Form the set_identifiers method is called to setup
+some unique names to be used in the template and possibly AJAX. Perhaps you'd
+like a different semantic for automatically titling your date pickers?
+Overriding this function may also be wanted if you're writing a Node with
+multiple form elements in it.  This all depends on your preference.
 
 .. code-block:: python
 

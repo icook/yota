@@ -6,9 +6,14 @@ from yota.validators import Check
 import json
 import copy
 
-class TrackingMeta(type):
 
-    def __init__(mcs, name, bases, dict):
+class TrackingMeta(type):
+    """ This metaclass builds our Form classes. It generates the internal
+    _node_list which preserves order of Nodes in your Form as declared. It also
+    generates _validation_list for explicitly declared Check attributes in the
+    Form """
+
+    def __init__(mcs, name, bases, dct):
         """ Process all of the attributes in the `Form` (or subclass)
         declaration and place them accordingly. This builds the internal
         _node_list and _validation_list and is responsible for preserving
@@ -79,65 +84,46 @@ class Form(object):
                         'close_template', 'auto_start_close', '_renderer',
                         '_processor', 'name')
 
-    def __new__(cls, **kwargs):
-        """ We want our created Form to have a copy of the original
-        form list so that dynamic additions to the list do not
-        effect all Form instances """
-        c = super(Form, cls).__new__(cls, **kwargs)
-        c._node_list = copy.deepcopy(cls._node_list)
-        for n in c._node_list:
-            setattr(c, n._attr_name, n)
-        c._validation_list = copy.deepcopy(cls._validation_list)
-        for n in c._validation_list:
-            if n._attr_name:
-                setattr(c, n._attr_name, n)
-        return c
-
     def __init__(self,
-                 name=None,
-                 auto_start_close=None,
-                 start_template=None,
-                 close_template=None,
-                 g_context=None,
-                 context=None,
-                 start=None,
-                 close=None,
                  **kwargs):
 
         # run our safety checks on all our nodes
         for node in self._node_list:
             self._check_node(node)
 
-        """ Basically, set the instance attribute to one of the following in
-        order of preference:
-        1. Passed in parameter
-        2. Class attribute
-        3. Set default """
-        def override(value, attr, default):
-            if value is not None:
+        def override(attr, default, copy=True):
+            """ Convenience for our desired override semantics """
+            # If they passed in as a kwarg it takes priority
+            if attr in kawgs:
                 setattr(self, attr, value)
+            # Populate the default value if there is none
             elif not hasattr(self, attr):
                 setattr(self, attr, default)
-            else:
+            # otherwise we want to copy the class attribute. This is to make
+            # parent classes act more "template" like, as opposed to sharing
+            # memory between classes. For instance, setting a manual start
+            # Node, you wouldn't want that Node object to be shared between
+            # instances of the class...
+            elif copy:
                 setattr(self, attr, copy.copy(getattr(self, attr)))
 
         # override semantics
-        override(auto_start_close, 'auto_start_close', True)
-        override(start_template, 'start_template', 'form_open')
-        override(close_template, 'close_template', 'form_close')
-        override(g_context, 'g_context', {})
-        override(context, 'context', {})
+        override('g_context', {})
+        override('context', {})
+        override('_node_list', [])
+        override('_validation_list', [])
+        # We don't need to copy values that will be immutable anyway
+        override('start_template', 'form_open', copy=False)
+        override('close_template', 'form_close', copy=False)
+        overrise('name', self.__class__.__name__, copy=False)
+        override('auto_start_close', True, copy=False)
+        override('title', None, copy=False)
 
-        # set a default for our name to the class name
-        self.name = name if name else self.__class__.__name__
-        self.context['name'] = self.name  # pass it to start/close
+        # pass some attributes to start/close nodes
+        self.context['name'] = self.name
+        self.context['title'] = self.title
 
-        # pass some special keywords to our context if they're defined as class
-        # attributes
-        if hasattr(self, 'title'):
-            self.context['title'] = self.title
         # passes everything to our rendering context and updates params.
-        # Overwrites class attributes
         self.context.update(kwargs)
 
         # since our default id is based off of the parent id
@@ -164,8 +150,8 @@ class Form(object):
         if not close and not hasattr(self, 'close'):
             if self.auto_start_close:
                 self.insert(-1, LeaderNode(template=self.close_template,
-                                        _attr_name='close',
-                                        **self.context))
+                                           _attr_name='close',
+                                           **self.context))
         else:
             # prefer a parameter over a class attr
             ins = close if close else self.close
@@ -184,7 +170,6 @@ class Form(object):
         # Initialize some general state variable
         self._last_valid = None
         self._last_raw_json = None
-
 
     def render(self):
         """ Runs the renderer to parse templates of nodes and generate the form
@@ -316,12 +301,12 @@ class Form(object):
         try:
             attr = getattr(self, name)
         except AttributeError:
-            raise AttributeError('Form attribute {0} couldn\'t be resolved to'
-                                 ' a Node'.format(name))
-        if isinstance(attr, Node):
-            return attr
+            pass
+        else:
+            if isinstance(attr, Node):
+                return attr
         raise AttributeError('Form attribute {0} couldn\'t be resolved to'
-                                ' a Node'.format(name))
+                             ' a Node'.format(name))
 
     def success_header_generate(self):
         """ Please see the documentation for :meth:`Form.error_header_generate`
@@ -338,11 +323,11 @@ class Form(object):
 
         For passing information to AJAJ rendering, simply return a dictionary,
         or any Python object that can be serialized to JSON. This information
-        gets passed back to the JavaScript callbacks of yota_activate, however each in
-        slightly different ways. success_header_generate's information will get
-        passed to the render_success callback, while error_header_generate will
-        get sent as an error to the render_error callback under the context
-        start.
+        gets passed back to the JavaScript callbacks of yota_activate, however
+        each in slightly different ways. success_header_generate's information
+        will get passed to the render_success callback, while
+        error_header_generate will get sent as an error to the render_error
+        callback under the context start.
 
         For passing information into a regular, non AJAJ context simply access
         the attribute manually similar to below.

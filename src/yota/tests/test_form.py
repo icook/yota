@@ -3,6 +3,7 @@ import yota
 from yota.validators import *
 from yota.nodes import *
 from yota.exceptions import *
+import copy
 
 
 class TestForms(unittest.TestCase):
@@ -10,8 +11,48 @@ class TestForms(unittest.TestCase):
     ####################################################################
     # Testing for passing of values being copied/not copied properly between
     # attributes, arguments and parameters
-    # TODO: Can be refactored into a few functions with clever loops for more
-    # complete coverage
+
+    def test_class_override(self):
+        """ ensure that a class attribute can be overriden by kwarg. Also
+        ensure mutable class attributes are copied on init """
+
+        # setup some test mutable types
+        td = {'something': 'else'}
+        td2 = {'something': 'else', 'entirely': 'different'}
+        tl = ['this', 'is', 'a', 'list']
+        tl2 = ['this', 'is']
+        # Now setup our test data. We want to ensure that a value set as a
+        # default as a class attr is properly overriden by using the kwarg
+        tests = [
+            ('g_context', copy(td), copy(td2), True),
+            ('context', copy(td), copy(td2), True),
+            ('_node_list', copy(td), copy(td2), True),
+            ('_validation_list', copy(tl), copy(td2), True),
+            ('start_template', 'customtem', 'close', False),
+            ('close_template', 'customtem', 'start', False),
+            ('name', 'customname', 'othername', False),
+            ('auto_start_close', True, False, False),
+            ('title', 'thistitle', 'notthisone', False)
+        ]
+        for key, class_val, kwarg_val, mutable in t1:
+            class TForm(yota.Form):
+                pass
+            # set our class attribute
+            setattr(TForm, key, class_val)
+
+            if mutable:
+                tester = TForm()
+                tester2 = TForm()
+                # Make sure a copy is happening for our mutable types
+                assert(getattr(TForm, key) is not getattr(tester, key))
+                assert(getattr(tester2, key) is not getattr(tester, key))
+
+            tester = TForm({key: kwarg_val})
+            # Ensure exactly our desired copy/override semantics with kwargs
+            assert(getattr(TForm, key) is not getattr(tester, key))
+            assert(getattr(TForm, key) != getattr(tester, key))
+            assert(class_val is not getattr(tester, key))
+            assert(class_val != getattr(tester, key))
 
     def test_override_start_close(self):
         class TForm(yota.Form):
@@ -25,46 +66,6 @@ class TestForms(unittest.TestCase):
         test = TForm()
         assert(isinstance(test.start, EntryNode))
         assert(isinstance(test.close, EntryNode))
-
-    def test_override_start_close_exc(self):
-        # Test the start node
-        class TForm(yota.Form):
-            start = ''
-
-        self.assertRaises(AttributeError,
-                          TForm)
-
-        # and the close node
-        class TForm(yota.Form):
-            close = ''
-
-        self.assertRaises(AttributeError,
-                          TForm)
-
-    def test_validate_class_attr(self):
-        """ Test whether setting validator as class attributes of Nodes gets
-        correctly passed """
-        class TForm(yota.Form):
-            class MyNode(yota.nodes.EntryNode):
-                validators = MinLengthValidator(5, message="Darn")
-            t = MyNode()
-
-        test = TForm()
-        test._parse_shorthand_validator(test.t)
-        assert(len(test._validation_list) > 0)
-        assert(isinstance(test._validation_list[0].validator,
-                          MinLengthValidator))
-
-        # ensure that we can still add multiples through iterable types
-        class TForm2(yota.Form):
-            class MyNode(yota.nodes.EntryNode):
-                validators = [MinLengthValidator(5, message="Darn"),
-                                MaxLengthValidator(5, message="Darn")]
-            t = MyNode()
-
-        test = TForm2()
-        test._parse_shorthand_validator(test.t)
-        assert(len(test._validation_list) > 1)
 
     #################################################################
     # Test core functionality of Form class
@@ -215,6 +216,17 @@ class TestForms(unittest.TestCase):
 
     ###############################################################
     # Testing Exceptions / Checking
+
+    def test_override_start_close_exc(self):
+        # Test the start node
+        class TForm(yota.Form):
+            start = ''
+        self.assertRaises(AttributeError, TForm)
+
+        # and the close node
+        class TForm(yota.Form):
+            close = ''
+        self.assertRaises(AttributeError, TForm)
 
     def test_bad_validator(self):
         """ malformed checks need to throw an exception """

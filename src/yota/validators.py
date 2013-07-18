@@ -2,6 +2,7 @@ import logging
 import re
 from yota.exceptions import NotCallableException
 
+
 class MinLengthValidator(object):
     """ Checks to see if data is at least length long.
 
@@ -110,8 +111,8 @@ class MinMaxValidator(object):
         if message:
             self.message = message
         else:
-            self.message = "Length must be between {0} and {1} characters.". \
-                            format(min, max)
+            self.message = "Length must be between {0} and {1} characters.".\
+                format(min, max)
         self.min = min
         self.max = max
         super(MinMaxValidator, self).__init__()
@@ -138,7 +139,7 @@ class RegexValidator(object):
         super(RegexValidator, self).__init__()
 
     def __call__(self, target=None):
-        if re.match(self.regex, target.data) == None:
+        if re.match(self.regex, target.data) is None:
             target.add_error({'message': self.message})
 
 class PasswordValidator(RegexValidator):
@@ -192,10 +193,10 @@ class StrongPasswordValidator(object):
         self.message = message
         if not isinstance(regex, list):
             self.regex = [
-                 "(?=.*[A-Z].*[A-Z])", # Matches 2 uppercase letters
-                 "(?=.*[!@#$&*])", # Matches 1 Special character
-                 "(?=.*[0-9].*[0-9])", # Matches 2 numbers
-                 ".{7}" # Has at least 7 characters
+                "(?=.*[A-Z].*[A-Z])",  # Matches 2 uppercase letters
+                "(?=.*[!@#$&*])",  # Matches 1 Special character
+                "(?=.*[0-9].*[0-9])",  # Matches 2 numbers
+                ".{7}"  # Has at least 7 characters
              ]
         else:
             self.regex = regex

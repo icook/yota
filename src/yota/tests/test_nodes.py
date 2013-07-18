@@ -6,6 +6,32 @@ from yota.exceptions import *
 
 
 class TestNode(unittest.TestCase):
+    def test_validate_class_attr(self):
+        """ Test whether setting validator as class attributes of Nodes gets
+        correctly passed """
+        # TODO: Needs to be reworked similar to the comprehensive test in Form
+        class TForm(yota.Form):
+            class MyNode(yota.nodes.EntryNode):
+                validators = MinLengthValidator(5, message="Darn")
+            t = MyNode()
+
+        test = TForm()
+        test._parse_shorthand_validator(test.t)
+        assert(len(test._validation_list) > 0)
+        assert(isinstance(test._validation_list[0].validator,
+                          MinLengthValidator))
+
+        # ensure that we can still add multiples through iterable types
+        class TForm2(yota.Form):
+            class MyNode(yota.nodes.EntryNode):
+                validators = [MinLengthValidator(5, message="Darn"),
+                                MaxLengthValidator(5, message="Darn")]
+            t = MyNode()
+
+        test = TForm2()
+        test._parse_shorthand_validator(test.t)
+        assert(len(test._validation_list) > 1)
+
     def test_required(self):
         """ required node attribute properly raise on render """
         class TForm(yota.Form):
