@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 here = os.path.abspath(os.path.dirname(__file__))
 
 requires = [
+    'jinja2'
 ]
 
 testing_extras = ['nose', 'coverage', 'beautifulsoup4']
