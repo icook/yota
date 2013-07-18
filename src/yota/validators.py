@@ -415,3 +415,6 @@ class Check(object):
     def __iter__(self):
         """ A simple way to make functions accept lists or single elements """
         yield self
+
+    def __repr__(self):
+        return "<Check at {0}, args: {1}, kwargs: {2}>".format(id(self), self.args, self.kwargs)

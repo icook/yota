@@ -46,6 +46,17 @@ class TestNode(unittest.TestCase):
         assert(t.something is True)
         assert(t.label is False)
 
+    def test_data_resolver(self):
+        """ default data resolution implemented """
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(
+                RequiredValidator(message="Darn"), target='t')
+
+        test = TForm()
+        block, invalid = test._gen_validate({'t': 'testing'})
+        assert(test.t.data == 'testing')
+
 class TestNodeSpecific(unittest.TestCase):
     """ Tests specific node behaviour for builtin nodes that have code
     associated with them """

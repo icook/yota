@@ -140,6 +140,17 @@ class TestForms(unittest.TestCase):
         assert(block is True)
         assert(len(invalid) == 0)
 
+    def test_non_blocking(self):
+        """ ensure that a non-blocking validators validation is successful """
+        class TForm(yota.Form):
+            t = EntryNode()
+            _t_valid = yota.Check(
+                NonBlockingDummyValidator(), 't')
+
+        test = TForm()
+        block, invalid = test._gen_validate({'t': 'toolong'})
+        assert(block is False)
+
     def test_piecewise_submit(self):
         """ Make sure a submit that is failing validators won't pass """
 
