@@ -7,7 +7,7 @@ from yota.exceptions import *
 
 class TestNode(unittest.TestCase):
     def test_required(self):
-        """ Testing a required node attribute """
+        """ required node attribute properly raise on render """
         class TForm(yota.Form):
             t = ListNode()
 
@@ -15,7 +15,7 @@ class TestNode(unittest.TestCase):
         self.assertRaises(InvalidContextException, test.render)
 
     def test_ignores(self):
-        """ _ignores functionality check """
+        """ _ignores doesn't pass to rendering context """
         class TForm(yota.Form):
             t = EntryNode()
 
@@ -31,7 +31,7 @@ class TestNode(unittest.TestCase):
         assert('something_else' in t._requires)
 
     def test_attribute_pass(self):
-        """ Make sure we can pass attributes through """
+        """ Make sure we can pass attributes through the class """
         class MyNode(yota.Node):
             _ignores = None
             _requires = list()
@@ -47,8 +47,11 @@ class TestNode(unittest.TestCase):
         assert(t.label is False)
 
 class TestNodeSpecific(unittest.TestCase):
+    """ Tests specific node behaviour for builtin nodes that have code
+    associated with them """
+
     def test_checknode(self):
-        """ Check node data semantics """
+        """ checkbox node should return false if name not in return data """
         class TForm(yota.Form):
             t = CheckNode()
 
@@ -57,15 +60,8 @@ class TestNodeSpecific(unittest.TestCase):
             {'_visited_names': '{}'}, piecewise=True)
         assert(test.t.data is False)
 
-    def test_leadernode_override(self):
-        """ Leader node simple """
-        class TForm(yota.Form):
-            start = LeaderNode()
-
-        test = TForm()
-
     def test_checkgroup(self):
-        """ CheckGroup node data semantics """
+        """ checkbox group data extraction works as intended """
         class TForm(yota.Form):
             t = CheckGroupNode(boxes=[('test', 'something'),
                                    ('this', 'else'),

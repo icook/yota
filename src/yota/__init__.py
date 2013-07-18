@@ -7,43 +7,29 @@ import json
 import copy
 
 class TrackingMeta(type):
-    reserved_attr_names = ('context', 'hidden', 'g_context', 'start_template',
-                           'close_template', 'auto_start_close', '_renderer',
-                           '_processor', 'name')
 
     def __init__(mcs, name, bases, dict):
         """ Process all of the attributes in the `Form` (or subclass)
         declaration and place them accordingly. This builds the internal
-        _node_list and _validation_list. """
+        _node_list and _validation_list and is responsible for preserving
+        initial Node order. """
 
-        t = {}
+        nodes = {}
         mcs._validation_list = []
-        for name, value in dict.items():
-            if isinstance(value, Node):
-                if name in TrackingMeta.reserved_attr_names:
-                    raise AttributeError(
-                        '{0} is a forbidden attribute name for a Node because'
-                        ' it overlaps with a Form attribute. Please rename.'
-                        .format(name))
-                value._attr_name = name
-                t[value._create_counter] = value
-                if hasattr(value, 'validators'):
-                    if not isinstance(value.validators, tuple) and \
-                       not isinstance(value.validators, list):
-                        value.validators = [value.validators, ]
-                    for validator in value.validators:
-                        # shorthand for adding a validation tuple
-                        c = Check(validator, name)
-                        mcs._validation_list.append(c)
-            elif isinstance(value, Check):
-                # if we've found a validation tuple
-                value._attr_name = name
-                mcs._validation_list.append(value)
-
         mcs._node_list = []
-        for i, value in sorted(t.items()):
-            # keeps track of the order of items for actual rendering
-            mcs._node_list.append(value)
+        for name, attribute in dict.items():
+            if isinstance(attribute, Node):
+                attribute._attr_name = name
+                nodes[attribute._create_counter] = attribute
+            elif isinstance(attribute, Check):
+                # if we've found a validation check
+                attribute._attr_name = name
+                mcs._validation_list.append(attribute)
+
+        # insert our nodes in sorted order by there initialization order, thus
+        # preserving order
+        for i, attribute in sorted(nodes.items()):
+            mcs._node_list.append(attribute)
 
 
 class Form(object):
@@ -89,12 +75,14 @@ class Form(object):
     framework being used to a format that Yota expects. It also allows things
     like filtering stripping characters or encoding all data that enters a
     validator. """
+    _reserved_attr_names = ('context', 'hidden', 'g_context', 'start_template',
+                        'close_template', 'auto_start_close', '_renderer',
+                        '_processor', 'name')
 
     def __new__(cls, **kwargs):
         """ We want our created Form to have a copy of the original
         form list so that dynamic additions to the list do not
         effect all Form instances """
-
         c = super(Form, cls).__new__(cls, **kwargs)
         c._node_list = copy.deepcopy(cls._node_list)
         for n in c._node_list:
@@ -116,6 +104,10 @@ class Form(object):
                  close=None,
                  **kwargs):
 
+        # run our safety checks on all our nodes
+        for node in self._node_list:
+            self._check_node(node)
+
         """ Basically, set the instance attribute to one of the following in
         order of preference:
         1. Passed in parameter
@@ -126,6 +118,8 @@ class Form(object):
                 setattr(self, attr, value)
             elif not hasattr(self, attr):
                 setattr(self, attr, default)
+            else:
+                setattr(self, attr, copy.copy(getattr(self, attr)))
 
         # override semantics
         override(auto_start_close, 'auto_start_close', True)
@@ -201,16 +195,51 @@ class Form(object):
 
         return self._renderer().render(self._node_list, self.g_context)
 
+    def _check_node(self, node):
+        """ An internal function performs some safety checks on our nodes """
+        try:
+            node._attr_name
+        except AttributeError as e:
+            raise AttributeError('Dynamically inserted nodes must have a _attr_name'
+                                 ' attribute. Please add it. ')
+
+        if node._attr_name in self._reserved_attr_names:
+            raise AttributeError(
+                '{0} is a forbidden attribute name for a Node because'
+                ' it overlaps with a Form attribute. Please rename.'
+                .format(node._attr_name))
+
+    def _parse_shorthand_validator(self, node):
+        """ Loops thorugh all the Nodes and checks for shorthand validators.
+        After inserting their checks into the form obj they are removed from
+        the node. This is because a validation may be called multiple times on
+        a single form instance. """
+        if hasattr(node, 'validators'):
+            # Convert a single callable to an iterator for convenience
+            if callable(node.validators):
+                node.validators = (node.validators, )
+
+            for validator in node.validators:
+                # If they provided a check add it, otherwise make the check
+                # for them
+                if isinstance(validator, Check):
+                    # Just for extra flexibility, add the attr if they left it out
+                    if not validator.args and not validator.kwargs:
+                        validator.args.append(node._attr_name)
+                    self._validation_list.append(validator)
+                else:
+                    # Assume only a single attr if not specified
+                    new_valid = Check(validator, node._attr_name)
+                    self._validation_list.append(new_valid)
+
+            # remove the attribute so multiple calls doesn't break things
+            delattr(node, 'validators')
+
     def insert_validator(self, new_validators):
         """ Inserts a validator to the validator list.
 
         :param validator: The :class:`Check` to be inserted.
         :type validator: Check """
-
-        # Check to make sure the passed in value is a list/tuple
-        if not isinstance(new_validators, tuple) and\
-           not isinstance(new_validators, list):
-            new_validators = [new_validators,]
 
         for validator in new_validators:
             # check to allow passing in just a check
@@ -219,7 +248,6 @@ class Form(object):
 
             # append the validator to the list
             self._validation_list.append(validator)
-
 
     def insert(self, position, new_node_list):
         """ Inserts a :class:`Node` object or a list of objects at the
@@ -236,11 +264,7 @@ class Form(object):
 
         for i, new_node in enumerate(new_node_list):
 
-            # Check to prevent shooting yourself in the foot
-            if new_node._attr_name in TrackingMeta.reserved_attr_names:
-                raise AttributeError('{0} is a forbidden attribute name for a'
-                    'Node because it overlaps with a Form attribute. Please '
-                                     'rename.'.format(new_node._attr_name))
+            self._check_node(new_node)
 
             # Another clarity error message
             if not new_node._attr_name:
@@ -368,11 +392,14 @@ class Form(object):
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
+
         # reset all error lists and data
         for node in self._node_list:
             node.errors = []
             node.data = ''
             node.resolve_data(data)
+            # Pull out all our shorthand validators
+            self._parse_shorthand_validator(node)
 
         # try to load our visited list of it's piecewise validation
         if '_visited_names' not in data and piecewise:

@@ -411,3 +411,7 @@ class Check(object):
             raise NotCallableException(
                 "Validators provided must be callable, type '{0}'" +
                 "instead. Caused by {1}".format(type(self.validator), e))
+
+    def __iter__(self):
+        """ A simple way to make functions accept lists or single elements """
+        yield self

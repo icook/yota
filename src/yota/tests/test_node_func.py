@@ -7,13 +7,14 @@ from yota.exceptions import *
 
 
 class TestBuiltinNodes(unittest.TestCase):
+    """ Some functional testing for our builtin nodes. Still very incomplete """
     builtin = [ListNode(items=[('1', 'some'), ('2', 'other')]),
                RadioNode(buttons=[('1', 'some'), ('2', 'other')]),
                EntryNode(),
                TextareaNode()]
 
     def test_radio_node(self):
-        """ Test radio node for actually generating the radio buttons """
+        """ radio node generating the radio buttons """
         class TForm(yota.Form):
             t = RadioNode(buttons=[('1', 'something'),
                                       ('2', 'else'),
@@ -28,7 +29,7 @@ class TestBuiltinNodes(unittest.TestCase):
         assert(len(bs.findAll('input')) == 3)
 
     def test_check_node(self):
-        """ Test check box node for actually generating the check box """
+        """ check box node for generating check box """
         class TForm(yota.Form):
             t = CheckNode(name='test')
 
@@ -39,7 +40,7 @@ class TestBuiltinNodes(unittest.TestCase):
         assert(len(bs.findAll('input')) == 1)
 
     def test_check_group(self):
-        """ Test grouped checkboxes for actually generating the check boxes """
+        """ grouped checkboxes generating check boxes """
         class TForm(yota.Form):
             t = CheckGroupNode(boxes=[('test', 'something'),
                                    ('this', 'else'),
@@ -54,7 +55,7 @@ class TestBuiltinNodes(unittest.TestCase):
         assert(len(bs.findAll('input')) == 3)
 
     def test_list_node(self):
-        """ Tests our list node for containing input fields """
+        """ list node contains input fields """
         class TForm(yota.Form):
             t = ListNode(items=[('1', 'something'),
                                 ('2', 'else'),
@@ -69,7 +70,7 @@ class TestBuiltinNodes(unittest.TestCase):
         assert(len(bs.findAll('option')) == 3)
 
     def test_labels(self):
-        """ Tests all applicable nodes for labels """
+        """ all builtin nodes have labels """
 
         for node in self.builtin:
             class TForm(yota.Form):
@@ -81,7 +82,7 @@ class TestBuiltinNodes(unittest.TestCase):
             assert(len(bs.findAll('label', {'class': 'control-label'})) == 1)
 
     def test_entry(self):
-        """ Tests our entry node for containing input fields """
+        """ entry node contains input field """
         class TForm(yota.Form):
             t = EntryNode(name='something')
 
@@ -90,17 +91,16 @@ class TestBuiltinNodes(unittest.TestCase):
         assert(len(bs.findAll('input', {'name': 'something'})) == 1)
 
     def test_textarea(self):
-        """ Tests our entry node for containing input fields """
+        """ textarea contains textarea field """
         class TForm(yota.Form):
             t = TextareaNode(rows='15', columns='20')
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
-        print bs.findAll('textarea')
         assert(len(bs.findAll('textarea', {'rows': '15', 'cols': '20'})) == 1)
 
     def test_submit(self):
-        """ submit node for containing input fields type submit"""
+        """ submit node for containing input fields type submit """
         class TForm(yota.Form):
             t = SubmitNode(title='Yay')
 
@@ -109,15 +109,8 @@ class TestBuiltinNodes(unittest.TestCase):
         assert(len(bs.findAll('input', {'type': 'submit', 'value': 'Yay'})) == 1)
         assert(len(bs.findAll('label')) == 0)
 
-    def test_textarea(self):
-        """ Tests our textarea node for containing fields and content"""
-        class TForm(yota.Form):
-            t = TextareaNode(rows='15', columns='20')
-
-        test = TForm(auto_start_close=False).render()
-        bs = BeautifulSoup(test)
-        assert(len(bs.findAll('textarea', {'rows': '15', 'cols': '20'})) == 1)
-
+    def test_textarea_content(self):
+        """ textarea data gets passed back in correctly """
         class TForm(yota.Form):
             t = TextareaNode(rows='15', columns='20')
             _t_long = Check(MinLengthValidator(5), 't')

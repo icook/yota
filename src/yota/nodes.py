@@ -1,4 +1,5 @@
 from yota.exceptions import InvalidContextException, DataAccessException
+import copy
 
 
 class Node(object):
@@ -55,7 +56,7 @@ class Node(object):
 
     def __init__(self,
                  template=None,
-                 validator=None,
+                 validators=None,
                  label=None,
                  _requires=None,
                  _ignores=None,
@@ -72,11 +73,13 @@ class Node(object):
                 setattr(self, attr, value)
             elif not hasattr(self, attr):
                 setattr(self, attr, default)
+            else:
+                setattr(self, attr, copy.copy(getattr(self, attr)))
 
         override(_ignores, '_ignores', ['template', 'validator'])
         override(_requires, '_requires', [])
         override(template, 'template', None)
-        override(validator, 'validator', None)
+        override(validators, 'validators', [])
         override(label, 'label', True)
 
         self._attr_name = _attr_name
@@ -177,6 +180,13 @@ class Node(object):
         attempting to bridge the concepts of Nodes and Elements. """
         return (self.name, )
 
+    def __iter__(self):
+        """ A simple way to make functions accept lists or single elements """
+        yield self
+
+    def __repr__(self):
+        """ Make debugging and printing nodes a bit more readible """
+        return "<{0} at {1}, _attr_name={2}>".format(__name__, id(self), self._attr_name)
 
 class BaseNode(Node):
     """ This base Node supplies the name of the base rendering template that
