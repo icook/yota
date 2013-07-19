@@ -152,7 +152,7 @@ class TestForms(unittest.TestCase):
         nl2 = deepcopy(nl)
         valid_list = [1, 1, 1, 0, 1, 1, 2, 2]
         for i, node in enumerate(nl):
-            print "Testing shorthand scenario #" + str(i)
+            print("Testing shorthand scenario #" + str(i))
             class TForm(yota.Form):
                 t = EntryNode(validators=node)
             test = TForm()
@@ -166,7 +166,7 @@ class TestForms(unittest.TestCase):
 
         for i, node in enumerate(nl2):
             # Now make sure passing as attr works
-            print "Testing shorthand attr scenario #" + str(i)
+            print("Testing shorthand attr scenario #" + str(i))
             class TForm(yota.Form):
                 class MyNode(yota.nodes.EntryNode):
                     validators = node

@@ -35,8 +35,8 @@ class TrackingMeta(type):
         for i, attribute in sorted(nodes.items()):
             mcs._node_list.append(attribute)
 
-
-class Form(object):
+_Form = TrackingMeta('_Form', (object, ), {})
+class Form(_Form):
     """ This is the base class that all user defined forms should inherit from,
     and as such it is the main way to access functionality in Yota. It
     provides the core functionality involved with setting up and

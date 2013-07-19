@@ -364,7 +364,7 @@ class Check(object):
             self.args[key] = form.get_by_attr(arg)
 
         # Process kwargs
-        for key, val in self.kwargs.iteritems():
+        for key, val in self.kwargs.items():
             self.kwargs[key] = form.get_by_attr(val)
 
         self.resolved = True
@@ -387,7 +387,7 @@ class Check(object):
                 return False
 
         # Process kwargs
-        for node in self.kwargs.itervalues():
+        for node in self.kwargs.values():
             for name in node.get_list_names():
                 if name in visited:
                     break

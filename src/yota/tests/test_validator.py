@@ -13,7 +13,7 @@ class TestValidators(unittest.TestCase):
         like what a post object would have and it builds the args for your
         check accordingly """
         args = []
-        for key, val in values.iteritems():
+        for key, val in values.items():
             args.append(EntryNode(_attr_name=key, data=val))
 
         c = Check(validator, *args)

@@ -80,7 +80,7 @@ class TestBuiltinNodes(unittest.TestCase):
 
             output = TForm(auto_start_close=False).render()
             bs = BeautifulSoup(output)
-            print "Testing for label in " + node.__class__.__name__
+            print("Testing for label in " + node.__class__.__name__)
             assert(len(bs.findAll('label', {'class': 'control-label'})) == 1)
 
     def test_entry(self):
