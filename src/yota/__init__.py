@@ -392,6 +392,9 @@ class Form(object):
                 # If even a single check can't be run, we need to block
                 block = True
 
+        # Run the one off validation method
+        self.validator()
+
         # a list to hold Nodes that actually have errors
         error_node_list = []
         for node in self._node_list:
@@ -529,6 +532,13 @@ class Form(object):
         else:
             self.error_header_generate(invalid, block)
         return (not block), self.render()
+
+    def validator(self):
+        """ This is provided as a convenience method for Validation logic that
+        is one-off, and only intended for a single form. Simply override this
+        function and access any of your Nodes and their data via the self. This
+        method will be called after all other Validators are run. """
+        pass
 
     def update_success(self, update_dict, raw=False):
         """ This method serves as an easy way to update your success attributes
