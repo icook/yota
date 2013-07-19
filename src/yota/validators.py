@@ -1,4 +1,3 @@
-import logging
 import re
 from yota.exceptions import NotCallableException
 
