@@ -116,7 +116,3 @@ class TestNodeSpecific(unittest.TestCase):
 
         ident = test.t.json_identifiers()
         assert(len(ident['elements']) == 3)
-
-
-if __name__ == '__main__':
-    unittest.main()

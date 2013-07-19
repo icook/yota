@@ -3,39 +3,71 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Yota: A simple, flexible HTML form library.
-===========================================
+Yota: Flexible forms with asynchronous validation
+=================================================
 .. py:module:: yota
 
-Yota is a Python form library that aims to make generation of web forms fast yet flexible. It is designed to work with AJAX submission/validation or conventional submission methods. If you're trying to do something simple Yota's default should be well equipped for your needs, however it is still configurable enough to let you do more complex actions, even ones it wasn't originally designed to handle. Yota attempts to allow several ways to do things when it makes sense, but tries at all costs to avoid syntax that is overly confusing or non-obvious.
+Yota is a Python form generation library with the following unique features:
 
-Basic Features
-==============
++ Easy integration of realtime validation. Trigger a server side form
+  validation with any JavaScript event on your input fields. (Client side in
+  planning)
 
-* Simple declarative syntax for defining a Form schema
-* Add elements and validators to your Form dynamically, freeing you from the bounds of a static Form schema.
-* Flexible validation structure that allows an arbitrary number of inputs as well as outputs.
-* Validation framework is designed to return results via JSON for client side rendering or directly to the rendering context for display after page submission.
-* AJAX validation methods support piecewise validation for instant user feedback or on submit validation.
-* Small, tested and documented. Under 1,000 lines of code without tests and documentation.
-* Many small callback hooks built in limiting the amount of monkey-patching required to allow more custom functionality.
++ Dynamic form structures allow for complex forms with on the fly changes.
+  Inject different input fields or validation methods into a specific instance
+  of your Form where needed.
+
++ Default themed with Bootstrap, allowing you to quickly throw together useful
+  forms that look nice.
+
+In addition to these features, Yota also includes most of the features that
+you would see with other form libraries.
+
++ Simple declarative syntax for defining form validation and layout
+
++ Customizable template driven schemas
+
++ Ability to operate with almost any framework and use any rendering engine.
+  (Default is jinja2)
+
+Philosophically Yota aims to have a ton of flexibility, since designing
+powerful webforms is infrequently a cookie cutter operation. This was the main
+problem the designers had with other libraries is that they ended up getting in
+the way if they wanted to do anything abnormal. At the same time however it is
+important that sensible default be easy to use and implement, making the
+creation of common forms trivial and lowering the inital learning curve.
 
 Overall Architecture
 ====================
 
-.. image:: _static/arch.png
+Yota allows you to create Forms quickly by declaring a class that is made up of
+Nodes and Checks. Nodes drive the rendering of your form while Checks drive
+validation of user input. Yotas power is derived from its integration of server
+side and client side components, and a growing set of quality default Nodes and
+Validators.
 
 |  :doc:`Form <Form>`
-|  The primary method of interaction with Yota, the Form class acts as a structure to contain all of the information about your Forms structure and configuration. Forms are usually just a collection of Nodes and Checks with some configuration data. Most method calls will be made on Form objects.
+|  The primary method of interaction with Yota, the Form class acts as a
+    structure to contain all of the information about your Forms structure and
+    configuration. Forms are usually just a collection of Nodes and Checks with
+    some configuration data. Most method calls will be made on Form objects.
 
 |  :doc:`Nodes <Nodes>`
-|  Nodes are the actual bits that make up your form. By default a Node has a template attribute that the Renderer picks up in its rendering method as well as context information to be passed into the rendering template. Despite this default, a Node is very abstract, and could be implemented quite differently.  The Form class above it attempts to make a minimum of assumptions about the Nodes attributes.
+|  Nodes are the actual bits that make up your forms output. Nodes link
+    together rendering templates and neccessary context information. Nodes are very
+    abstract, and could be used to render anything, although most render form
+    elements.  The Forms attempts to make a minimum of assumptions about the Nodes
+    attributes.
 
 |  :doc:`Validators and Checks <Validators>`
-|  Checks form the bridge between your submission data and your validators. Validators are supplied with the names of Nodes that are used in the actual Validation callable. At validation time these names are resolved to a tuple containing the actual Node reference as well as your submission data.
+|  Checks form the bridge between your Nodes and your validators.  Validators
+    are supplied with the names of Nodes that are used in the actual Validation
+    callable. At validation time these names are resolved to the actual Node
+    reference.
 
 |  :ref:`renderers`
-|  Renderers provide a pluggable interface through which you can render your form. This allows interchange of different templating engines, etc.
+|  Renderers provide a pluggable interface through which you can render your
+    form. This allows interchange of different templating engines, etc.
 
 
 Contents
