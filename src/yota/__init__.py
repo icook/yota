@@ -90,11 +90,11 @@ class Form(object):
         for node in self._node_list:
             self._check_node(node)
 
-        def override(attr, default, copy=True):
+        def override(attr, default, cpy=True):
             """ Convenience for our desired override semantics """
             # If they passed in as a kwarg it takes priority
-            if attr in kawgs:
-                setattr(self, attr, value)
+            if attr in kwargs:
+                setattr(self, attr, kwargs[attr])
             # Populate the default value if there is none
             elif not hasattr(self, attr):
                 setattr(self, attr, default)
@@ -103,7 +103,7 @@ class Form(object):
             # memory between classes. For instance, setting a manual start
             # Node, you wouldn't want that Node object to be shared between
             # instances of the class...
-            elif copy:
+            elif cpy:
                 setattr(self, attr, copy.copy(getattr(self, attr)))
 
         # override semantics
@@ -111,12 +111,14 @@ class Form(object):
         override('context', {})
         override('_node_list', [])
         override('_validation_list', [])
+        override('start', None)
+        override('close', None)
         # We don't need to copy values that will be immutable anyway
-        override('start_template', 'form_open', copy=False)
-        override('close_template', 'form_close', copy=False)
-        overrise('name', self.__class__.__name__, copy=False)
-        override('auto_start_close', True, copy=False)
-        override('title', None, copy=False)
+        override('start_template', 'form_open', cpy=False)
+        override('close_template', 'form_close', cpy=False)
+        override('name', self.__class__.__name__, cpy=False)
+        override('auto_start_close', True, cpy=False)
+        override('title', None, cpy=False)
 
         # pass some attributes to start/close nodes
         self.context['name'] = self.name
@@ -130,35 +132,27 @@ class Form(object):
         for n in self._node_list:
             n.set_identifiers(self.name)
 
+        # Check start/close nodes for proper type
+        if (self.start is not None and not isinstance(self.start, Node)) or \
+            (self.close is not None and not isinstance(self.start, Node)):
+            raise AttributeError("start/close attribute is special and should "
+                "specify a Node to begin your form")
+
         # Add our open and close form defaults
-        if not start and not hasattr(self, 'start'):
+        if self.start is not None:
+            self.insert(0, self.start)
+        else:
             if self.auto_start_close:
                 self.insert(0, LeaderNode(template=self.start_template,
                                         _attr_name='start',
                                         **self.context))
+        if self.close is not None:
+            self.insert(-1, self.close)
         else:
-            # prefer a parameter over a class attr
-            ins = start if start else self.start
-            if isinstance(ins, Node):
-                self.insert(0, ins)
-            else:
-                raise AttributeError("start attribute is special and should "
-                                     "specify a Node to begin your form")
-
-        # do the same for close
-        if not close and not hasattr(self, 'close'):
             if self.auto_start_close:
                 self.insert(-1, LeaderNode(template=self.close_template,
                                            _attr_name='close',
                                            **self.context))
-        else:
-            # prefer a parameter over a class attr
-            ins = close if close else self.close
-            if isinstance(ins, Node):
-                self.insert(-1, ins)
-            else:  # provide a bit of error notif
-                raise AttributeError("close attribute is special and should "
-                                     "specify a Node to begin your form")
 
         # Add some useful global variables for templates
         default_globals = {'form_id': self.name}
@@ -228,7 +222,7 @@ class Form(object):
         for validator in new_validators:
             # check to allow passing in just a check
             if not isinstance(validator, Check):
-                raise TypeError
+                raise TypeError('Can only insert type Check or derived classes')
 
             # append the validator to the list
             self._validation_list.append(validator)
@@ -564,8 +558,8 @@ class Form(object):
         if self._last_valid == 'render':
             try:
                 self.start.errors[-1].update(update_dict)
-            except KeyError:
-                raise KeyError("Error updating your error dictionary for the "
+            except IndexError:
+                raise IndexError("Error updating your error dictionary for the "
                                "start Node. There were no errors to modify.")
             except AttributeError:
                 raise AttributeError("This method is designed to update an "
