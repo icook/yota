@@ -12,6 +12,8 @@ class TestForms(unittest.TestCase):
     ####################################################################
     # Testing for passing of values being copied/not copied properly between
     # attributes, arguments and parameters
+
+    # TODO: Add a test to ensure overriding start and close inserts at correct position
     def test_class_override(self):
         """ ensure that a class attribute can be overriden by kwarg. Also
         ensure mutable class attributes are copied on init """
@@ -32,9 +34,11 @@ class TestForms(unittest.TestCase):
             ('close_template', 'customtem', 'start', False),
             ('name', 'customname', 'othername', False),
             ('auto_start_close', True, False, False),
-            ('title', 'thistitle', 'notthisone', False)
+            ('title', 'thistitle', 'notthisone', False),
+            ('custom', 'thistitle', 'notthisone', False)
         ]
         for key, class_val, kwarg_val, mutable in tests:
+            print "Running test for key type " + key
             class TForm(yota.Form):
                 pass
             # set our class attribute
@@ -84,14 +88,14 @@ class TestForms(unittest.TestCase):
         assert(TForm._node_list[2] is three)
 
         # In its instances
-        assert(test._node_list[1] == one)
-        assert(test._node_list[2] == two)
-        assert(test._node_list[3] == three)
+        assert(test._node_list[1]._attr_name == one._attr_name)
+        assert(test._node_list[2]._attr_name == two._attr_name)
+        assert(test._node_list[3]._attr_name == three._attr_name)
 
         # attribute preservation
-        assert(test.something == one)
-        assert(test.other == two)
-        assert(test.thing == three)
+        assert(test.something._attr_name == one._attr_name)
+        assert(test.other._attr_name == two._attr_name)
+        assert(test.thing._attr_name == three._attr_name)
 
     #################################################################
     # Test core functionality of Form class
@@ -385,12 +389,14 @@ class TestFormValidation(unittest.TestCase):
     # Testing Exceptions / Checking For core form functions
     def test_override_start_close_exc(self):
         # Test the start node
-        class TForm(yota.Form): start = ''
-        self.assertRaises(AttributeError, TForm)
+        def make_class():
+            class TForm(yota.Form): start = ''
+        self.assertRaises(AttributeError, make_class)
 
         # and the close node
-        class TForm(yota.Form): close = ''
-        self.assertRaises(AttributeError, TForm)
+        def make_class():
+            class TForm(yota.Form): close = ''
+        self.assertRaises(AttributeError, make_class)
 
     def test_node_attr_safety(self):
         """ Ensure safe node _attr_names """

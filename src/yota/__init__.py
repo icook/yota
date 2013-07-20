@@ -22,13 +22,24 @@ class TrackingMeta(type):
         mcs._validation_list = []
         mcs._node_list = []
         for name, attribute in dct.items():
+            # These aren't ordered Nodes, ignore them
+            if name is 'start' or name is 'close':
+                try:
+                    attribute._attr_name = name
+                except AttributeError:
+                    raise AttributeError("start/close attribute is special and"
+                        "should specify a Node to begin your form. Got type {0}"
+                        "instead".format(type(name)))
+                continue
             if isinstance(attribute, Node):
                 attribute._attr_name = name
                 nodes[attribute._create_counter] = attribute
+                delattr(mcs, name)
             elif isinstance(attribute, Check):
                 # if we've found a validation check
                 attribute._attr_name = name
                 mcs._validation_list.append(attribute)
+                delattr(mcs, name)
 
         # insert our nodes in sorted order by there initialization order, thus
         # preserving order
@@ -82,72 +93,55 @@ class Form(_Form):
     _reserved_attr_names = ('context', 'hidden', 'g_context', 'start_template',
                         'close_template', 'auto_start_close', '_renderer',
                         '_processor', 'name')
+    name = None
+    context = {}
+    g_context = {}
+    title = None
+    auto_start_close = True
+    start_template = 'form_open'
+    close_template = 'form_close'
 
-    def __init__(self,
-                 **kwargs):
+    def __init__(self, **kwargs):
+        # A bit of a hack to copy all our class attributes
+        for class_attr in dir(self):
+            if class_attr in kwargs:
+                continue
+            att = getattr(self, class_attr)
+            # We want to copy all the nodes as well as the list, this is a
+            # succinct way to do it
+            if class_attr in ['_node_list', '_validation_list']:
+                setattr(self, class_attr, copy.deepcopy(att))
+            elif not class_attr.startswith('__'):
+                # don't try to copy functions, it doesn't go well
+                if not callable(att):
+                    setattr(self, class_attr, copy.copy(att))
 
-        # run our safety checks on all our nodes
-        for node in self._node_list:
-            self._check_node(node)
-
-        def override(attr, default, cpy=True):
-            """ Convenience for our desired override semantics """
-            # If they passed in as a kwarg it takes priority
-            if attr in kwargs:
-                setattr(self, attr, kwargs[attr])
-            # Populate the default value if there is none
-            elif not hasattr(self, attr):
-                setattr(self, attr, default)
-            # otherwise we want to copy the class attribute. This is to make
-            # parent classes act more "template" like, as opposed to sharing
-            # memory between classes. For instance, setting a manual start
-            # Node, you wouldn't want that Node object to be shared between
-            # instances of the class...
-            elif cpy:
-                setattr(self, attr, copy.copy(getattr(self, attr)))
-
-        # override semantics
-        override('g_context', {})
-        override('context', {})
-        override('_node_list', [])
-        override('_validation_list', [])
-        override('start', None)
-        override('close', None)
-        # We don't need to copy values that will be immutable anyway
-        override('start_template', 'form_open', cpy=False)
-        override('close_template', 'form_close', cpy=False)
-        override('name', self.__class__.__name__, cpy=False)
-        override('auto_start_close', True, cpy=False)
-        override('title', None, cpy=False)
+        # Set a default name for our Form
+        if self.name is None:
+            self.name = self.__class__.__name__
 
         # pass some attributes to start/close nodes
         self.context['name'] = self.name
         self.context['title'] = self.title
 
+        # run our safety checks, set identifiers, and set local attributes
+        for node in self._node_list:
+            self._setup_node(node)
+
         # passes everything to our rendering context and updates params.
         self.context.update(kwargs)
-
-        # since our default id is based off of the parent id
-        # we can pass it in here
-        for n in self._node_list:
-            n.set_identifiers(self.name)
-
-        # Check start/close nodes for proper type
-        if (self.start is not None and not isinstance(self.start, Node)) or \
-            (self.close is not None and not isinstance(self.start, Node)):
-            raise AttributeError("start/close attribute is special and should "
-                "specify a Node to begin your form")
+        self.__dict__.update(kwargs)
 
         # Add our open and close form defaults
-        if self.start is not None:
-            self.insert(0, self.start)
+        if hasattr(self, 'start'):
+            self._node_list.insert(0, self.start)
         else:
             if self.auto_start_close:
                 self.insert(0, LeaderNode(template=self.start_template,
                                         _attr_name='start',
                                         **self.context))
-        if self.close is not None:
-            self.insert(-1, self.close)
+        if hasattr(self, 'close'):
+            self._node_list.append(self.close)
         else:
             if self.auto_start_close:
                 self.insert(-1, LeaderNode(template=self.close_template,
@@ -173,19 +167,23 @@ class Form(_Form):
 
         return self._renderer().render(self._node_list, self.g_context)
 
-    def _check_node(self, node):
-        """ An internal function performs some safety checks on our nodes """
+    def _setup_node(self, node):
+        """ An internal function performs some safety checks, sets attribute,
+        and set_identifiers """
         try:
-            node._attr_name
+            if type(node._attr_name) is not str:
+                raise AttributeError
         except AttributeError as e:
             raise AttributeError('Dynamically inserted nodes must have a _attr_name'
-                                 ' attribute. Please add it. ')
+                                 ' attribute as a string. Please add it. ')
 
-        if node._attr_name in self._reserved_attr_names:
-            raise AttributeError(
-                '{0} is a forbidden attribute name for a Node because'
-                ' it overlaps with a Form attribute. Please rename.'
+        if hasattr(self, node._attr_name):
+            raise AttributeError( 'Attribute name {0} overlaps with a Form '
+                                 'attribute. Please rename.'
                 .format(node._attr_name))
+
+        node.set_identifiers(self.name)
+        setattr(self, node._attr_name, node)
 
     def _parse_shorthand_validator(self, node):
         """ Loops thorugh all the Nodes and checks for shorthand validators.
@@ -242,19 +240,12 @@ class Form(_Form):
 
         for i, new_node in enumerate(new_node_list):
 
-            self._check_node(new_node)
-
-            # Another clarity error message
-            if not new_node._attr_name:
-                raise AttributeError('Dynamically added nodes should have an '
-                                     '_attr_name attribute.')
+            self._setup_node(new_node)
 
             if position == -1:
                 self._node_list.append(new_node)
             else:
                 self._node_list.insert(position + i, new_node)
-            setattr(self, new_node._attr_name, new_node)
-            new_node.set_identifiers(self.name)
 
     def insert_after(self, prev_attr_name, new_node_list):
         """ Runs through the internal node structure attempting to find
