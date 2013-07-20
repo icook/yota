@@ -139,11 +139,25 @@ class Node(object):
 
 
     def resolve_data(self, data):
-        """ This method is called when resolving the data from a form
-        submission and linking it to a specific Node. The return value of this
-        function is passed directly to the Validators data portion for your
-        node. By default this will try and lookup data from the submission
-        using the name attribute. """
+        """ This method links data from form submission back to Nodes. HTML
+        form data is represented by a dictionary that is keyed by the 'name'
+        attribute of the form element. Since most Nodes only render a single
+        form element, and the default set_identifiers generates a single 'name'
+        attribute for the Node then this function attempts to find data by
+        linking the two together. However, if you were to change that semantic
+        this would need to change. Look at the CheckGroupNode for a reference
+        impplementation of this behaviour, or the Docs under "Custom Nodes".
+        This method should operate by setting its own data attribute, as this
+        is how Validators conventionally look for data.
+
+        ... note:: This method will throw an exception at validation time if
+            the data dictionary contains no key name, so it important to
+            override this function to a NoOp if your Node generates no data.
+            NonDataNode was created for this exact purpose.
+
+        :param data: The dictionary of data that is passed to your validation
+            method call.
+        """
         try:
             self.data = data[self.name]
         except KeyError:
@@ -156,7 +170,12 @@ class Node(object):
         and the global rendering context is passed in under the variable 'g'.
         This function is designed to be overridden for customization.  :param
         g_context: The global rendering context passed in from the rendering
-        method.  """
+        method.
+
+        :param g_context: This is the global context passed in from the parent
+            Form object. By default it's included under the 'g' key, similar to
+            Flask's globals.
+        """
 
         # Dat 2.6 compat, no dict comprehensions :(
         d = {}
@@ -176,8 +195,8 @@ class Node(object):
         """ As the title suggests this needs to return an iterable of names. These
         should be names corresponding to form elements that the Node will
         generate. This list is uesed by piecewise validation to determine if a
-        Node has been visisted base on a list of names that have been visited,
-        attempting to bridge the concepts of Nodes and Elements. """
+        Node has been visisted based on a list of names that have been visited,
+        bridging Nodes to elements. """
         return (self.name, )
 
     def __iter__(self):
@@ -283,15 +302,12 @@ class CheckGroupNode(BaseNode):
             self.title = self._attr_name.capitalize().replace('_', ' ')
 
 
-class ButtonNode(BaseNode):
+class ButtonNode(BaseNode, NonDataNode):
     """ Creates a button in your form that submits
     no data.
     """
     template = 'button'
     button_title = 'Click me!'
-
-    def resolve_data(self, data):
-        pass
 
 
 class EntryNode(BaseNode):
@@ -314,25 +330,10 @@ class TextareaNode(BaseNode):
     rows = '5'
     columns = '10'
 
-class CaptchaNode(BaseNode):
-    """ A node designed for basic captcha support. It expects
-    to receive a captcha id through the global context and uses
-    the id to reference a captcha image.
-    """
-    template = 'captcha'
-    placeholder = 'Are you human?'
-
-    def resolve_data(self, data):
-        try:
-            captcha = data['__captcha_id__']
-            captcha_attempt = data[self.name]
-        except KeyError:
-            raise DataAccessException("Node {0} cannot find name {1} in "
-                                      "submission data.".format(self._attr_name, self.name))
-        self.data = {'captcha': captcha, 'captcha_attempt':captcha_attempt}
-
 
 class SubmitNode(NonDataNode, BaseNode):
+    """ Displays a submit button on the right side to align with Form elements
+    """
     template = 'submit'
 
 

@@ -119,6 +119,3 @@ class TestBuiltinNodes(unittest.TestCase):
         success, test = TForm(auto_start_close=False).validate_render({'t': 'test'})
         bs = BeautifulSoup(test)
         assert('test' in bs.findAll('textarea')[0].contents[0].strip())
-
-if __name__ == '__main__':
-    unittest.main()

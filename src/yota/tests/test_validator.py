@@ -91,7 +91,3 @@ class TestCheck(unittest.TestCase):
 
         test = TForm()
         self.assertRaises(DataAccessException, test._gen_validate, {})
-
-
-if __name__ == '__main__':
-    unittest.main()
