@@ -12,8 +12,6 @@ class TestForms(unittest.TestCase):
     ####################################################################
     # Testing for passing of values being copied/not copied properly between
     # attributes, arguments and parameters
-
-    # TODO: Add a test to ensure overriding start and close inserts at correct position
     def test_class_override(self):
         """ ensure that a class attribute can be overriden by kwarg. Also
         ensure mutable class attributes are copied on init """
@@ -30,6 +28,7 @@ class TestForms(unittest.TestCase):
             ('context', copy(td), copy(td2), True),
             ('_node_list', [], [EntryNode(_attr_name='test')], True),
             ('_validation_list', copy(tl), copy(td2), True),
+            ('my_custom_attr2', copy(tl), copy(tl2), True),
             ('start_template', 'customtem', 'close', False),
             ('close_template', 'customtem', 'start', False),
             ('name', 'customname', 'othername', False),
@@ -38,7 +37,7 @@ class TestForms(unittest.TestCase):
             ('custom', 'thistitle', 'notthisone', False)
         ]
         for key, class_val, kwarg_val, mutable in tests:
-            print "Running test for key type " + key
+            print("Running test for key type " + key)
             class TForm(yota.Form):
                 pass
             # set our class attribute
@@ -70,6 +69,8 @@ class TestForms(unittest.TestCase):
         test = TForm()
         assert(isinstance(test.start, EntryNode))
         assert(isinstance(test.close, EntryNode))
+        assert(test._node_list[0]._attr_name is 'start')
+        assert(test._node_list[2]._attr_name is 'close')
 
     def test_node_order_prev(self):
         """ is node order being properly preserved, attr preserved, _node_list populated """

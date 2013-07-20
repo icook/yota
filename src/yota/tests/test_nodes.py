@@ -3,9 +3,51 @@ import yota
 from yota.validators import *
 from yota.nodes import *
 from yota.exceptions import *
+from copy import copy
 
 
 class TestNode(unittest.TestCase):
+    def test_class_override(self):
+        """ ensure that a class attribute can be overriden by kwarg. Also
+        ensure mutable class attributes are copied on init """
+
+        # setup some test mutable types
+        td = {'something': 'else'}
+        td2 = {'something': 'else', 'entirely': 'different'}
+        tl = ['this', 'is', 'a', 'list']
+        tl2 = ['this', 'is']
+        # Now setup our test data. We want to ensure that a value set as a
+        # default as a class attr is properly overriden by using the kwarg
+        tests = [
+            ('_ignores', copy(tl), copy(td2), True),
+            ('_requires', copy(tl), copy(td2), True),
+            ('my_custom_attr2', copy(tl), copy(tl2), True),
+            ('template', 'customtem', 'close', False),
+            ('label', 'customname', 'othername', False),
+            ('_attr_name', 'something', 'else', False),
+            ('my_custom_attr', 'something2', 'else2', False)
+        ]
+        for key, class_val, kwarg_val, mutable in tests:
+            print("Running test for key type " + key)
+            class TNode(yota.nodes.Node):
+                pass
+            # set our class attribute
+            setattr(TNode, key, class_val)
+
+            if mutable:
+                tester = TNode()
+                tester2 = TNode()
+                # Make sure a copy is happening for our mutable types
+                assert(getattr(TNode, key) is not getattr(tester, key))
+                assert(getattr(tester2, key) is not getattr(tester, key))
+
+            tester = TNode(**{key: kwarg_val})
+            # Ensure exactly our desired copy/override semantics with kwargs
+            assert(getattr(TNode, key) is not getattr(tester, key))
+            assert(getattr(TNode, key) != getattr(tester, key))
+            assert(class_val is not getattr(tester, key))
+            assert(class_val != getattr(tester, key))
+
     def test_validate_class_attr(self):
         """ Test whether setting validator as class attributes of Nodes gets
         correctly passed """

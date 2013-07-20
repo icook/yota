@@ -111,6 +111,7 @@ class Form(_Form):
             # succinct way to do it
             if class_attr in ['_node_list', '_validation_list']:
                 setattr(self, class_attr, copy.deepcopy(att))
+            # Private attributes are internal stuff..
             elif not class_attr.startswith('__'):
                 # don't try to copy functions, it doesn't go well
                 if not callable(att):
@@ -190,7 +191,7 @@ class Form(_Form):
         After inserting their checks into the form obj they are removed from
         the node. This is because a validation may be called multiple times on
         a single form instance. """
-        if hasattr(node, 'validators'):
+        if hasattr(node, 'validators') and node.validators:
             # Convert a single callable to an iterator for convenience
             if callable(node.validators):
                 node.validators = (node.validators, )

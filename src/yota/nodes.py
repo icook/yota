@@ -51,49 +51,35 @@ class Node(object):
     """
 
     _create_counter = 0
-    piecewise_trigger = 'blur'
     """ Allows tracking the order of Node creation """
+    piecewise_trigger = 'blur'
+    _ignores = ['template', 'validator']
+    _requires = []
+    template = None
+    validators = []
+    label = True
+    _attr_name = None
+    errors = []
+    data = ''
 
-    def __init__(self,
-                 template=None,
-                 validators=None,
-                 label=None,
-                 _requires=None,
-                 _ignores=None,
-                 _attr_name=None,
-                 **kwargs):
-
-        """ Basically, set the instance attribute to one of the following in
-        order of preference:
-        1. Passed in parameter
-        2. Class attribute
-        3. Set default """
-        def override(value, attr, default):
-            if value is not None:
-                setattr(self, attr, value)
-            elif not hasattr(self, attr):
-                setattr(self, attr, default)
-            else:
-                setattr(self, attr, copy.copy(getattr(self, attr)))
-
-        override(_ignores, '_ignores', ['template', 'validator'])
-        override(_requires, '_requires', [])
-        override(template, 'template', None)
-        override(validators, 'validators', [])
-        override(label, 'label', True)
-
-        self._attr_name = _attr_name
+    def __init__(self, **kwargs):
+        # A bit of a hack to copy all our class attributes
+        for class_attr in dir(self):
+            if class_attr in kwargs:
+                continue
+            # We want to copy all the nodes as well as the list, this is a
+            # succinct way to do it
+            # Private attributes are internal stuff..
+            if not class_attr.startswith('__'):
+                # don't try to copy functions, it doesn't go well
+                att = getattr(self, class_attr)
+                if not callable(att):
+                    setattr(self, class_attr, copy.copy(att))
+        self.__dict__.update(kwargs)
 
         # Allows the parent form to keep track of attribute order
         self._create_counter = Node._create_counter
         Node._create_counter += 1
-
-        # A placeholder for validation process
-        self.errors = []
-        self.data = ''
-
-        # passes everything to our rendering context and updates params
-        self.__dict__.update(kwargs)
 
     def add_error(self, error):
         """ This method serves mostly as a wrapper alowing for different error
