@@ -100,6 +100,8 @@ class Form(_Form):
     auto_start_close = True
     start_template = 'form_open'
     close_template = 'form_close'
+    render_success = False
+    render_error = False
 
     def __init__(self, **kwargs):
         # A bit of a hack to copy all our class attributes
@@ -116,6 +118,7 @@ class Form(_Form):
                 # don't try to copy functions, it doesn't go well
                 if not callable(att):
                     setattr(self, class_attr, copy.copy(att))
+                    self.context[class_attr] = att
 
         # Set a default name for our Form
         if self.name is None:

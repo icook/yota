@@ -1,5 +1,11 @@
 {% extends base %}
 {% block label %}{% endblock %}
 {% block control %}
-<input type="submit" placeholder="{{ placeholder }}" class="btn btn-primary {{ css_class }}" style="{{ css_style }}" value="{{ title }}" id="{{ id }}" name="{{ name }}"/>
+<input type="submit"
+       placeholder="{{ placeholder }}"
+       class="{{ css_class }}"
+       style="{{ css_style }}"
+       value="{{ title }}"
+       id="{{ id }}"
+       name="{{ name }}"/>
 {% endblock %}

@@ -2,7 +2,9 @@
     {% if g.ajax %}
         <script type="text/javascript">
         $(function () {
-            $('#{{ id }}').yota_activate({ {% if g.piecewise %}piecewise: true{% endif %}
+            $('#{{ id }}').yota_activate({ {% if g.piecewise %}piecewise: true,{% endif %}
+              {% if render_success %}render_success: {{ render_success }}, {% endif %}
+              {% if render_error %}render_error: {{ render_error }}, {% endif %}
                                         });
         });
         </script>

@@ -166,8 +166,11 @@ class Node(object):
         # Dat 2.6 compat, no dict comprehensions :(
         d = {}
         for key in dir(self):
-            if not key.startswith("_") and key not in self._ignores:
-                d[key] = getattr(self, key)
+            attr = getattr(self, key)
+            if not key.startswith("_") and\
+               key not in self._ignores and\
+               not callable(attr):
+                d[key] = attr
 
         # check to make sure all required attributes are present
         for r in self._requires:
@@ -321,6 +324,7 @@ class SubmitNode(NonDataNode, BaseNode):
     """ Displays a submit button on the right side to align with Form elements
     """
     template = 'submit'
+    css_class = 'btn btn-primary'
 
 
 class LeaderNode(NonDataNode):
