@@ -1,0 +1,18 @@
+{% block error %}
+    {% if errors %}
+        <div class="alert alert-error">
+            {{ errors[0]['message'] }}
+        </div>
+    {% endif %}
+    {% if g.ajax %}
+        <div class="alert alert-error" style="display:none;" id="{{ id }}_error">
+        </div>
+    {% endif %}
+{% endblock %}
+{% if label == True %}
+    {% block label %}
+        <label for="{{ name }}">{{ title }}</label>
+    {% endblock %}
+{% endif %}
+{% block control %}
+{% endblock %}

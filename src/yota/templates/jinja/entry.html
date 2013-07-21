@@ -7,5 +7,6 @@
        class="{{ css_class }}"
        style="{{ css_style }}"
        name="{{ name }}"
-       placeholder="{{ placeholder }}">
+       placeholder="{{ placeholder }}"
+       {% if disabled %}disabled{% endif %}>
 {% endblock %}
