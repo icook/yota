@@ -4,7 +4,8 @@
         id="{{ id }}"
         class="{{ css_class }}"
         style="{{ css_style }}"
-        name="{{ name }}">
+        name="{{ name }}"
+        {% if disabled %}disabled{% endif %}>
     {% for value, description in items %}
     <option value="{{value}}"{% if data == value %} selected{% endif %}>{{description}}</option>
     {% endfor %}

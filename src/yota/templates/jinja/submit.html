@@ -7,5 +7,6 @@
        style="{{ css_style }}"
        value="{{ title }}"
        id="{{ id }}"
-       name="{{ name }}"/>
+       name="{{ name }}"
+       {% if disabled %}disabled{% endif %}>
 {% endblock %}

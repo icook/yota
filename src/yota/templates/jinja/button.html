@@ -5,5 +5,6 @@
        stlye="{{ css_style }}"
        value="{{ button_title }}"
        id="{{ id }}"
-       name="{{ name }}"/>
+       name="{{ name }}"
+       {% if disabled %}disabled{% endif %}>
 {% endblock %}
