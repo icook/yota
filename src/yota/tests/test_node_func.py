@@ -92,6 +92,16 @@ class TestBuiltinNodes(unittest.TestCase):
         bs = BeautifulSoup(test)
         assert(len(bs.findAll('input', {'name': 'something'})) == 1)
 
+    def test_file(self):
+        """ input file node contains type=file attr """
+        class TForm(yota.Form):
+            t = FileNode(name='something')
+
+        test = TForm(enctype='multipart/form-data').render()
+        bs = BeautifulSoup(test)
+        assert(len(bs.findAll('input', {'type': 'file'})) == 1)
+        assert(len(bs.findAll('form', {'enctype':'multipart/form-data'})) == 1)
+
     def test_textarea(self):
         """ textarea contains textarea field """
         class TForm(yota.Form):

@@ -309,6 +309,12 @@ class PasswordNode(BaseNode):
     template = 'password'
 
 
+class FileNode(BaseNode):
+    """ Creates an input box for your form. """
+    template = 'file'
+    accepts = 'audio/*,video/*,image/*'
+
+
 class TextareaNode(BaseNode):
     """ A node with a basic textarea template with defaults provided.
 
