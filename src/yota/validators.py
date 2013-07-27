@@ -256,7 +256,7 @@ class RequiredValidator(object):
             target.add_error({'message': self.message})
 
 class MimeTypeValidator(object):
-    """ Checks to make sure the user entered something.
+    """ Checks to make sure a posted file is an allowed mime type
 
     :param message: (optional) The message to present to the user upon failure.
     :type message: string
