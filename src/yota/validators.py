@@ -255,6 +255,24 @@ class RequiredValidator(object):
         if len(target.data) == 0:
             target.add_error({'message': self.message})
 
+class MimeTypeValidator(object):
+    """ Checks to make sure a posted file is an allowed mime type
+
+    :param message: (optional) The message to present to the user upon failure.
+    :type message: string
+    :param mimetypes: MIME types to check the post against ala 'image/jpeg'
+    :type mimetypes: list
+    """
+    __slots__ = ["message", "mimetypes"]
+
+    def __init__(self, mimetypes, message=None):
+        self.mimetypes = mimetypes
+        self.message = message if message else "Sorry, that MIME type is not supported"
+        super(MimeTypeValidator, self).__init__()
+
+    def __call__(self, target=None):
+        if not target.data.type in self.mimetypes:
+            target.add_error({'message': self.message})
 
 class EmailValidator(object):
     """ A direct port of the Django Email validator. Checks to see if an
