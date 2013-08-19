@@ -1,5 +1,19 @@
+# encoding: utf-8
+from __future__ import unicode_literals
 import re
 from yota.exceptions import NotCallableException
+
+
+if sys.version_info[0] == 2:
+    string_types = (str, unicode)
+else:
+    string_types = (str,)
+
+def strplz(obj):
+    if isinstance(obj, string_types):
+        return obj
+    else:
+        return str(obj)
 
 
 class MinLengthValidator(object):
@@ -212,7 +226,7 @@ class PasswordStrengthValidator(object):
         for regex in self.regex:
             if re.match(regex, target.data):
                 strength += 1
-        target.add_error({'message': "Password strength is " + str(strength),
+        target.add_error({'message': "Password strength is " + strplz(strength),
                           'block': False})
 
 
