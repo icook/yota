@@ -1,6 +1,21 @@
+# encoding: utf-8
+from __future__ import unicode_literals
 import logging
 import re
 from yota.exceptions import NotCallableException
+
+import sys
+if sys.version_info[0] == 2:
+    string_types = (str, unicode)
+else:
+    string_types = (str,)
+
+def strplz(obj):
+    if isinstance(obj, string_types):
+        return obj
+    else:
+        return str(obj)
+
 
 class MinLengthValidator(object):
     """ Checks to see if data is at least length long.
@@ -20,7 +35,7 @@ class MinLengthValidator(object):
         super(MinLengthValidator, self).__init__()
 
     def __call__(self, target):
-        if len(str(target.data)) < self.min_length:
+        if len(strplz(target.data)) < self.min_length:
             target.add_error({'message': self.message})
 
 
@@ -42,7 +57,7 @@ class MaxLengthValidator(object):
         super(MaxLengthValidator, self).__init__()
 
     def __call__(self, target):
-        if len(str(target.data)) > self.max_length:
+        if len(strplz(target.data)) > self.max_length:
             target.add_error({'message': self.message})
 
 
@@ -117,7 +132,7 @@ class MinMaxValidator(object):
         super(MinMaxValidator, self).__init__()
 
     def __call__(self, target):
-        if len(str(target.data)) < self.min or len(str(target.data)) > self.max:
+        if len(strplz(target.data)) < self.min or len(strplz(target.data)) > self.max:
             target.add_error({'message': self.message})
 
 
@@ -209,7 +224,7 @@ class StrongPasswordValidator(object):
         for regex in self.regex:
             if re.match(regex, target.data):
                 strength += 1
-        target.add_error({'message': "Password strength is " + str(strength),
+        target.add_error({'message': "Password strength is " + strplz(strength),
                           'block': False})
 
 
