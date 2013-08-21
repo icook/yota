@@ -125,6 +125,17 @@ class Form(_Form):
     _reserved_attr_names = ('context', 'hidden', 'g_context', 'start_template',
                         'close_template', 'auto_start_close', '_renderer',
                         '_processor', 'name')
+
+    """ This declares which backend is used when storing semi-persistent
+    information such as CSRF tokens and CAPTCHA solutions. """
+    pysistor_backend = None
+    """ This defines an adapter object that will be made availible to the
+    Pysistor backend for use in storing the data. For instance, access to
+    sessions frequently requires access to the request object and an adapter
+    can carry that information. More information on this behaviour can be
+    gotten in the pysistor documentation """
+    pysistor_adapter = None
+
     name = None
     context = {}
     g_context = {}
