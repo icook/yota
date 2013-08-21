@@ -15,7 +15,7 @@
     {% endif %}
     {% if hidden %}
         {% for key, val in hidden.iteritems() %}
-            <input type="hidden" name="_arg_{{ key }}" value="{{ val }}" />
+            <input type="hidden" name="_arg_{{ key }}" id="_arg_{{ key }}" value="{{ val }}" />
         {% endfor %}
     {% endif %}
     <div class="alert alert-success"
