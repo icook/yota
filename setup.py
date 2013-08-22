@@ -7,7 +7,7 @@ requires = [
     'jinja2'
 ]
 
-testing_extras = ['nose', 'coverage', 'beautifulsoup4']
+testing_extras = ['nose', 'coverage', 'beautifulsoup4', 'python-coveralls']
 docs_extras = ['Sphinx', 'sphinxcontrib-fulltoc']
 
 try:
