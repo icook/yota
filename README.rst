@@ -1,5 +1,15 @@
+.. image:: https://travis-ci.org/icook/yota.png?branch=master
+    :target: https://travis-ci.org/icook/yota
+.. image:: https://coveralls.io/repos/icook/yota/badge.png?branch=master
+    :target: https://coveralls.io/r/icook/yota?branch=master
+
 Yota
 ================
+
+
+*************************************************************************************************************************************************************************************
+`Documentation <https://yota.readthedocs.org/en/latest/>`_ | `Example Repository <https://github.com/icook/yota_examples>`_ | `Demo <http://64.49.234.90/yota_example>`_
+*************************************************************************************************************************************************************************************
 
 Yota is a Python form generation library with the following unique features:
 
@@ -31,31 +41,15 @@ however it is important that sensible default be easy to use and implement,
 making the creation of common forms trivial and lowering the inital learning
 curve.
 
-**Note: Release of 0.2 has made changes that will minorly break reverse
-compatibility. This should be the last time as this code base is maturing, but
-be cautious if upgrading any production code to the latest release.**
+**Note: Release of 0.2 has made changes that will minorly break reverse compatibility. This should be the last time as this code base is maturing, but be cautious if upgrading any production code to the latest release.**
 
 **Breaking Changes Are:**
-+ Validation methods now return a tuple containing (1) Success value (2) Data
-  (Json or rendered form).
+
++ Validation methods now return a tuple containing (1) Success value (2)
+  Data (Json or rendered form).
 
 + Semantics with which Nodes interact with piecewise validation have changed
   with the re-write, but this only effects people writing custom Nodes.
-
-Getting Started
-================
-
-Yota currently provides standard documentation (although is still lacking in some areas) at [ReadTheDocs](https://yota.readthedocs.org/en/latest/).
-
-### [Documentation](https://yota.readthedocs.org/en/latest/)
-
-Example uses in Flask and Django are currently availible in the [Yota Examples](https://github.com/icook/yota_examples>) repository.
-
-### [Examples Repository](https://github.com/icook/yota_examples>)
-
-You can also view our examples live [here](http://64.49.234.90/yota_example).
-
-### [Live Demo](http://64.49.234.90/yota_example)
 
 Get Involved
 ================
@@ -68,17 +62,20 @@ requests. If you're looking to help out, there are several tickets tagged with
 CONTRIBUTORS.txt list when making a pull request is also encouraged.
 
 Latest Changes
-================
+============================
 
+*******************
 0.2.1 (2013-07-03)
-------------------
+*******************
 
-### Features
+Features
+------------------
 
 - Added a method to easily change error statuses after validation methods are
   run
 
-### Bug Fixes
+Bug Fixes
+----------
 
 - Textarea template whitespace was causing undesirable rendering
 
@@ -89,7 +86,8 @@ Latest Changes
 
 - Fixed a documentation bug giving the wrong attribute name for an action
 
-### Maintenance/Stability
+Maintenance/Stability
+----------------------
 
 - Wrote tests for all new features
 
@@ -116,4 +114,3 @@ License
 ================
 
 Yota is under the new-style BSD license.
-
