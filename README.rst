@@ -6,8 +6,9 @@
 Yota
 ================
 
+
 *************************************************************************************************************************************************************************************
-`Documentation <https://yota.readthedocs.org/en/latest/>`_ | `Example Repository <https://github.com/icook/yota_examples>`_ | `Demo <http://yota.ibcook.com/>`_
+`Documentation <https://yota.readthedocs.org/en/latest/>`_ | `Example Repository <https://github.com/icook/yota_examples>`_ | `Demo <http://64.49.234.90/yota_example>`_
 *************************************************************************************************************************************************************************************
 
 Yota is a Python form generation library with the following unique features:
@@ -40,34 +41,15 @@ however it is important that sensible default be easy to use and implement,
 making the creation of common forms trivial and lowering the inital learning
 curve.
 
-Installation
-================
+**Note: Release of 0.2 has made changes that will minorly break reverse compatibility. This should be the last time as this code base is maturing, but be cautious if upgrading any production code to the latest release.**
 
-To install Yota just:
+**Breaking Changes Are:**
 
-+ pip install yota
++ Validation methods now return a tuple containing (1) Success value (2)
+  Data (Json or rendered form).
 
-Or you can install it from Git with:
-
-+ git clone https://github.com/icook/yota.git
-+ cd yota
-+ pip install .
-+ pip install jinja2
-
-Tests
-================
-
-Yota tries hard to maintain a high level of test coverage, and as such running 
-the tests before pull requests and commits is important. Tests are setup to run
-with nose, and some testing parses HTML with beautifulsoup. To install:
-
-+ pip install nose beautifulsoup4
-
-Then run:
-
-+ nosetests
-
-in the root folder of the project.
++ Semantics with which Nodes interact with piecewise validation have changed
+  with the re-write, but this only effects people writing custom Nodes.
 
 Get Involved
 ================
@@ -83,56 +65,49 @@ Latest Changes
 ============================
 
 *******************
-0.2.2 (2013-08-22)
+0.2.1 (2013-07-03)
 *******************
 
 Features
 ------------------
 
-- Added post-success JavaScript hooks for common actions as well as custom JS
-
-- Shorthand validation is now allowed for dynamically inserted nodes
-
-- Added Python 3.3 support
-
-- Implemented a 'validator' method for Form that allows one-off validation for 
-  validation logic that is specific to that form only
-
-- Added new 'render_success' and 'error_success' attributes for Form to specify
-  a JavaScript function to replace the default callback in the JS api
-  
-- css_style, disable, and css_class are now Node attributes that can be used in
-  templates
-
-- Added a new FileNode for uploading files with along with a MimeTypeValidator
-  and associated template modifications
+- Added a method to easily change error statuses after validation methods are
+  run
 
 Bug Fixes
 ----------
 
-- Documentation fixes
+- Textarea template whitespace was causing undesirable rendering
 
-- Setting title=False didn't function correctly
+- Updated the Button Node to use the proper template inheritence
 
-- Some class attribute override semantics didn't function as intended and have
-  now been resolved
+- Modified insert_validator to accept iterables as the other insert function
+  does
 
-- Fixed a unicode encoding error identified by xen that was breaking validation
+- Fixed a documentation bug giving the wrong attribute name for an action
 
 Maintenance/Stability
 ----------------------
 
-- Moved some functionality out of the metaclass to be more lazy, increasing the
-  initialization speed of classes and improving testing
+- Wrote tests for all new features
 
-- Wrote many additional tests and significantly improved assertion coverage
+- Expanded details in minor places in documentation
 
-- Completely re-organized tests to be organized less haphazzardly and updated 
-  /extended their comments significantly.
+- Added checking on attribute name collisions with Nodes to make the mistakes
+  easier to debug
 
-- Setup coveralls and Travis CI
+Installation
+================
 
-- Gave the whole codebase a PyLint and PEP8 pass
+Yota has no dependencies on other libraries or packages except for its rendering engine. To install Yota just do:
+
++ pip install yota
+
+Or you can install it from Git with:
+
++ git clone https://github.com/icook/yota.git
++ cd yota
++ pip install .
 
 License
 ================
