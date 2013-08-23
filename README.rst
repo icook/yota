@@ -6,7 +6,6 @@
 Yota
 ================
 
-
 *************************************************************************************************************************************************************************************
 `Documentation <https://yota.readthedocs.org/en/latest/>`_ | `Example Repository <https://github.com/icook/yota_examples>`_ | `Demo <http://64.49.234.90/yota_example>`_
 *************************************************************************************************************************************************************************************
@@ -65,36 +64,56 @@ Latest Changes
 ============================
 
 *******************
-0.2.1 (2013-07-03)
+0.2.2 (2013-08-22)
 *******************
 
 Features
 ------------------
 
-- Added a method to easily change error statuses after validation methods are
-  run
+- Added post-success JavaScript hooks for common actions as well as custom JS
+
+- Shorthand validation is now allowed for dynamically inserted nodes
+
+- Added Python 3.3 support
+
+- Implemented a 'validator' method for Form that allows one-off validation for 
+  validation logic that is specific to that form only
+
+- Added new 'render_success' and 'error_success' attributes for Form to specify
+  a JavaScript function to replace the default callback in the JS api
+  
+- css_style, disable, and css_class are now Node attributes that can be used in
+  templates
+
+- Added a new FileNode for uploading files with along with a MimeTypeValidator
+  and associated template modifications
 
 Bug Fixes
 ----------
 
-- Textarea template whitespace was causing undesirable rendering
+- Documentation fixes
 
-- Updated the Button Node to use the proper template inheritence
+- Setting title=False didn't function correctly
 
-- Modified insert_validator to accept iterables as the other insert function
-  does
+- Some class attribute override semantics didn't function as intended and have
+  now been resolved
 
-- Fixed a documentation bug giving the wrong attribute name for an action
+- Fixed a unicode encoding error identified by xen that was breaking validation
 
 Maintenance/Stability
 ----------------------
 
-- Wrote tests for all new features
+- Moved some functionality out of the metaclass to be more lazy, increasing the
+  initialization speed of classes and improving testing
 
-- Expanded details in minor places in documentation
+- Wrote many additional tests and significantly improved assertion coverage
 
-- Added checking on attribute name collisions with Nodes to make the mistakes
-  easier to debug
+- Completely re-organized tests to be organized less haphazzardly and updated 
+  /extended their comments significantly.
+
+- Setup coveralls and Travis CI
+
+- Gave the whole codebase a PyLint and PEP8 pass
 
 Installation
 ================

@@ -1,3 +1,54 @@
+0.2.2 (2013-08-22)
+------------------
+
+Features
+~~~~~~~~
+
+- Added post-success JavaScript hooks for common actions as well as custom JS
+
+- Shorthand validation is now allowed for dynamically inserted nodes
+
+- Added Python 3.3 support
+
+- Implemented a 'validator' method for Form that allows one-off validation for 
+  validation logic that is specific to that form only
+
+- Added new 'render_success' and 'error_success' attributes for Form to specify
+  a JavaScript function to replace the default callback in the JS api
+  
+- css_style, disable, and css_class are now Node attributes that can be used in
+  templates
+
+- Added a new FileNode for uploading files with along with a MimeTypeValidator
+  and associated template modifications
+
+Bug Fixes
+~~~~~~~~
+
+- Documentation fixes
+
+- Setting title=False didn't function correctly
+
+- Some class attribute override semantics didn't function as intended and have
+  now been resolved
+
+- Fixed a unicode encoding error identified by xen that was breaking validation
+
+Maintenance/Stability
+~~~~~~~~~~~~~~~~~~~~~
+
+- Moved some functionality out of the metaclass to be more lazy, increasing the
+  initialization speed of classes and improving testing
+
+- Wrote many additional tests and significantly improved assertion coverage
+
+- Completely re-organized tests to be organized less haphazzardly and updated 
+  /extended their comments significantly.
+
+- Setup coveralls and Travis CI
+
+- Gave the whole codebase a PyLint and PEP8 pass
+
 0.2.1 (2013-07-03)
 ------------------
 
