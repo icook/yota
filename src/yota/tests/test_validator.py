@@ -82,6 +82,75 @@ class TestValidators(unittest.TestCase):
         errors = self.run_check({'t': u'm@\xc3.com'}, meth)
         assert(len(errors) == 0)
 
+    def test_minmax(self):
+        """ minmax validator testing, pos and neg """
+        meth = MinMaxValidator(2, 5, message="Darn")
+
+        errors = self.run_check({'t': 'ai'}, meth)
+        assert(len(errors) == 0)
+        errors = self.run_check({'t': 'a'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'asdlkjdsfgljksdfg'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'asdfg'}, meth)
+        assert(len(errors) == 0)
+
+        meth = MinMaxValidator(2, 5)
+        errors = self.run_check({'t': 'aiadsflgkj'}, meth)
+        assert(len(errors) > 0)
+        assert("be between" in errors[0].errors[0]['message'])
+
+    def test_password(self):
+        """ password validator testing, pos and neg """
+        meth = PasswordValidator()
+
+        errors = self.run_check({'t': 'a'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'a&'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'aA&'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'aklm%klsdfg'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'aklm% '}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'aklm%\n'}, meth)
+        assert(len(errors) > 0)
+
+        errors = self.run_check({'t': 'A7Sdfkls$gdf'}, meth)
+        assert(len(errors) == 0)
+
+    def test_username(self):
+        """ username validator testing, pos and neg """
+        meth = UsernameValidator()
+
+        errors = self.run_check({'t': 'a'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'adfgl&'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'adfgsdfg '}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'aklm%klsdfg'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'aklm% '}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'aklm%\n'}, meth)
+        assert(len(errors) > 0)
+
+        errors = self.run_check({'t': 'some_thing-new'}, meth)
+        assert(len(errors) == 0)
+
+    def test_integer(self):
+        """ integer validator testing, pos and neg """
+        meth = IntegerValidator(message="Darn")
+
+        errors = self.run_check({'t': '12'}, meth)
+        assert(len(errors) == 0)
+        errors = self.run_check({'t': '12a'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'asdfsd'}, meth)
+        assert(len(errors) > 0)
+
     def test_required(self):
         """ required validator """
         meth = RequiredValidator(message="Darn")
