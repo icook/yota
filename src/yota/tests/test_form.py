@@ -174,6 +174,14 @@ class TestForms(unittest.TestCase):
         assert(success is False)
         assert('This is a very specific error' in render)
 
+    def test_error_header(self):
+        """ tests the validate_render methods use of success_header_generate """
+        class TForm(yota.Form):
+            t = EntryNode()
+
+        test = TForm()
+        assert(test.t._parent_form is test)
+
     def test_success_header(self):
         """ success header generation """
 

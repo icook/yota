@@ -9,5 +9,5 @@ from copy import copy, deepcopy
 class TestPysist(unittest.TestCase):
     """ Integration testing between pysistor project and yota """
 
-    def test_simple_persist():
+    def test_simple_persist(self):
         pass

@@ -271,6 +271,7 @@ class Form(_Form):
 
         node.set_identifiers(self.name)
         setattr(self, node._attr_name, node)
+        setattr(node, "_parent_form", self)
 
     def _parse_shorthand_validator(self, node):
         """ Loops thorugh all the Nodes and checks for shorthand validators.

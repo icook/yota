@@ -1,4 +1,6 @@
 from yota.exceptions import InvalidContextException
+import simplecaptcha.visual.tests
+import pysistor
 import copy
 
 
@@ -316,6 +318,48 @@ class ButtonNode(BaseNode, NonDataNode):
     """
     template = 'button'
     button_title = 'Click me!'
+
+
+class CaptchaNode(BaseNode):
+    """ A node designed for basic captcha support. It expects
+    to receive a captcha id through the global context and uses
+    the id to reference a captcha image.
+    """
+    template = 'captcha'
+    placeholder = 'Are you human?'
+    captcha_test = simplecaptcha.visual.tests.AngryGimpy
+
+    def get_context(self, g_context):
+        import pysistor
+        import pickle
+        import datetime
+        # Perform the super context as normal
+        context = BaseNode.get_context(self, g_context)
+
+        # Then generate a new Captcha Node from Pysistor and inject the
+        # information
+        test = self.captcha_test()
+        pysistor.Pysistor.expire_all("captcha_",
+                                backend=self._parent_form.pysistor_backend,
+                                adapter=self._parent_form.pysistor_adapter)
+        pysistor.Pysistor.store("captcha_{0}".format(test.id),
+                                pickle.dumps(test),
+                                expire=datetime.datetime.now() -
+                                        datetime.timedelta(minutes=5),
+                                backend=self._parent_form.pysistor_backend,
+                                adapter=self._parent_form.pysistor_adapter)
+
+        context.update({'captcha_id': test.id})
+        return context
+
+    def resolve_data(self, data):
+        try:
+            self.captcha_id = data['__captcha_id__']
+            self.data = data[self.name]
+        except KeyError:
+            raise DataAccessException("Node {0} cannot find name {1} in "
+                                      "submission data.".format(self._attr_name,
+                                                                self.name))
 
 
 class EntryNode(BaseNode):
