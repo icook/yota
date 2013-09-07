@@ -8,16 +8,13 @@
         // default settings
         var settings = $.extend({  
             // Show errors with a bootstrap tooltip by default
-            render_success: function (data, ids) {
-                if (data.custom_success != undefined) {
-                } else {
-                    if (ids.error_id != undefined) {
-                        $("#" + ids.error_id).show();
-                        $("#" + ids.error_id).html(data.message);
-                    }
+            render_success: function (type, data, ids) {
+                if (ids.error_id != undefined) {
+                    $("#" + ids.error_id).show();
+                    $("#" + ids.error_id).html(data.message);
                 }
             },
-            render_error: function (id, status, data) {
+            error_default: function (id, status, data){
                 // exit if there wasn't a proper id given
                 if (id.elements[0] == undefined) {
                     console.log("There are no elements defined to deliver " +
@@ -45,6 +42,13 @@
                                         html: true});
                     $('#' + target_id).tooltip('show');
                 }
+            },
+            //error_CaptchaNode: function (id, status, data){},
+            render_error: function (id, status, data) {
+                if (settings.hasOwnProperty('error_' + type))
+                    settings[type](id, status, data);
+                else
+                    settings['error_default'](id, status, data);
             },
             piecewise: false,
             process_builtins: true
@@ -110,8 +114,14 @@
                             if (opts.redirect)
                                 window.location.replace(opts.redirect);
                             if (opts.ga_run) {
+                                // Run google analytics action
                                 if (typeof(ga) === 'function')
-                                    ga('send', 'event', opts.ga_run[0], opts.ga_run[1], opts.ga_run[2], opts.ga_run[3]);
+                                    ga('send',
+                                       'event',
+                                       opts.ga_run[0],
+                                       opts.ga_run[1],
+                                       opts.ga_run[2],
+                                       opts.ga_run[3]);
                             }
                         }
                     } else {
