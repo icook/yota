@@ -488,7 +488,9 @@ class Form(_Form):
         # easy catching of success in the view code.
         if data.get('submit_action', 'false') == 'true' and not block:
             valid = True
+            self.run_events("validate_success")
         else:
+            self.run_events("validate_failure")
             valid = False
 
         # Hold our return dictionary in memeory for easy editing later
@@ -511,6 +513,12 @@ class Form(_Form):
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
         block, invalid = self._gen_validate(data)
+
+        # Run our validation trigger events
+        if block:
+            self.run_events("validate_failure")
+        else:
+            self.run_events("validate_success")
 
         return (not block), invalid
 
@@ -544,9 +552,12 @@ class Form(_Form):
 
         # run our form validators at the end
         if not block:
+            self.run_events("validate_success")
             self.success_header_generate()
         else:
+            self.run_events("validate_failure")
             self.error_header_generate(invalid, block)
+
         return (not block), self.render()
 
     def validator(self):
