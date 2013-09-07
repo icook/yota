@@ -18,7 +18,7 @@ class TestValidators(unittest.TestCase):
 
         c = Check(validator, *args)
         c.resolved = True
-        c.validate()
+        c()
         ret = []
         for a in args:
             if len(a.errors) > 0:

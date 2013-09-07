@@ -60,7 +60,7 @@ class TestNode(unittest.TestCase):
         test = TForm()
         test._parse_shorthand_validator(test.t)
         assert(len(test._validation_list) > 0)
-        assert(isinstance(test._validation_list[0].validator,
+        assert(isinstance(test._validation_list[0].callable,
                           MinLengthValidator))
 
         # ensure that we can still add multiples through iterable types

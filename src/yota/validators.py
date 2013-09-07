@@ -328,30 +328,10 @@ class EmailValidator(object):
             target.add_error({'message': self.message})
 
 
-class Check(object):
-    """ This object wraps a validator callable and is intended to be used in
-    your `Form` subclass definition.
+class BaseEvent(object):
 
-    :param callable validator: This is required to be a callable object
-        that will carry out the actual validation. Many generic validators
-        exist or you can roll your own.
-
-    :param list args: A list of strings, or a single string,
-        representing that _attr_name of the `Node` you would like passed
-        into the validator. Once a validator is called this string will get
-        resolved into a NamedTuple that will be passed into the validator
-        callable.
-
-    :param dict kwargs: Same as args above except it allows passing in node
-        information as keyword arguments to the validator callable.
-
-    `Check` objects are designed to be declared in your form subclass in one of
-    two ways. Explicit.
-
-    """
-
-    def __init__(self, validator, *args, **kwargs):
-        self.validator = validator
+    def __init__(self, callable, *args, **kwargs):
+        self.callable = callable
         if not args:
             self.args = []
         else:
@@ -365,7 +345,7 @@ class Check(object):
         self._attr_name = None
         self.resolved = False
 
-    def resolve_attr_names(self, data, form):
+    def resolve_attr_names(self, form):
         """ Called internally by the validation methods this resolves all arg
         and kwarg strings to their respective `Node` objects and replaces them
         with a KeyedTuple containing the submitted data and the Node object
@@ -386,6 +366,45 @@ class Check(object):
             self.kwargs[key] = form.get_by_attr(val)
 
         self.resolved = True
+
+    def __call__(self):
+        """ Called by the validation routines. Allows the Check to specify
+        parameters that will be passed to our Validation method.
+        """
+
+        if not self.resolved:
+            raise ValueError("Check args are not resolved. This should not happen")
+
+        try:
+            # Run our validator
+            return self.callable(*self.args, **self.kwargs)
+        except TypeError as e:
+            raise NotCallableException(
+                "Validators provided must be callable, type '{0}'" +
+                "instead. Caused by {1}".format(type(self.callable), e))
+
+
+class Check(BaseEvent):
+    """ This object wraps a validator callable and is intended to be used in
+    your `Form` subclass definition.
+
+    :param callable validator: This is required to be a callable object
+        that will carry out the actual validation. Many generic validators
+        exist or you can roll your own.
+
+    :param list args: A list of strings, or a single string,
+        representing that _attr_name of the `Node` you would like passed
+        into the validator. Once a validator is called this string will get
+        resolved into a NamedTuple that will be passed into the validator
+        callable.
+
+    :param dict kwargs: Same as args above except it allows passing in node
+        information as keyword arguments to the validator callable.
+
+    `Check` objects are designed to be declared in your form subclass in one of
+    two ways. Explicit.
+
+    """
 
     def node_visited(self, visited):
         """ Used by piecewise validation to determine if all the Nodes involved
@@ -415,24 +434,15 @@ class Check(object):
         # we identified at least one name in each node's collection of names
         return True
 
-    def validate(self):
-        """ Called by the validation routines. Allows the Check to specify
-        parameters that will be passed to our Validation method.
-        """
-
-        if not self.resolved:
-            raise ValueError("Check args are not resolved. This should not happen")
-        try:
-            # Run our validator
-            return self.validator(*self.args, **self.kwargs)
-        except TypeError as e:
-            raise NotCallableException(
-                "Validators provided must be callable, type '{0}'" +
-                "instead. Caused by {1}".format(type(self.validator), e))
-
     def __iter__(self):
         """ A simple way to make functions accept lists or single elements """
         yield self
 
     def __repr__(self):
         return "<Check at {0}, args: {1}, kwargs: {2}>".format(id(self), self.args, self.kwargs)
+
+
+class Event(BaseEvent):
+    def __init__(self, type, callable, *args, **kwargs):
+        self.type = type
+        super(Event, self).__init__(callable, *args, **kwargs)

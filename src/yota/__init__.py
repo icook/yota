@@ -1,7 +1,7 @@
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
 from yota.nodes import LeaderNode, Node
-from yota.validators import Check
+from yota.validators import Check, Event
 import json
 import copy
 
@@ -21,6 +21,7 @@ class TrackingMeta(type):
         nodes = {}
         mcs._validation_list = []
         mcs._node_list = []
+        mcs._event_lists = {}
         for name, attribute in dct.items():
             # These aren't ordered Nodes, ignore them
             if name is 'start' or name is 'close':
@@ -39,6 +40,13 @@ class TrackingMeta(type):
                 # if we've found a validation check
                 attribute._attr_name = name
                 mcs._validation_list.append(attribute)
+                delattr(mcs, name)
+            elif isinstance(attribute, Event):
+                # if we've found a validation check
+                attribute._attr_name = name
+                if attribute.type not in mcs._event_lists:
+                    mcs._event_lists[attribute.type] = []
+                mcs._event_lists[attribute.type].append(attribute)
                 delattr(mcs, name)
 
         # insert our nodes in sorted order by there initialization order, thus
@@ -111,7 +119,7 @@ class Form(_Form):
             att = getattr(self, class_attr)
             # We want to copy all the nodes as well as the list, this is a
             # succinct way to do it
-            if class_attr in ['_node_list', '_validation_list']:
+            if class_attr in ['_node_list', '_validation_list', '_event_lists']:
                 setattr(self, class_attr, copy.deepcopy(att))
             # Private attributes are internal stuff..
             elif not class_attr.startswith('__'):
@@ -170,6 +178,14 @@ class Form(_Form):
         """
 
         return self._renderer().render(self._node_list, self.g_context)
+
+    def run_events(self, type):
+        try:
+            for event in self._event_lists[type]:
+                event.resolve_attr_names(self)
+                event()
+        except KeyError:
+            pass
 
     def _setup_node(self, node):
         """ An internal function performs some safety checks, sets attribute,
@@ -385,9 +401,9 @@ class Form(_Form):
         block = False
         # loop over our checks and run our validators
         for check in self._validation_list:
-            check.resolve_attr_names(data, self)
+            check.resolve_attr_names(self)
             if piecewise is False or check.node_visited(visited):
-                check.validate()
+                check()
             else:
                 # If even a single check can't be run, we need to block
                 block = True
@@ -588,3 +604,4 @@ class Form(_Form):
                 return self._last_raw_json
             else:
                 return json.dumps(self._last_raw_json)
+
