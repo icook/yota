@@ -328,7 +328,11 @@ class EmailValidator(object):
             target.add_error({'message': self.message})
 
 
-class BaseEvent(object):
+class ActionWrapper(object):
+    """ A base class for Check and Listener. Both are very similar in operation
+    since they are both wrappers around called functions. Their primary
+    function is to resolve arguments lazily, allowing validators to be added
+    for fields that don't exist. """
 
     def __init__(self, callable, *args, **kwargs):
         self.callable = callable
@@ -384,26 +388,23 @@ class BaseEvent(object):
                 "instead. Caused by {1}".format(type(self.callable), e))
 
 
-class Check(BaseEvent):
+class Check(ActionWrapper):
     """ This object wraps a validator callable and is intended to be used in
     your `Form` subclass definition.
 
     :param callable validator: This is required to be a callable object
         that will carry out the actual validation. Many generic validators
-        exist or you can roll your own.
+        exist, or you can roll your own.
 
     :param list args: A list of strings, or a single string,
         representing that _attr_name of the `Node` you would like passed
         into the validator. Once a validator is called this string will get
-        resolved into a NamedTuple that will be passed into the validator
-        callable.
+        resolved into the Node object
 
     :param dict kwargs: Same as args above except it allows passing in node
         information as keyword arguments to the validator callable.
 
-    `Check` objects are designed to be declared in your form subclass in one of
-    two ways. Explicit.
-
+    `Check` objects are designed to be declared in your form subclass.
     """
 
     def node_visited(self, visited):
@@ -442,7 +443,29 @@ class Check(BaseEvent):
         return "<Check at {0}, args: {1}, kwargs: {2}>".format(id(self), self.args, self.kwargs)
 
 
-class Event(BaseEvent):
+class Listener(ActionWrapper):
+    """ The class that wraps actions triggered by events. Essentially this just
+    holds reference to a callable along with some metadata and a lazy loader
+    for Nodes. The Form._event_lists will contain a collection of these objects
+    and are what drives the Form.trigger_event function.
+
+    :param string type: The name of the event to listen to. The callable will be
+        executed when the event is triggered.
+
+    :param callable validator: This is required to be a callable object
+        that will will be executed when the event of `type` is triggered.
+
+    :param string *args: A list of strings, or a single string,
+        representing that _attr_name of the `Node` you would like passed
+        into the validator. Once a validator is called this string will get
+        resolved into the Node object.
+
+    :param dict **kwargs: Same as args above except it allows passing in node
+        information as keyword arguments to the validator callable.
+
+    `Listener` objects are designed to be declared in your form subclass.
+    """
     def __init__(self, type, callable, *args, **kwargs):
+        # Just add the type attribute that the base doesn't have
         self.type = type
-        super(Event, self).__init__(callable, *args, **kwargs)
+        super(Listener, self).__init__(callable, *args, **kwargs)

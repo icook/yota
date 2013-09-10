@@ -1,7 +1,7 @@
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
 from yota.nodes import LeaderNode, Node
-from yota.validators import Check, Event
+from yota.validators import Check, Listener
 import json
 import copy
 
@@ -41,7 +41,7 @@ class TrackingMeta(type):
                 attribute._attr_name = name
                 mcs._validation_list.append(attribute)
                 delattr(mcs, name)
-            elif isinstance(attribute, Event):
+            elif isinstance(attribute, Listener):
                 # if we've found a validation check
                 attribute._attr_name = name
                 if attribute.type not in mcs._event_lists:
@@ -179,7 +179,16 @@ class Form(_Form):
 
         return self._renderer().render(self._node_list, self.g_context)
 
-    def run_events(self, type):
+    def add_listener(self, listener, type):
+        """ Attaches a :class:`Listener` to an event type. These Listener will
+        be executed when trigger event is called. """
+        if type not in self._event_lists:
+            self._event_lists[type] = []
+        self._event_lists[type].append(listener)
+
+    def trigger_event(self, type):
+        """ Runs all the associated :class:`Listener`'s for a specific event
+        type. """
         try:
             for event in self._event_lists[type]:
                 event.resolve_attr_names(self)
@@ -488,9 +497,9 @@ class Form(_Form):
         # easy catching of success in the view code.
         if data.get('submit_action', 'false') == 'true' and not block:
             valid = True
-            self.run_events("validate_success")
+            self.trigger_event("validate_success")
         else:
-            self.run_events("validate_failure")
+            self.trigger_event("validate_failure")
             valid = False
 
         # Hold our return dictionary in memeory for easy editing later
@@ -516,9 +525,9 @@ class Form(_Form):
 
         # Run our validation trigger events
         if block:
-            self.run_events("validate_failure")
+            self.trigger_event("validate_failure")
         else:
-            self.run_events("validate_success")
+            self.trigger_event("validate_success")
 
         return (not block), invalid
 
@@ -552,10 +561,10 @@ class Form(_Form):
 
         # run our form validators at the end
         if not block:
-            self.run_events("validate_success")
+            self.trigger_event("validate_success")
             self.success_header_generate()
         else:
-            self.run_events("validate_failure")
+            self.trigger_event("validate_failure")
             self.error_header_generate(invalid, block)
 
         return (not block), self.render()
