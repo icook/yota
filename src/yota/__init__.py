@@ -48,6 +48,14 @@ class TrackingMeta(type):
                     mcs._event_lists[attribute.type] = []
                 mcs._event_lists[attribute.type].append(attribute)
                 delattr(mcs, name)
+            else:
+                # just assume that this is some kind of blueprint with
+                # ducktyping
+                try:
+                    for node in attribute._node_list:
+                        nodes[node._create_counter] = node
+                except AttributeError:
+                    pass
 
         # insert our nodes in sorted order by there initialization order, thus
         # preserving order

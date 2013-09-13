@@ -98,6 +98,31 @@ class TestForms(unittest.TestCase):
         assert(test.other._attr_name == two._attr_name)
         assert(test.thing._attr_name == three._attr_name)
 
+    def test_blueprint(self):
+        """ make sure forms can be used inside of forms """
+        class TForm(yota.Form):
+            something = EntryNode()
+            other = EntryNode()
+            thing = EntryNode()
+
+        class BForm(yota.Form):
+            first = EntryNode()
+            second = TForm
+            third = EntryNode()
+
+        test = BForm()
+
+        # attribute preservation
+        assert(test.something._attr_name == "something")
+        assert(test.other._attr_name == "other")
+        assert(test.thing._attr_name == "thing")
+
+        # assert correct order preservation
+        assert(test._node_list[1]._attr_name == "first")
+        assert(test._node_list[2]._attr_name == "something")
+        assert(test._node_list[5]._attr_name == "third")
+
+
     #################################################################
     # Test core functionality of Form class
     def test_error_header(self):
