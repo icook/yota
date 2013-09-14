@@ -64,7 +64,7 @@ class TrackingMeta(type):
                             mcs._event_lists[key].extend(lst)
                         else:
                             mcs._event_lists[key] = lst
-                except AttributeError, e:
+                except AttributeError:
                     pass
 
                 # and validation

@@ -125,7 +125,7 @@ class TestForms(unittest.TestCase):
     def test_blueprint_events(self):
         """ ensure events get transferred properly """
         def testing():
-            print "nothing"
+            print("nothing")
 
         class TForm(yota.Form):
             test = Listener("something", testing)
@@ -156,7 +156,6 @@ class TestForms(unittest.TestCase):
 
         test = BForm()
 
-        print test._validation_list
         assert(len(test._validation_list) == 1)
         assert(test._validation_list[0].callable.min_length == 10)
 
