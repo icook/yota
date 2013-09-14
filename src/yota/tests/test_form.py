@@ -98,7 +98,7 @@ class TestForms(unittest.TestCase):
         assert(test.other._attr_name == two._attr_name)
         assert(test.thing._attr_name == three._attr_name)
 
-    def test_blueprint(self):
+    def test_blueprint_nodes(self):
         """ make sure forms can be used inside of forms """
         class TForm(yota.Form):
             something = EntryNode()
@@ -107,7 +107,7 @@ class TestForms(unittest.TestCase):
 
         class BForm(yota.Form):
             first = EntryNode()
-            second = TForm
+            second = Blueprint(TForm)
             third = EntryNode()
 
         test = BForm()
@@ -122,6 +122,43 @@ class TestForms(unittest.TestCase):
         assert(test._node_list[2]._attr_name == "something")
         assert(test._node_list[5]._attr_name == "third")
 
+    def test_blueprint_events(self):
+        """ ensure events get transferred properly """
+        def testing():
+            print "nothing"
+
+        class TForm(yota.Form):
+            test = Listener("something", testing)
+            test2 = Listener("else", testing)
+
+        class BForm(yota.Form):
+            test3 = Listener("else", testing)
+            test4 = Blueprint(TForm)
+
+        test = BForm()
+
+        # make sure the keys are there
+        assert("something" in test._event_lists)
+        assert("else" in test._event_lists)
+
+        # assert correct order preservation
+        assert(len(test._event_lists["something"]) == 1)
+        assert(len(test._event_lists["else"]) == 2)
+
+    def test_blueprint_events(self):
+        """ ensure events get transferred properly """
+        class TForm(yota.Form):
+            main = EntryNode(validators=MinLengthValidator(5))
+            other_name_val = Check(MinLengthValidator(10), "main")
+
+        class BForm(yota.Form):
+            test4 = Blueprint(TForm)
+
+        test = BForm()
+
+        print test._validation_list
+        assert(len(test._validation_list) == 1)
+        assert(test._validation_list[0].callable.min_length == 10)
 
     #################################################################
     # Test core functionality of Form class

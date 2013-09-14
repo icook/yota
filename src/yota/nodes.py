@@ -196,6 +196,18 @@ class Node(object):
         """ Make debugging and printing nodes a bit more readible """
         return "<{0} at {1}, _attr_name={2}>".format(__name__, id(self), self._attr_name)
 
+
+class Blueprint(object):
+    def __init__(self, source):
+        for node in source._node_list:
+            # Reassign attribute order to fit in line with the other attributes
+            node._create_counter = Node._create_counter
+            Node._create_counter += 1
+        self._node_list = source._node_list
+        self._event_lists = source._event_lists
+        self._validation_list = source._validation_list
+
+
 class BaseNode(Node):
     """ This base Node supplies the name of the base rendering template that
     is used for standard form elements. This base template provides error divs

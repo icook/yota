@@ -57,6 +57,22 @@ class TrackingMeta(type):
                 except AttributeError:
                     pass
 
+                # merge in our events
+                try:
+                    for key, lst in attribute._event_lists.items():
+                        if key in mcs._event_lists:
+                            mcs._event_lists[key].extend(lst)
+                        else:
+                            mcs._event_lists[key] = lst
+                except AttributeError, e:
+                    pass
+
+                # and validation
+                try:
+                    mcs._validation_list.extend(attribute._validation_list)
+                except AttributeError:
+                    pass
+
         # insert our nodes in sorted order by there initialization order, thus
         # preserving order
         for i, attribute in sorted(nodes.items()):
