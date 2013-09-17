@@ -1,0 +1,17 @@
+{% extends base %}
+{% block control %}
+<script>
+  $( "#{{ id }}" ).autocomplete({
+    source: {{ json_autolist }}
+  });
+</script>
+<input data-piecewise="{{ piecewise_trigger }}"
+       type="text"
+       id="{{ id }}"
+       value="{{ data }}"
+       class="{{ css_class }}"
+       style="{{ css_style }}"
+       name="{{ name }}"
+       placeholder="{{ placeholder }}"
+       {% if disabled %}disabled{% endif %}>
+{% endblock %}

@@ -1,4 +1,5 @@
 from yota.exceptions import InvalidContextException
+import json
 import copy
 
 
@@ -256,6 +257,19 @@ class RadioNode(BaseNode):
     template = 'radio_group'
     _requires = ['buttons']
 
+
+class AutocompleteNode(BaseNode):
+    """ An autocomplete jQuery UI node. Populate the autolist attribute with a
+    list of autocomplete values. """
+    template = 'autocomplete'
+    autolist = []
+
+    def get_context(self, g_context):
+        cont = super(AutocompleteNode, self).get_context(g_context)
+        cont.update({'json_autolist': json.dumps(self.autolist)})
+        return cont
+
+
 class CheckNode(BaseNode):
     """ Creates a simple checkbox for your form. """
     template = 'checkbox'
@@ -267,6 +281,7 @@ class CheckNode(BaseNode):
             # Unchecked checkboxes don't submit any data so we'll set the
             # value to false if there is no post data
             self.data = False
+
 
 class CheckGroupNode(BaseNode):
     """ Node for providing a group of checkboxes. Requires boxes
