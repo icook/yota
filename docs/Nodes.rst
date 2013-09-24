@@ -6,7 +6,7 @@ Nodes
 
 Nodes drive the actual rendering of your :class:`Form`. Internally a
 :class:`Form` keeps track of a list of :class:`Node`'s and then passes them off
-to the :class:`Renderer` when a render of the :class:`Form` is requested. Lets
+to the :ref:`Renderer <renderers>` when a render of the :class:`Form` is requested. Lets
 look at a simple example Form as shown in the introduction:
 
 .. code-block:: python
@@ -39,7 +39,7 @@ template is rendered.
 A Simple Node
 ==============================
 Let's examine one of the builtin Nodes availible in Yota, and some of the
-things we can do with it. Let us look at the :class:`EntryNode`. It has the
+things we can do with it. Let us look at the :class:`nodes.EntryNode`. It has the
 following template:
 
 .. code-block:: html
@@ -257,7 +257,6 @@ multiple form elements in it.  This all depends on your preference.
 Builtin Nodes
 =====================
 
-
 .. autoclass:: yota.nodes.BaseNode
 .. autoclass:: yota.nodes.NonDataNode
 .. autoclass:: yota.nodes.ListNode
@@ -265,6 +264,8 @@ Builtin Nodes
 .. autoclass:: yota.nodes.CheckGroupNode
 .. autoclass:: yota.nodes.ButtonNode
 .. autoclass:: yota.nodes.EntryNode
+.. autoclass:: yota.nodes.PasswordNode
+.. autoclass:: yota.nodes.FileNode
 .. autoclass:: yota.nodes.TextareaNode
 .. autoclass:: yota.nodes.SubmitNode
 .. autoclass:: yota.nodes.LeaderNode

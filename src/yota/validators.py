@@ -177,7 +177,7 @@ class UsernameValidator(RegexValidator):
         self.regex = '^[a-zA-Z0-9-_]{3,20}$'
 
 
-class StrongPasswordValidator(object):
+class PasswordStrengthValidator(object):
     """ A validator to check the password strength.
 
     :param regex: (optional) The regex to run against the input.
@@ -293,7 +293,7 @@ class EmailValidator(object):
 
     def __init__(self, message=None):
         self.message = message if message else "Entered value must be a valid"\
-                                               " Email address"
+                                               " email address"
         super(EmailValidator, self).__init__()
 
     def valid(self, value):

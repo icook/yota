@@ -1,0 +1,30 @@
+<div class="form-group">
+    {% block error %}
+        {% if g.ajax %}
+        <div class="alert alert-danger" style="display:none;" id="{{ id }}_error">
+        </div>
+        {% endif %}
+    {% endblock %}
+    {% if label %}
+        {% block label %}
+            <label class="col-lg-4 control-label" for="{{ id }}">{{ title }}</label>
+        {% endblock %}
+    {% endif %}
+    <div class="col-lg-8">
+        {% block control %}
+        {% endblock %}
+      {% if errors %}
+      <div class="alert alert-danger" style="margin:5px 0px;">
+        {% if errors|length > 1 %}
+          <ul>
+            {% for error in errors %}
+            <li>{{ error['message'] }}</li>
+            {%endfor%}
+          </ul>
+        {%else%}
+          {{ errors[0]['message'] }}
+        {%endif%}
+      </div>
+      {% endif %}
+    </div>
+</div>

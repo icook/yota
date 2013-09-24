@@ -1,0 +1,42 @@
+<form method="post" class="{{ form_class }}" id="{{ id }}" action="{{action}}" enctype="{{enctype}}">
+    {% if g.ajax %}
+        <script type="text/javascript">
+        $(function () {
+            $('#{{ id }}').yota_activate({ {% if g.piecewise %}piecewise: true,{% endif %}
+              {% if render_success %}render_success: {{ render_success }}, {% endif %}
+              {% if render_error %}render_error: {{ render_error }}, {% endif %}
+                                        });
+        });
+        </script>
+        {% if g.piecewise %}
+            <input type="hidden" name="_piecewise_" value="True"/>
+        {% endif %}
+        <input type="hidden" name="_ajax_" value="True"/>
+    {% endif %}
+    {% if hidden %}
+        {% for key, val in hidden.iteritems() %}
+            <input type="hidden" name="_arg_{{ key }}" id="_arg_{{ key }}" value="{{ val }}" />
+        {% endfor %}
+    {% endif %}
+    <div
+      {% if not errors %}style="display:none;"{% else %}
+        {% if not errors[0]['error'] %}
+        class="alert alert-success"{% else %}
+        class="alert alert-danger" {% endif %}
+      {% endif %}
+        id="{{ id }}_error">
+        {% if errors|length > 1 %}
+          <ul>
+            {% for error in errors %}
+            <li>{{ error['message'] }}</li>
+            {%endfor%}
+          </ul>
+        {%else%}
+          {% if errors %}
+          {{ errors[0]['message'] }}
+          {%endif%}
+        {%endif%}
+    </div>
+    {% if title %}
+    <h2>{{ title }}</h2>
+    {% endif %}

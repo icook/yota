@@ -77,6 +77,7 @@ Contents
     Form.rst
     Nodes.rst
     Validators.rst
+    Renderers.rst
     AJAX.rst
 
 

@@ -11,6 +11,8 @@ structured, reusable callables. Validators can be supplied an arbitrary number o
 inputs as well as dispatch information (errors, warnings, etc) to an arbitrary
 number of output Nodes.
 
+.. _using_validators_in_your_form:
+
 Using Validators In Your Form
 =============================
 
@@ -73,6 +75,8 @@ for simple validators, and is just syntactic sugar for the above syntax.
 
 .. note:: If neither kwargs or args are specified and cannot be implicitly determined
     an exception will be thrown.
+
+.. _validator_execution:
 
 Validator Execution
 =====================
@@ -149,6 +153,8 @@ concepts should be fairly obvious and transfer to most frameworks easily.
         return render_template('basic.html',
                                 form=out)
 
+.. _making_custom_validators:
+
 Making Custom Validators
 ========================
 A validator should be a Python callable. The callable will be accessed through
@@ -191,6 +197,8 @@ until vaildation time, as well as dynamic injection of validation rules
 themselves. In addition your validation methods can now request as much data
 as you'd like, and subsequently can disperse errors to any Nodes they are
 supplied with.
+
+.. _return_semantics:
 
 Return Semantics
 ====================
@@ -239,20 +247,23 @@ Special Key Values
     the block flag to return true. This is useful for things like notification
     of password strength, etc.
 
-.. py:module:: yota
+.. _builtin_validators:
 
 Builtin Validators
 =====================
 The default pattern for builtin Validators in Yota is to return a dictionary
 with a key 'message' containing the error. This is also the pattern that the
-builtin :class:`Nodes`'s except when rendering errors, and therefore is the
+builtin :class:`Node`'s except when rendering errors, and therefore is the
 recommended format when building your own validators.
 
 .. autoclass:: yota.validators.MinLengthValidator
 .. autoclass:: yota.validators.MaxLengthValidator
 .. autoclass:: yota.validators.MinMaxValidator
 .. autoclass:: yota.validators.RequiredValidator
+.. autoclass:: yota.validators.RegexValidator
 .. autoclass:: yota.validators.EmailValidator
+.. autoclass:: yota.validators.UsernameValidator
+.. autoclass:: yota.validators.PasswordStrengthValidator
 .. autoclass:: yota.validators.MatchingValidator
 .. autoclass:: yota.validators.IntegerValidator
 

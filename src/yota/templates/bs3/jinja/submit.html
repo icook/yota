@@ -1,0 +1,12 @@
+{% extends base %}
+{% block label %}<div class="col-lg-4"></div>{% endblock %}
+{% block control %}
+<input type="submit"
+       placeholder="{{ placeholder }}"
+       class="{{ css_class }}"
+       style="{{ css_style }}"
+       value="{{ title }}"
+       id="{{ id }}"
+       name="{{ name }}"
+       {% if disabled %}disabled{% endif %}>
+{% endblock %}

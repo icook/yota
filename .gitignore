@@ -33,6 +33,7 @@ nosetests.xml
 
 # Translations
 *.mo
+*.swo
 
 # Mr Developer
 .mr.developer.cfg

@@ -1,0 +1,16 @@
+{% extends base %}
+{% block control %}
+
+{% for value, description in buttons %}
+<label class="radio {{ css_class }}" style="{{ css_style }}">
+    <input type="radio"
+           name="{{name}}"
+           value="{{value}}"
+           id="{{ id }}_{{value}}"
+           {% if data == value %} selected{% endif %}
+           {% if disabled %}disabled{% endif %}>
+    {{description}}
+</label>
+{% endfor %}
+
+{% endblock %}

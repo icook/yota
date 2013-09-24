@@ -1,0 +1,13 @@
+{% extends base %}
+{% block control %}
+<input data-piecewise="{{ piecewise_trigger }}"
+       type="file"
+       accept="{{ accepts }}"
+       id="{{ id }}"
+       value="{{ data }}"
+       class="{{ css_class }}"
+       style="{{ css_style }}"
+       name="{{ name }}"
+       placeholder="{{ placeholder }}"
+       {% if disabled %}disabled{% endif %}>
+{% endblock %}

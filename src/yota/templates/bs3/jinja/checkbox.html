@@ -1,0 +1,12 @@
+{% extends base %}
+{% block control %}
+<label class="checkbox {{ css_class }}">
+<input data-piecewise="{{ piecewise_trigger }}"
+      type="checkbox"
+      id="{{ id }}"
+      name="{{ name }}"
+      value="true"
+      {% if data == value %}checked{% endif %}
+      {% if disabled %}disabled{% endif %}>
+{{ description }}</label>
+{% endblock %}
