@@ -141,6 +141,8 @@ A standard pattern would be to set the Form class object _renderer attribute
 allowing the attribute change to be effectively global. This would normally be
 done in whatever setup function your web framework provides.
 
+.. _dynamic_forms:
+
 Dynamic Forms
 ==========================
 One of the key features of Yota is the ability to make changes to the Form

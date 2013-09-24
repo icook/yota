@@ -29,17 +29,17 @@ through the definition of a Check.
         first = EntryNode(title='First name')
         _first_valid = Check(MinLengthValidator(5), 'first')
 
-The syntax above defines a single EntryNode and an associated validator that
+The syntax above defines a single :class:`yota.nodes.EntryNode` and an associated validator that
 ensures the entered value is at least 5 characters long. This is done through
-the declaration of a :class:`Check` object. The Check accepts the actual
+the declaration of a :class:`yota.Check` object. The Check accepts the actual
 validator as its first argument, followed by the names of Nodes that you will
-be validating. The above example binds our `MinLengthValidator` to a Node with
+be validating. The above example binds our :class:`yota.validators.MinLengthValidator` to a Node with
 the attribute name 'first'. Later when we try to validate the Form the string
 'first' will be used to lookup our Node and supply the appropriate information
 to the validator method. Nodes in Yota are identified by their attribute name
 as given in the class declaration. However, If you later add a `Node`
 dynamically it will need to specify the _attr_name attribute upon declaration
-explicitly. More on this in :ref:`Dynamically Adding Nodes`.
+explicitly. More on this in :ref:`dynamic_forms`.
 
 The above syntax gives us some nice power. We can supply that validation method
 with as many Nodes as we would like in a clear way. But what if we want to
@@ -151,16 +151,16 @@ concepts should be fairly obvious and transfer to most frameworks easily.
 
 Making Custom Validators
 ========================
-A validator should be a Python callable. The callable will be accessed through a
-Check object that provides context on how you would like your validator to be
-executed *in this given instance*. Checks are what provide your validation
-callable with the data it is going to validate. Essentially they are context
-resolvers, which is part of what allows Yota to be so dynamic.
+A validator should be a Python callable. The callable will be accessed through
+a :class:`Check` object that provides context on how you would like your
+validator to be executed *in this given instance*. Checks are what provide your
+validation callable with the data it is going to validate. Essentially they are
+context resolvers, which is part of what allows Yota to be so dynamic.
 
-When the validation callable is run it is supplied with a reference to a Node.
-The submitted data that is associated with that :class:`Node` will be loaded
-into the data attribute automatically. At this point, perhaps an example will
-help clarify.
+When the validation callable is run it is supplied with a reference to a
+:class:`Node`.  The submitted data that is associated with that :class:`Node`
+will be loaded into the data attribute automatically. At this point, perhaps an
+example will help clarify.
 
 .. code-block:: python
 

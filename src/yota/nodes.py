@@ -1,4 +1,4 @@
-from yota.exceptions import InvalidContextException, DataAccessException
+from yota.exceptions import InvalidContextException
 import copy
 
 
@@ -39,26 +39,32 @@ class Node(object):
         filename like 'node' that occurs in it's search path.
     :type template: string
 
-    :param validator: An optional attribute that specifies a
-        :class:`Check` object to be associated with the Node. This is
-        automatically extracted at parse time and cannot be manipulated
-        after Node insertion.
+    :param validators: An optional attribute that specifies a :class:`Check`
+        object, or list of Check objects to be associated with the Node. This is
+        automatically at render time.
     :type validator: callable
 
-    The default Node init method accepts any keyword arguments and adds them to
-    the Node's rendering context.
+    :param _null_val: When form submission data is passed in for validation and
+        the :meth:`Node.resolve_data` method cannot identify anything, the data
+        attribute will be set to this value. Defaults to "".
 
+    The default Node init method accepts any keyword arguments and adds them to
+    the Node's rendering context. In addition any class attributes may be added
+    to custom Nodes and these attributes will be copied at instantiation time
+    and passed into the rendering context.
     """
 
     _create_counter = 0
     """ Allows tracking the order of Node creation """
-    piecewise_trigger = 'blur'
     _ignores = ['template', 'validator']
     _requires = []
+    _attr_name = None
+    _null_val = ""
+
+    piecewise_trigger = 'blur'
     template = None
     validators = []
     label = True
-    _attr_name = None
     errors = []
     data = ''
 
@@ -123,7 +129,6 @@ class Node(object):
         if not hasattr(self, 'title'):
             self.title = self._attr_name.capitalize().replace('_', ' ')
 
-
     def resolve_data(self, data):
         """ This method links data from form submission back to Nodes. HTML
         form data is represented by a dictionary that is keyed by the 'name'
@@ -147,8 +152,7 @@ class Node(object):
         try:
             self.data = data[self.name]
         except KeyError:
-            raise DataAccessException("Node {0} cannot find name {1} in "
-                                      "submission data.".format(self._attr_name, self.name))
+            self.data = self._null_val
 
     def get_context(self, g_context):
         """ Builds our rendering context for the Node at render time. By
@@ -221,8 +225,7 @@ class BaseNode(Node):
 class NonDataNode(Node):
     """ A base to inherit from for Nodes that aren't designed to generate
     output, such as the SubmitNode or the LeaderNode. It must override
-    resolve_data, otherwise a DataAccessException will be raised upon
-    validation time. """
+    resolve_data, otherwise the data will be set to :attr:`Node._null_val`. """
     def resolve_data(self, data):
         pass
 

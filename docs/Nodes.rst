@@ -182,8 +182,7 @@ naming your input field that looks something like this:
         try:
             self.data = data[self.name]
         except KeyError:
-            raise DataAccessException("Node {0} cannot find name {1} in "
-                                      "submission data.".format(self._attr_name, self.name))
+            self.data = self._null_val
 
 You can see above that the Node's name is used to pick out the data that is
 associated with this Node. But say your Node includes multiple input fields,
@@ -202,14 +201,12 @@ something like this.
 .. code-block:: python
     
     def resolve_data(self, data):
-        """ FormDataAccessException is a safety check to make sure Form
-        submissions are working as you planned """
         try:
             day = data[self.name + '_day']
             month = data[self.name + '_month']
             year = data[self.name + '_year']
         except KeyError:
-            raise FormDataAccessException
+            self.data = self._null_val
 
         # set data to a tuple of values for validation
         self.data = (year, month, day)

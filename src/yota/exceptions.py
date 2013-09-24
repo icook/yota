@@ -8,7 +8,3 @@ class NotCallableException(Exception):
 
 class ValidationError(Exception):
         pass
-
-
-class DataAccessException(Exception):
-    pass

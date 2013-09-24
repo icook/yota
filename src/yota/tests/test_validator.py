@@ -169,4 +169,6 @@ class TestCheck(unittest.TestCase):
             _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
 
         test = TForm()
-        self.assertRaises(DataAccessException, test._gen_validate, {})
+        test.t._null_val = ['test']
+        test._gen_validate({})
+        assert len(test.t.data) == 1
