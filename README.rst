@@ -40,15 +40,34 @@ however it is important that sensible default be easy to use and implement,
 making the creation of common forms trivial and lowering the inital learning
 curve.
 
-**Note: Release of 0.2 has made changes that will minorly break reverse compatibility. This should be the last time as this code base is maturing, but be cautious if upgrading any production code to the latest release.**
+Installation
+================
 
-**Breaking Changes Are:**
+To install Yota just:
 
-+ Validation methods now return a tuple containing (1) Success value (2)
-  Data (Json or rendered form).
++ pip install yota
 
-+ Semantics with which Nodes interact with piecewise validation have changed
-  with the re-write, but this only effects people writing custom Nodes.
+Or you can install it from Git with:
+
++ git clone https://github.com/icook/yota.git
++ cd yota
++ pip install .
++ pip install jinja2
+
+Tests
+================
+
+Yota tries hard to maintain a high level of test coverage, and as such running 
+the tests before pull requests and commits is important. Tests are setup to run
+with nose, and some testing parses HTML with beautifulsoup. To install:
+
++ pip install nose beautifulsoup4
+
+Then run:
+
++ nosetests
+
+in the root folder of the project.
 
 Get Involved
 ================
@@ -114,20 +133,6 @@ Maintenance/Stability
 - Setup coveralls and Travis CI
 
 - Gave the whole codebase a PyLint and PEP8 pass
-
-Installation
-================
-
-Yota has no dependencies on other libraries or packages except for its rendering engine. To install Yota just do:
-
-+ pip install yota jinja2
-
-Or you can install it from Git with:
-
-+ git clone https://github.com/icook/yota.git
-+ cd yota
-+ pip install .
-+ pip install jinja2
 
 License
 ================
