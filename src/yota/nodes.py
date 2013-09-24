@@ -232,6 +232,10 @@ class ListNode(BaseNode):
      is a list of tuples providing the key and value for the dropdown list
      items.
 
+     .. note:: The first item of the tuple must be a string in order to match
+        returned data properly and re-select the same list item when a
+        validation error occurs.
+
     :attr items: Must be a list of tuples where the first element is the value
         of the second is the label.
     """
