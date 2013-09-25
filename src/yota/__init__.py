@@ -134,6 +134,27 @@ class Form(_Form):
     close_template = 'form_close'
     render_success = False
     render_error = False
+    type_class_map = {'error': 'alert alert-error',
+                      'info': 'alert alert-info',
+                      'success': 'alert alert-success',
+                      'warn': 'alert alert-warn'}
+    """ A mapping of error types to their respective class values. Used to
+    render messages to the user from validation. Changing it to render messages
+    differently could be performed as follows:
+
+    .. code-block:: python
+
+        class MyForm(yota.Form):
+            first = EntryNode(title='First name', validators=Check(MinLengthValidator(5)))
+            last = EntryNode(title='Last name', validators=MinLengthValidator(5)
+
+            # Override the default type_class_map with our own
+            type_class_map = {'error': 'alert alert-error my-special-class', # Add an additional class
+                            'info': 'alert alert-info',
+                            'success': 'alert alert-success',
+                            'warn': 'alert alert-warn'}
+    """
+
 
     def __init__(self, **kwargs):
         # A bit of a hack to copy all our class attributes
@@ -450,6 +471,15 @@ class Form(_Form):
             # slightly confusing way of setting our block = True by
             # default
             if node.errors:
+                # process the node errors and inject special values
+                for error in node.errors:
+                    # Try and retrieve the class values for the result type
+                    # and send along the required render value
+                    try:
+                        error['_type_class'] = self.type_class_map[error['type']]
+                    except KeyError:
+                        error['_type_class'] = self.type_class_map['error']
+
                 error_node_list.append(node)
 
             for error in node.errors:

@@ -1,22 +1,15 @@
 <div class="control-group">
-    {% block error %}
-        {% if errors %}
-        <div class="alert alert-error">
-            {{ errors[0]['message'] }}
-        </div>
-        {% endif %}
-        {% if g.ajax %}
-        <div class="alert alert-error" style="display:none;" id="{{ id }}_error">
-        </div>
-        {% endif %}
+    {% block label %}
+      {% if label %}
+        <label class="span4 control-label" for="{{ id }}">{{ title }}</label>
+      {% endif %}
     {% endblock %}
-    {% if label %}
-        {% block label %}
-            <label class="control-label" for="{{ name }}">{{ title }}</label>
-        {% endblock %}
-    {% endif %}
-    <div class="controls">
-        {% block control %}
-        {% endblock %}
+    <div class="span8" style="width:216px;">
+      {% block control %}
+      {% endblock %}
+      <span style="height:5px; display:block;"></span>
+      {% block error %}
+        {% include 'error.html' %}
+      {% endblock %}
     </div>
 </div>

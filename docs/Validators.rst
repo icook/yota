@@ -205,15 +205,18 @@ Return Semantics
 
 Validators need not return anything explicitly, but instead provide output by
 appending error information to one of their supplied Node's errors list
-attribute via the method :meth:`Node.add_error`. This method is simply a wrapper
-around appending to a list so that different ordering or filtering semantics
-may be used if desired. The data can be put into this list is fairly flexible,
-although a dictionary is recommended. If you are running a JSON based
+attribute via the method :meth:`Node.add_error`. This method is simply a
+wrapper around appending to a list so that different ordering or filtering
+semantics may be used if desired. The data can be put into this list is fairly
+flexible, although a dictionary is recommended. If you are running a JSON based
 validation method the data must by serializable, otherwise it may be anything
-since it is merely passed into the rendering context of your templates. The
-default templates are setup to look for a dictionary with a single key
-'message' which will be printed. Looking at a builtin validator should provide
-additional clarity.
+since it is merely passed into the rendering context of your templates.
+
+That said, the builtin templtes are setup to recieve specific things. The
+default templates are setup to look two keys: a dictionary with a single key
+'message' which will be printed, and 'type' to denote the alert style. If a
+type is ommitted then type will default to an error for rendering purposes.
+Looking at a builtin validator should provide additional clarity.
 
 .. code-block:: python
 
@@ -235,7 +238,14 @@ additional clarity.
             try:
                 target.data = int(target.data)
             except ValueError:
+                # Type can be safely ommitted because this is an error
                 target.add_error({'message': self.message})
+
+For rendering errors you may notice the _type_class key being looked for in the 
+error.html template. This is generated internally from what you enter as 'type'
+in your return dictionary. This is resolved by the :attr:`Form.type_class_map`,
+which maps types in the key to classes to be applied in the value. An example 
+usage might be that you'd like to add your own class to the error display. 
 
 .. note:: If you wish to make use of `Special Key Values`_ you will be required to use dictionaries to return errors.
 
@@ -245,7 +255,8 @@ Special Key Values
 | If set to False the validation message will not prevent the form from
     submitting.  As might be expected, a single blocking validator will cause
     the block flag to return true. This is useful for things like notification
-    of password strength, etc.
+    of password strength, etc. Errors returned are assumed to be blocking unless
+    specified otherwise.
 
 .. _builtin_validators:
 

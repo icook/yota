@@ -25,9 +25,9 @@
                     return;
                 }
                 // else, start tagging or removing respectively
-                target_id = id.elements[0];
-                if (status == "update" || status == "no_error")
-                    $('#' + target_id).tooltip('destroy');
+                target_id = id.error_id;
+                if (status == "no_error")
+                    $('#' + target_id).fadeOut();
 
                 if (status == "update" || status == "error") {
                     if (data.length > 1) {
@@ -39,11 +39,11 @@
                     } else
                         var tip = data[0]['message'];
 
-                    $('#' + target_id).tooltip({title: tip,
-                                        placement: 'right',
-                                        trigger: 'manual',
-                                        html: true});
-                    $('#' + target_id).tooltip('show');
+                    $('#' + target_id).html(tip);
+                    // Set the css styling
+                    $('#' + target_id).removeClass();
+                    $('#' + target_id).addClass(data[0]._type_class);
+                    $('#' + target_id).fadeIn();
                 }
             },
             piecewise: false,

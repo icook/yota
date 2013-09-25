@@ -1,0 +1,20 @@
+    <div
+      {% if not errors %}
+        style="display:none; margin-bottom:5px;"
+      {% else %}
+        style="margin-bottom:5px;""
+        class="{{ errors[0]['_type_class'] }}"
+      {% endif %}
+        id="{{ id }}_error">
+        {% if errors|length > 1 %}
+          <ul>
+            {% for error in errors %}
+            <li>{{ error['message'] }}</li>
+            {%endfor%}
+          </ul>
+        {%else%}
+          {% if errors %}
+          {{ errors[0]['message'] }}
+          {%endif%}
+        {%endif%}
+    </div>

@@ -18,13 +18,7 @@
             <input type="hidden" name="_arg_{{ key }}" id="_arg_{{ key }}" value="{{ val }}" />
         {% endfor %}
     {% endif %}
-    <div class="alert alert-success"
-        {% if not errors %}style="display:none;"{% endif %}
-        id="{{ id }}_error">
-        {% if errors %}
-            {{ errors[0]['message'] }}
-        {% endif %}
-    </div>
+    {% include 'error.html' %}
     {% if title %}
     <h2>{{ title }}</h2>
     {% endif %}

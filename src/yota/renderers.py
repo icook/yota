@@ -19,6 +19,10 @@ class JinjaRenderer(object):
 
         JinjaRenderer.templ_type = "bs3"
 
+    .. note:: In order to display errors correctly the :attr:`Form.type_class_map`
+        must be overriden so alert-error can be changed to alert-danger for
+        Bootstrap 3.
+
     """
     search_path = []
     """

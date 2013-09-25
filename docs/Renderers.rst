@@ -33,7 +33,7 @@ Switching Template Sets
 Yota provides potential for multiple default template sets. The default template
 set is designed for use with Bootstrap 2.3.2, but a Bootstrap 3.0 implementation
 can used by modifying the JinjaRenderer attribute templ_type to 'bs3'. More can
-be read at :attr:`renderers.JinjaRenderer.templ_type`.
+be read at :attr:`renderers.JinjaRenderer.templ_type`. 
 
 .. _rendering_engines:
 
