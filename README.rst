@@ -7,7 +7,7 @@ Yota
 ================
 
 *************************************************************************************************************************************************************************************
-`Documentation <https://yota.readthedocs.org/en/latest/>`_ | `Example Repository <https://github.com/icook/yota_examples>`_ | `Demo <http://64.49.234.90/yota_example>`_
+`Documentation <https://yota.readthedocs.org/en/latest/>`_ | `Example Repository <https://github.com/icook/yota_examples>`_ | `Demo <http://yota.ibcook.com/>`_
 *************************************************************************************************************************************************************************************
 
 Yota is a Python form generation library with the following unique features:
