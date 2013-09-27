@@ -84,7 +84,7 @@ class TestValidators(unittest.TestCase):
 
     def test_minmax(self):
         """ minmax validator testing, pos and neg """
-        meth = MinMaxValidator(2, 5, message="Darn")
+        meth = MinMaxValidator(2, 5, minmsg="Darn", maxmsg="Darn")
 
         errors = self.run_check({'t': 'ai'}, meth)
         assert(len(errors) == 0)
@@ -98,7 +98,7 @@ class TestValidators(unittest.TestCase):
         meth = MinMaxValidator(2, 5)
         errors = self.run_check({'t': 'aiadsflgkj'}, meth)
         assert(len(errors) > 0)
-        assert("be between" in errors[0].errors[0]['message'])
+        assert("fewer" in errors[0].errors[0]['message'])
 
     def test_password(self):
         """ password validator testing, pos and neg """
