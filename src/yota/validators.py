@@ -104,21 +104,24 @@ class MinMaxValidator(object):
     :param max: The maximum length of the data.
     :type length: integer
     """
-    __slots__ = ["message", "max", "min"]
+    __slots__ = ["minmsg", "maxmsg", "max", "min"]
 
-    def __init__(self, min, max, message=None):
-        if message:
-            self.message = message
-        else:
-            self.message = "Length must be between {0} and {1} characters.".\
-                format(min, max)
+    def __init__(self,
+                 min,
+                 max,
+                 minmsg=None,
+                 maxmsg=None):
         self.min = min
         self.max = max
+        self.minmsg = minmsg if minmsg else "Must be longer than {0} characters".format(min)
+        self.maxmsg = maxmsg if maxmsg else "Must be fewer than {0} characters".format(max)
         super(MinMaxValidator, self).__init__()
 
     def __call__(self, target):
-        if len(target.data) < self.min or len(target.data) > self.max:
-            target.add_error({'message': self.message})
+        if len(target.data) < self.min:
+            target.add_error({'message': self.minmsg})
+        if len(target.data) > self.max:
+            target.add_error({'message': self.maxmsg})
 
 
 class RegexValidator(object):

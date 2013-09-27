@@ -221,6 +221,8 @@ class Form(_Form):
 
         :returns: A string containing the generated output.
         """
+        # process the errors before we render
+        self._process_errors()
 
         return self._renderer().render(self._node_list, self.g_context)
 
@@ -284,6 +286,17 @@ class Form(_Form):
 
             # remove the attribute so multiple calls doesn't break things
             delattr(node, 'validators')
+
+    def _process_errors(self):
+        for node in self._node_list:
+            # process the node errors and inject special values
+            for error in node.errors:
+                # Try and retrieve the class values for the result type
+                # and send along the required render value
+                try:
+                    error['_type_class'] = self.type_class_map[error['type']]
+                except KeyError:
+                    error['_type_class'] = self.type_class_map['error']
 
     def insert_validator(self, new_validators):
         """ Inserts a validator to the validator list.
@@ -471,14 +484,6 @@ class Form(_Form):
             # slightly confusing way of setting our block = True by
             # default
             if node.errors:
-                # process the node errors and inject special values
-                for error in node.errors:
-                    # Try and retrieve the class values for the result type
-                    # and send along the required render value
-                    try:
-                        error['_type_class'] = self.type_class_map[error['type']]
-                    except KeyError:
-                        error['_type_class'] = self.type_class_map['error']
 
                 error_node_list.append(node)
 
@@ -558,6 +563,9 @@ class Form(_Form):
 
         # Hold our return dictionary in memeory for easy editing later
         self._last_raw_json = retval
+
+        # process the errors before we serialize
+        self._process_errors()
 
         # Return our raw dictionary if requested, otherwise serialize for
         # convenience...
