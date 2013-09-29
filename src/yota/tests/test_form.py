@@ -166,7 +166,7 @@ class TestForms(unittest.TestCase):
         class TForm(yota.Form):
             t = EntryNode(validators=RequiredValidator())
 
-            def error_header_generate(self, errors, block):
+            def error_header_generate(self, errors):
                 self.start.add_error({'message': 'This is a very specific error'})
 
         test = TForm()
@@ -193,7 +193,7 @@ class TestForms(unittest.TestCase):
                 return {'message': 'something....'}
 
         test = TForm()
-        success, json = test.json_validate({
+        success, json = test.validate_json({
             't': 'something',
             '_visited_names': '("t")',
             'submit_action': 'true'},
@@ -202,12 +202,6 @@ class TestForms(unittest.TestCase):
         assert('success_blob' in json)
         assert('something..' in json['success_blob']['message'])
         assert('success_ids' in json)
-
-        # testing validate render portion
-        success, render = test.validate_render({'t': 'something'})
-        assert(success is True)
-        assert('success_blob' in json)
-        assert('something else entirely' in render)
 
     def test_validator_shorthand(self):
         """ Properly test many flexible shorthands """
@@ -232,7 +226,7 @@ class TestForms(unittest.TestCase):
             test = TForm()
             test._parse_shorthand_validator(test.t)
             assert(len(test._validation_list) >= valid_list[i])
-            block, err_list = test._gen_validate({'t': ''})
+            block, err_list = test._gen_validate({'t': ''}, internal=True)
             if valid_list[i] > 0:
                 assert(len(err_list[0].errors) >= valid_list[i])
             else:
@@ -247,7 +241,7 @@ class TestForms(unittest.TestCase):
                 t = MyNode()
 
             test = TForm()
-            block, err_list = test._gen_validate({'t': 'a'})
+            block, err_list = test._gen_validate({'t': 'a'}, internal=True)
             assert(len(test._validation_list) >= valid_list[i])
             if valid_list[i] > 0:
                 assert(len(err_list[0].errors) >= valid_list[i])
@@ -257,24 +251,6 @@ class TestForms(unittest.TestCase):
 
     ##################################################################
     # Coverage for utility functions, helpers
-    def test_json_validation_update(self):
-        """ updating of json return values to the header works properly """
-        test = yota.Form()
-        test._last_raw_json = {'success_blob': {}}
-        ret = test.update_success({'add': 'me'}, raw=True)
-        assert('add' in ret['success_blob'])
-        ret = test.update_success({'those': 'are'})
-        assert('those' in ret)
-        assert('success_blob' in ret)
-
-    def test_render_validation_update(self):
-        """ updating of render return values to the header works properly """
-        test = yota.Form()
-        test.start.add_error({})
-        test._last_valid = 'render'
-        ret = test.update_success({'message': 'something'})
-        assert('something' in ret)
-
     def test_data_by_attr_name(self):
         """ Data by attr and by name functions as expected """
         class TForm(yota.Form):
@@ -362,9 +338,9 @@ class TestFormValidation(unittest.TestCase):
             _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
 
         test = TForm()
-        success, response = test.json_validate({'t': '', '_visited_names': '{"t": true}'},
+        success, json = test.validate_json({'t': '', '_visited_names': '{"t": true}'},
                                       piecewise=True)
-        assert('Darn' in response)
+        assert('Darn' in json)
 
     def test_piecewise_submit(self):
         """ a piecewise submit that is failing visited validators won't pass on
@@ -375,9 +351,10 @@ class TestFormValidation(unittest.TestCase):
             _t_valid = yota.Check(MinLengthValidator(5), 't')
 
         test = TForm()
-        success, json = test.json_validate({'t': '',
-            '_visited_names': '("t")',
-            'submit_action': 'true'},
+        success, json = test.validate_json(
+            {'t': '',
+             '_visited_names': '{"t": true}',
+             'submit_action': 'true'},
             piecewise=True,
             raw=True)
         assert(success is False)
@@ -390,23 +367,23 @@ class TestFormValidation(unittest.TestCase):
             _t_valid = yota.Check(MinLengthValidator(5), 't')
 
         test = TForm()
-        block, invalid = test._gen_validate(
+        success, invalid = test._gen_validate(
             {'t': '', '_visited_names': '{}'},
-            piecewise=True)
+            piecewise=True, internal=True)
 
-        assert(block is True)
+        assert(success is False)
         assert(len(invalid) == 0)
 
     def test_piecewise_nosubmit(self):
         """ even with no errors and all visited, piecewise fails without submit """
         test = yota.Form()
-        success, json = test.json_validate(
+        success, json = test.validate_json(
             {'_visited_names': '{}', 'submit_action': False},
             piecewise=True,
             raw=True)
 
         assert(success is False)
-        assert(json['block'] is True)
+        assert(json['success'] is False)
 
     def test_piecewise_exc(self):
         """ validation will throw an exception without passing visited nodes """
@@ -427,10 +404,10 @@ class TestFormValidation(unittest.TestCase):
                 MinLengthValidator(5, message="Darn"), 't')
 
         test = TForm()
-        success, ret = test.validate({'t': 'adfasdfasdf'})
+        success, ret = test.validate({'t': 'adfasdfasdf'}, internal=True)
         assert(success is True)
         assert(len(ret) == 0)
-        success, ret = test.validate({'t': ''})
+        success, ret = test.validate({'t': ''}, internal=True)
         assert(len(ret) > 0)
         assert(success is False)
 
@@ -442,8 +419,8 @@ class TestFormValidation(unittest.TestCase):
                 NonBlockingDummyValidator(), 't')
 
         test = TForm()
-        block, invalid = test._gen_validate({'t': 'toolong'})
-        assert(block is False)
+        success, invalid = test._gen_validate({'t': 'toolong'}, internal=True)
+        assert(success is True)
 
     def test_bad_validator(self):
         """ malformed checks need to throw an exception """
@@ -485,11 +462,3 @@ class TestFormValidation(unittest.TestCase):
                           f.insert,
                           0,
                           EntryNode(_attr_name='g_context'))
-
-    def test_update_success_exc(self):
-        """ update success bounds checking verif """
-        test = yota.Form()
-        test._last_valid = 'render'
-        self.assertRaises(IndexError, test.update_success, {'those': 'are'})
-        delattr(test, 'start')
-        self.assertRaises(AttributeError, test.update_success, {'those': 'are'})

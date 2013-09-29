@@ -122,7 +122,7 @@ class TestNode(unittest.TestCase):
                 RequiredValidator(message="Darn"), target='t')
 
         test = TForm()
-        block, invalid = test._gen_validate({'t': 'testing'})
+        success = test._gen_validate({'t': 'testing'})
         assert(test.t.data == 'testing')
 
 class TestNodeSpecific(unittest.TestCase):
@@ -135,7 +135,7 @@ class TestNodeSpecific(unittest.TestCase):
             t = CheckNode()
 
         test = TForm()
-        block, invalid = test._gen_validate(
+        success = test._gen_validate(
             {'_visited_names': '{}'}, piecewise=True)
         assert(test.t.data is False)
 
@@ -148,7 +148,7 @@ class TestNodeSpecific(unittest.TestCase):
                                    ])
 
         test = TForm()
-        block, invalid = test._gen_validate(
+        success = test._gen_validate(
             {'_visited_names': '["test", "this"]',
              'test': 'checked',
              'this': 'checked'},

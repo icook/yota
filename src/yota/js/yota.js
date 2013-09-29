@@ -61,7 +61,7 @@
             // Called upon successful return of the AJAJ call
             success: function (jsonObj)  {
                 // upon failure, deliver our error messages
-                if (jsonObj.block == true) {
+                if (jsonObj.success == false) {
                     error_obj = jsonObj.errors;
                     for (var key in error_obj) {
                         if (key in errors_present) {

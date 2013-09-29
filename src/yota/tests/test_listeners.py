@@ -37,7 +37,7 @@ class TestListeners(unittest.TestCase):
         assert test.test.data == "testing"
         test.test.data = "something_else"
 
-        test.json_validate({'test': '1', 'submit_action': 'true'})
+        test.validate_json({'test': '1', 'submit_action': 'true'})
         assert test.test.data == "testing"
         test.test.data = "something_else"
 
@@ -54,7 +54,7 @@ class TestListeners(unittest.TestCase):
         assert test.test.data == "testing"
         test.test.data = "something_else"
 
-        test.json_validate({'test': '1', 'submit_action': 'false'})
+        test.validate_json({'test': '1', 'submit_action': 'false'})
         assert test.test.data == "testing"
         test.test.data = "something_else"
 

@@ -226,34 +226,6 @@ class Form(_Form):
         self._last_valid = None
         self._last_raw_json = None
 
-    def render(self):
-        """ Runs the renderer to parse templates of nodes and generate the form
-        HTML.
-
-        :returns: A string containing the generated output.
-        """
-        # process the errors before we render
-        self._process_errors()
-
-        return self._renderer().render(self._node_list, self.g_context)
-
-    def add_listener(self, listener, type):
-        """ Attaches a :class:`Listener` to an event type. These Listener will
-        be executed when trigger event is called. """
-        if type not in self._event_lists:
-            self._event_lists[type] = []
-        self._event_lists[type].append(listener)
-
-    def trigger_event(self, type):
-        """ Runs all the associated :class:`Listener`'s for a specific event
-        type. """
-        try:
-            for event in self._event_lists[type]:
-                event.resolve_attr_names(self)
-                event()
-        except KeyError:
-            pass
-
     def _setup_node(self, node):
         """ An internal function performs some safety checks, sets attribute,
         and set_identifiers """
@@ -310,6 +282,25 @@ class Form(_Form):
                 except KeyError:
                     error['_type_class'] = self.type_class_map['error']
 
+    def is_piecewise(self):
+        return bool('piecewise' in self.g_context and self.g_context['piecewise'])
+
+    def add_listener(self, listener, type):
+        """ Attaches a :class:`Listener` to an event type. These Listener will
+        be executed when trigger event is called. """
+        if type not in self._event_lists:
+            self._event_lists[type] = []
+        self._event_lists[type].append(listener)
+
+    def trigger_event(self, type):
+        """ Runs all the associated :class:`Listener`'s for a specific event
+        type. """
+        try:
+            for event in self._event_lists[type]:
+                event.resolve_attr_names(self)
+                event()
+        except KeyError:
+            pass
     def insert_validator(self, new_validators):
         """ Inserts a validator to the validator list.
 
@@ -396,37 +387,17 @@ class Form(_Form):
         as it covers this function as well as itself. """
         pass
 
-    def error_header_generate(self, errors, block):
-        """ This function, along with success_header_generate allow you to give
-        form wide information back to the user for both AJAJ validated forms
-        and conventionally validated forms, although the mechanisms are
-        slightly different. Both functions are run at the end of a successful
-        or failed validation call in order to give more information for
-        rendering.
+    def error_header_generate(self, errors):
+        """ This function is generally used to generate a header on the start
+        Node automatically when there is an error in validation. For instance,
+        you might want to say "Please fix the errors below" or something
+        similar. While it could actually be used for anything post-validation
+        failure, it is better practice to create a listener that subscribes to
+        "validation_failure" event, as this function is called at the same time.
 
-        For passing information to AJAJ rendering, simply return a dictionary,
-        or any Python object that can be serialized to JSON. This information
-        gets passed back to the JavaScript callbacks of yota_activate, however
-        each in slightly different ways. success_header_generate's information
-        will get passed to the render_success callback, while
-        error_header_generate will get sent as an error to the render_error
-        callback under the context start.
-
-        For passing information into a regular, non AJAJ context simply access
-        the attribute manually similar to below.
-
-        .. code-block:: python
-
-            self.start.add_error(
-                {'message': 'Please resolve the errors below to continue.'})
-
-        This will provide a simple error message to your start Node. In
-        practice these functions could also be used to trigger events and other
-        interesting things, although that was not their intended function.
-
-        :param errors: This will be a list of all other Nodes that have errors.
-        :param block: Whether or not the form submission will be blocked.
-        :type block: boolean
+        :param errors: This will be a list of all other Nodes that have errors,
+            with the idea that you might want to list the errors that occurred.
+        :type errors: list
 
         .. note: By default this function does nothing.
         """
@@ -452,69 +423,14 @@ class Form(_Form):
             ret[node.name] = node.data
         return ret
 
-    def _gen_validate(self, data, piecewise=False):
-        """ This is an internal utility function that does the grunt work of
-        running validation logic for a :class:`Form`. It is called by the other
-        primary validation methods. """
-
-        # Allows user to set a modular processor on incoming data
-        data = self._processor().filter_post(data)
-
-
-        # reset all error lists and data
-        for node in self._node_list:
-            node.errors = []
-            node.data = ''
-            node.resolve_data(data)
-            # Pull out all our shorthand validators
-            self._parse_shorthand_validator(node)
-
-        # try to load our visited list of it's piecewise validation
-        if '_visited_names' not in data and piecewise:
-            raise AttributeError("No _visited_names present in data submission"
-                                 ". Data is required for piecewise validation")
-        elif piecewise:
-            visited = json.loads(data['_visited_names'])
-
-        # assume to be not blocking
-        block = False
-        # loop over our checks and run our validators
-        for check in self._validation_list:
-            check.resolve_attr_names(self)
-            if piecewise is False or check.node_visited(visited):
-                check()
-            else:
-                # If even a single check can't be run, we need to block
-                block = True
-
-        # Run the one off validation method
-        self.validator()
-
-        # a list to hold Nodes that actually have errors
-        error_node_list = []
-        for node in self._node_list:
-            # slightly confusing way of setting our block = True by
-            # default
-            if node.errors:
-
-                error_node_list.append(node)
-
-            for error in node.errors:
-                block |= error.get('block', True)
-
-        return block, error_node_list
-
-    def json_validate(self, data, piecewise=False, raw=False):
+    def validate_json(self, data, piecewise="auto", raw=False):
         """ The same as :meth:`Form.validate_render` except the errors
         are loaded into a JSON string to be passed back as a query
         result. This output is designed to be used by the Yota
         Javascript library.
 
-        :param piecewise: If set to True, the validator will silently
-            ignore validator for which it has insufficient information. This
-            is designed to be used for the AJAJ piecewise validation
-            function, although it does not have to be.
-        :type piecewise: boolean
+        :param piecewise: This parameter is deprecated. Piecewise is
+            automatically detected from g_context.
 
         :param raw: If set to True then the second return parameter will be a
             Python dictionary instead of a JSON string
@@ -527,83 +443,8 @@ class Form(_Form):
             validators passed)
         """
 
-        # Allows user to set a modular processor on incoming data
-        data = self._processor().filter_post(data)
-
-        errors = {}
-        """ We want to automatically block the form from actually submitting
-        if this is piecewise validation. In addition if they are actually
-        submitting then we want to run it as non-piecewise validation """
-        if data.get('submit_action', 'false') != 'true' and piecewise:
-            block, invalid = self._gen_validate(data, piecewise=piecewise)
-            block = True
-        else:
-            block, invalid = self._gen_validate(data, piecewise=False)
-
-        # loop over our nodes and insert information for the JS callbacks
-        for node in invalid:
-            errors[node._attr_name] = {'identifiers': node.json_identifiers(),
-                                       'errors': node.errors}
-
-        # if needed we should run our all form message generator and return
-        # json encoded error message
-        retval = {'block': block}
-        if len(errors) > 0:
-            header_err = self.error_header_generate(errors, block)
-            if header_err:
-                errors['start'] = {'identifiers': self.start.json_identifiers(),
-                                   'errors': header_err}
-
-        if not block:
-            blob = self.success_header_generate()
-            if blob:
-                retval['success_blob'] = blob
-            if hasattr(self, 'start'):
-                retval['success_ids'] = self.start.json_identifiers()
-
-        retval['errors'] = errors
-
-        # Throw back a variable in the json if there is both a submit
-        # and no blocking errors. The main purpose here is the allow
-        # easy catching of success in the view code.
-        if data.get('submit_action', 'false') == 'true' and not block:
-            valid = True
-            self.trigger_event("validate_success")
-        else:
-            self.trigger_event("validate_failure")
-            valid = False
-
-        # Hold our return dictionary in memeory for easy editing later
-        self._last_raw_json = retval
-
-        # process the errors before we serialize
-        self._process_errors()
-
-        # Return our raw dictionary if requested, otherwise serialize for
-        # convenience...
-        if raw:
-            return valid, retval
-        else:
-            return valid, json.dumps(retval)
-
-    def validate(self, data):
-        """ Runs all the validators associated with the :class:`Form`.
-
-        :return: Whether the validators are blocking submission and a list of
-            nodes that have validation messages.
-        """
-
-        # Allows user to set a modular processor on incoming data
-        data = self._processor().filter_post(data)
-        block, invalid = self._gen_validate(data)
-
-        # Run our validation trigger events
-        if block:
-            self.trigger_event("validate_failure")
-        else:
-            self.trigger_event("validate_success")
-
-        return (not block), invalid
+        success, invalid = self.validate(data, internal=True, piecewise=piecewise)
+        return success, self.render_json(invalid=invalid, success=success, raw=raw)
 
     def validate_render(self, data):
         """ Runs all the validators on the `data` that is passed in and returns
@@ -622,80 +463,160 @@ class Form(_Form):
         :return: Whether the validators are blocking submission and a re-render
             of the form with the validation data passed in.
         """
+        success = self.validate(data)
+        return success, self.render()
+
+    def render_json(self, invalid=None, success=None, raw=False):
+        """ This function takes the state that is stored internally and
+        serializes it into a form that the yota JS library is designed to
+        recieve. """
+
+        # If a list of invalid nodes wasn't included, build it. This is
+        # because json_validate can pass this function the list, and success
+        # info from validate directly if they aren't called separately
+        block = False
+        if not invalid or not success:
+            invalid = []
+            for node in self._node_list:
+                if node.errors:
+                    invalid.append(node)
+
+                # slightly confusing way of setting our block = True by
+                # default
+                for error in node.errors:
+                    block |= error.get('block', True)
+
+            # Make sure they have run validate
+            if self._submit_action and not block:
+                success = True
+            else:
+                success = False
+
+        errors = {}
+
+        # convert node errors into a format for the JS callbacks
+        for node in invalid:
+            errors[node._attr_name] = {'identifiers': node.json_identifiers(),
+                                       'errors': node.errors}
+
+        retval = {'success': success}
+
+        # add our success header generate results if applicable
+        if success:
+            blob = self.success_header_generate()
+            if blob:
+                retval['success_blob'] = blob
+            if hasattr(self, 'start'):
+                retval['success_ids'] = self.start.json_identifiers()
+
+        retval['errors'] = errors
+
+        # process the errors before we serialize
+        self._process_errors()
+
+        # Return our raw dictionary if requested, otherwise serialize for
+        # convenience...
+        if raw:
+            return retval
+        else:
+            return json.dumps(retval)
+
+    def render(self):
+        """ Runs the renderer to parse templates of nodes and generate the form
+        HTML.
+
+        :returns: A string containing the generated output.
+        """
+        # process the errors before we render
+        self._process_errors()
+
+        return self._renderer().render(self._node_list, self.g_context)
+
+    def validate(self, data, piecewise="auto", internal=False, resolver=None):
+        """ Runs all the validators associated with the :class:`Form`.
+
+        :return: Whether validation was successful
+        """
+        piecewise = piecewise if piecewise != "auto" else self.is_piecewise()
 
         # Allows user to set a modular processor on incoming data
         data = self._processor().filter_post(data)
 
-        block, invalid = self._gen_validate(data)
+        # reset all error lists and data, then re-resolve with the new data.
+        # also parse nodes for shorthand validators at this time
+        for node in self._node_list:
+            node.errors = []
+            node.data = ''
+            node.resolve_data(data)
+            self._parse_shorthand_validator(node)
 
-        self.g_context['block'] = block
+        # try to load our visited list of it's piecewise validation
+        if '_visited_names' not in data and piecewise:
+            raise AttributeError("No _visited_names present in data submission"
+                                 ". Data is required for piecewise validation")
+        elif piecewise:
+            visited = json.loads(data['_visited_names'])
 
-        # update our state var for later update_success calls
-        self._last_valid = 'render'
+        # assume to be not blocking
+        block = False
+        # loop over our checks and run our validators
+        for check in self._validation_list:
+            check.resolve_attr_names(self)
+            # Run the check if we're not in piecewise mode, or if the check
+            # tells us all relevant form elements have been visited
+            if piecewise is False or check.node_visited(visited):
+                check()
+            else:
+                # If even a single check can't be run, we need to block
+                block = True
 
-        # run our form validators at the end
-        if not block:
-            self.trigger_event("validate_success")
-            self.success_header_generate()
-        else:
+        # Run the one off validation method
+        self.validator()
+
+        # a list to hold Nodes that actually have errors. while this list isn't
+        # used in this function, it's cheap to generate and saves a loop if
+        # serialization is run at the same time as validation
+        invalid = []
+        for node in self._node_list:
+            if node.errors:
+                invalid.append(node)
+
+            # slightly confusing way of setting our block = True by
+            # default
+            for error in node.errors:
+                block |= error.get('block', True)
+
+        # If it's blocking right now then there was an error, so generate
+        # the error header
+        header_err = self.error_header_generate(invalid)
+        if header_err:
+            self.start.add_error(header_err)
+
+        # Run our validation trigger events. At this point block represents just
+        # the validation
+        if block:
             self.trigger_event("validate_failure")
-            self.error_header_generate(invalid, block)
+        else:
+            self.trigger_event("validate_success")
 
-        return (not block), self.render()
+        # Block if they aren't actually submitting the form. Also, flag as a
+        # non-submit for later serialization
+        if data.get('submit_action', 'false') != 'true' and piecewise:
+            self._submit_action = False
+            block = True
+        else:
+            self._submit_action = True
+
+        if internal:
+            return (not block), invalid
+        else:
+            return not block
+    _gen_validate = validate
 
     def validator(self):
         """ This is provided as a convenience method for Validation logic that
         is one-off, and only intended for a single form. Simply override this
-        function and access any of your Nodes and their data via the self. This
-        method will be called after all other Validators are run. """
+        function and access any of your Nodes and their data via the self
+        attribute. This method will be called after all other Checks are
+        run. """
         pass
-
-    def update_success(self, update_dict, raw=False):
-        """ This method serves as an easy way to update your success attributes
-        that are passed to the start Node rendering context, or passed back in
-        JSON. It automatically recalls whether the last validation call was to
-        json_validate or validate_render and modifys the correct dictionary
-        accordingly.
-
-        :param update_dict: The dictionary of values to update/add.
-        :type data: dictionary
-
-        :param raw: Whether you would like a pre-compiled JSON
-            string returned, or the raw dictionary.
-        :type raw: bool
-
-        :return: Return value is either the new JSON string (or raw dict if
-            requested) if json_validate was your last validation call, or a
-            re-render of the form with updated error messages if validate_render
-            was your last call.
-        """
-
-        if self._last_valid == 'render':
-            try:
-                self.start.errors[-1].update(update_dict)
-            except IndexError:
-                raise IndexError("Error updating your error dictionary for the "
-                               "start Node. There were no errors to modify.")
-            except AttributeError:
-                raise AttributeError("This method is designed to update an "
-                                     "error dictionary, yet your errors are "
-                                     "not dictionaries")
-
-            return self.render()
-
-        # We're going to default to json render
-        else:
-            # Modify our last json dict
-            try:
-                self._last_raw_json['success_blob'].update(update_dict)
-            except KeyError:
-                raise KeyError("Either your json_validate method has not been "
-                               "run yet, or your success_header_generate does"
-                               " not produce output")
-
-            # Continue the raw semantic...
-            if raw:
-                return self._last_raw_json
-            else:
-                return json.dumps(self._last_raw_json)
-
