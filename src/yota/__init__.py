@@ -382,7 +382,7 @@ class Form(_Form):
         raise AttributeError('Form attribute {0} couldn\'t be resolved to'
                              ' a Node'.format(name))
 
-    def success_header_generate(self):
+    def success_json_generate(self):
         """ Please see the documentation for :meth:`Form.error_header_generate`
         as it covers this function as well as itself. """
         pass
@@ -503,7 +503,7 @@ class Form(_Form):
 
         # add our success header generate results if applicable
         if success:
-            blob = self.success_header_generate()
+            blob = self.success_json_generate()
             if blob:
                 retval['success_blob'] = blob
             if hasattr(self, 'start'):
