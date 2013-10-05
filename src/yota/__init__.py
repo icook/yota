@@ -181,8 +181,9 @@ class Form(_Form):
             elif not class_attr.startswith('__'):
                 # don't try to copy functions, it doesn't go well
                 if not callable(att):
-                    setattr(self, class_attr, copy.copy(att))
-                    self.context[class_attr] = att
+                    new = copy.copy(att)
+                    setattr(self, class_attr, new)
+                    self.context[class_attr] = new
 
         # Set a default name for our Form
         if self.name is None:
@@ -501,13 +502,18 @@ class Form(_Form):
 
         retval = {'success': success}
 
-        # add our success header generate results if applicable
+        # add our success header generate results if needed, else success_data
         if success:
-            blob = self.success_json_generate()
-            if blob:
-                retval['success_blob'] = blob
+            if not self._success_data:
+                blob = self.success_json_generate()
+                if blob:
+                    retval['success_blob'] = blob
+            else:
+                retval['success_blob'] = self._success_data
+
             if hasattr(self, 'start'):
                 retval['success_ids'] = self.start.json_identifiers()
+
 
         retval['errors'] = errors
 
@@ -620,3 +626,9 @@ class Form(_Form):
         attribute. This method will be called after all other Checks are
         run. """
         pass
+
+    def set_json_success(self, **kwargs):
+        """ As opposed to using generate_json_success to pass information
+        to the js success function you can use add_success in your view code. """
+
+        self._success_data = kwargs
