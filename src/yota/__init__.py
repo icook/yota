@@ -125,6 +125,9 @@ class Form(_Form):
     _reserved_attr_names = ('context', 'hidden', 'g_context', 'start_template',
                         'close_template', 'auto_start_close', '_renderer',
                         '_processor', 'name')
+    _success_data = None
+    """ Hold information that will be serialized into success return values
+    for render_json """
 
     """ This declares which backend is used when storing semi-persistent
     information such as CSRF tokens and CAPTCHA solutions. """

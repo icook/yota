@@ -188,7 +188,7 @@ class TestForms(unittest.TestCase):
         class TForm(yota.Form):
             t = EntryNode()
 
-            def success_header_generate(self):
+            def success_json_generate(self):
                 self.start.add_error({'message': 'something else entirely'})
                 return {'message': 'something....'}
 
