@@ -135,9 +135,14 @@ class TestNodeSpecific(unittest.TestCase):
             t = CheckNode()
 
         test = TForm()
-        success = test._gen_validate(
-            {'_visited_names': '{}'}, piecewise=True)
+
+        # ensure nothing getting passed defaults to False
+        success = test.validate({'_visited_names': '{}'}, piecewise=True)
         assert(test.t.data is False)
+
+        # and passing something is true
+        success = test.validate({'t': 'saldkfj'})
+        assert(test.t.data is True)
 
     def test_checkgroup(self):
         """ checkbox group data extraction works as intended """

@@ -151,6 +151,33 @@ class TestValidators(unittest.TestCase):
         errors = self.run_check({'t': 'asdfsd'}, meth)
         assert(len(errors) > 0)
 
+    def test_matching(self):
+        """ matching validator """
+        meth = MatchingValidator(message="Darn")
+
+        errors = self.run_check({'t': 'toolong', 'b': 'notmatching'}, meth)
+        assert(len(errors) > 0)
+        errors = self.run_check({'t': 'something', 'b': 'something'}, meth)
+        assert(len(errors) == 0)
+
+    def test_strength(self):
+        """ password strength validator """
+        meth = PasswordStrengthValidator(message="Darn")
+
+        errors = self.run_check({'t': 'AA'}, meth)
+        assert('1' in errors[0].errors[0]['message'])
+        errors = self.run_check({'t': 'SOmething'}, meth)
+        assert('2' in errors[0].errors[0]['message'])
+        errors = self.run_check({'t': 'SOme33ing'}, meth)
+        assert('3' in errors[0].errors[0]['message'])
+        errors = self.run_check({'t': 'SOme33ing%'}, meth)
+        assert('4' in errors[0].errors[0]['message'])
+
+        meth = PasswordStrengthValidator(message="Darn",
+                                         regex=["(?=.*[A-Z].*[A-Z])"])
+        errors = self.run_check({'t': 'SOme33ing%'}, meth)
+        assert('1' in errors[0].errors[0]['message'])
+
     def test_required(self):
         """ required validator """
         meth = RequiredValidator(message="Darn")

@@ -198,13 +198,13 @@ class PasswordStrengthValidator(object):
         if not isinstance(regex, list):
             self.regex = [
                 "(?=.*[A-Z].*[A-Z])",  # Matches 2 uppercase letters
-                "(?=.*[!@#$&*])",  # Matches 1 Special character
+                "(?=.*[!@#$&%*])",  # Matches 1 Special character
                 "(?=.*[0-9].*[0-9])",  # Matches 2 numbers
                 ".{7}"  # Has at least 7 characters
              ]
         else:
             self.regex = regex
-        super(StrongPasswordValidator, self).__init__()
+        super(PasswordStrengthValidator, self).__init__()
 
     def __call__(self, target=None):
         strength = 0

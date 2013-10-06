@@ -264,7 +264,7 @@ class CheckNode(BaseNode):
 
     def resolve_data(self, data):
         if self.name in data:
-            self.data = data[self.name]
+            self.data = True
         else:
             # Unchecked checkboxes don't submit any data so we'll set the
             # value to false if there is no post data
