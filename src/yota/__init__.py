@@ -27,11 +27,11 @@ class TrackingMeta(type):
             if name is 'start' or name is 'close':
                 try:
                     attribute._attr_name = name
+                    continue
                 except AttributeError:
                     raise AttributeError("start/close attribute is special and"
                         "should specify a Node to begin your form. Got type {0}"
                         "instead".format(type(name)))
-                continue
             if isinstance(attribute, Node):
                 attribute._attr_name = name
                 nodes[attribute._create_counter] = attribute
@@ -128,6 +128,9 @@ class Form(_Form):
     _success_data = None
     """ Hold information that will be serialized into success return values
     for render_json """
+    _submit_action = False
+    """ Tracks whether you're submitting the form, or just validating it for
+    later json serialization """
 
     """ This declares which backend is used when storing semi-persistent
     information such as CSRF tokens and CAPTCHA solutions. """
@@ -289,12 +292,12 @@ class Form(_Form):
     def is_piecewise(self):
         return bool('piecewise' in self.g_context and self.g_context['piecewise'])
 
-    def add_listener(self, listener, type):
+    def add_listener(self, listener):
         """ Attaches a :class:`Listener` to an event type. These Listener will
         be executed when trigger event is called. """
         if type not in self._event_lists:
-            self._event_lists[type] = []
-        self._event_lists[type].append(listener)
+            self._event_lists[listener.type] = []
+        self._event_lists[listener.type].append(listener)
 
     def trigger_event(self, type):
         """ Runs all the associated :class:`Listener`'s for a specific event

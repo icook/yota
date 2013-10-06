@@ -145,7 +145,7 @@ class TestForms(unittest.TestCase):
         assert(len(test._event_lists["something"]) == 1)
         assert(len(test._event_lists["else"]) == 2)
 
-    def test_blueprint_events(self):
+    def test_blueprint_validators(self):
         """ ensure events get transferred properly """
         class TForm(yota.Form):
             main = EntryNode(validators=MinLengthValidator(5))
@@ -162,25 +162,29 @@ class TestForms(unittest.TestCase):
     #################################################################
     # Test core functionality of Form class
     def test_error_header(self):
-        """ tests the validate_render methods use of success_header_generate """
+        """ tests the validate method use of success_header_generate """
         class TForm(yota.Form):
             t = EntryNode(validators=RequiredValidator())
 
             def error_header_generate(self, errors):
                 self.start.add_error({'message': 'This is a very specific error'})
+                return {'message': 'Other error'}
 
         test = TForm()
         success, render = test.validate_render({'t': ''})
         assert(success is False)
         assert('This is a very specific error' in render)
+        assert('Other error' in render)
 
-    def test_error_header(self):
-        """ tests the validate_render methods use of success_header_generate """
+    def test_parent_form(self):
+        """ existence of _parent_form being populated"""
         class TForm(yota.Form):
             t = EntryNode()
 
         test = TForm()
+        test.insert(1, EntryNode(_attr_name="testing"))
         assert(test.t._parent_form is test)
+        assert(test.testing._parent_form is test)
 
     def test_success_header(self):
         """ success header generation """
@@ -251,18 +255,6 @@ class TestForms(unittest.TestCase):
 
     ##################################################################
     # Coverage for utility functions, helpers
-    def test_data_by_attr_name(self):
-        """ Data by attr and by name functions as expected """
-        class TForm(yota.Form):
-            t = EntryNode()
-
-        test = TForm()
-        test.t.data = 'something'
-        test.t.name = 'two'
-
-        assert('t' in test.data_by_attr())
-        assert('two' in test.data_by_name())
-
     def test_data_by_attr_name(self):
         """ Data by attr and by name functions as expected """
         class TForm(yota.Form):
@@ -389,6 +381,15 @@ class TestFormValidation(unittest.TestCase):
         """ validation will throw an exception without passing visited nodes """
         test = yota.Form()
         self.assertRaises(AttributeError, test._gen_validate, {}, piecewise=True)
+
+    def test_success_insert(self):
+        """ the dedicated success_insert function """
+        test = yota.Form()
+        test._submit_action = True
+        test.set_json_success(redirect='home')
+        json = test.render_json({'submit_action': 'true'}, raw=True)
+
+        assert('redirect' in json['success_blob'])
 
     ######################################################################
     # Regular validation

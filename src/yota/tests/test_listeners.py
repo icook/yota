@@ -11,6 +11,7 @@ class TestListeners(unittest.TestCase):
         """ Canonical simple event """
         def test_func(list):
             list.data = "testing"
+
         class TForm(yota.Form):
             test = ListNode()
             event = Listener("dummy", test_func, "test")
@@ -23,6 +24,20 @@ class TestListeners(unittest.TestCase):
         """ make sure no exception for empty events """
         test = yota.Form()
         test.trigger_event("dummy")
+
+    def test_add_listener(self):
+        """ make sure no exception for empty events """
+        def test_func(list):
+            list.data = "testing"
+
+        class TForm(yota.Form):
+            test = ListNode()
+        test = TForm()
+        test.add_listener(Listener("dummy", test_func, "test"))
+        test.trigger_event("dummy")
+
+        assert test.test.data == "testing"
+
 
     def test_builtin_events(self):
         """  test builtin validation event calls """
