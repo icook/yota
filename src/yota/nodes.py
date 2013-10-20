@@ -132,21 +132,16 @@ class Node(object):
             self.title = self._attr_name.capitalize().replace('_', ' ')
 
     def resolve_data(self, data):
-        """ This method links data from form submission back to Nodes. HTML
-        form data is represented by a dictionary that is keyed by the 'name'
-        attribute of the form element. Since most Nodes only render a single
-        form element, and the default set_identifiers generates a single 'name'
-        attribute for the Node then this function attempts to find data by
-        linking the two together. However, if you were to change that semantic
-        this would need to change. Look at the CheckGroupNode for a reference
-        impplementation of this behaviour, or the Docs under "Custom Nodes".
-        This method should operate by setting its own data attribute, as this
-        is how Validators conventionally look for data.
-
-        ... note:: This method will throw an exception at validation time if
-            the data dictionary contains no key name, so it important to
-            override this function to a NoOp if your Node generates no data.
-            NonDataNode was created for this exact purpose.
+        """ This method links data from input data into the Nodes. By default
+        HTML form data is represented by a dictionary that is keyed by the
+        'name' attribute of the form element. Since most Nodes only render a
+        single form element, and the default set_identifiers generates a single
+        'name' attribute for the Node then this function attempts to find data
+        by linking the two together. However, if you were to change that
+        semantic this would need to change. Look at the CheckGroupNode for a
+        reference impplementation of this behaviour, or the Docs under "Custom
+        Nodes".  This method should operate by setting its own data attribute,
+        as this is how Validators conventionally look for data.
 
         :param data: The dictionary of data that is passed to your validation
             method call.

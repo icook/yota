@@ -377,6 +377,12 @@ class Form(_Form):
             for new_node in new_node_list:
                 self._node_list.append(new_node)
 
+    def resolve_all(self, data):
+        """ This is a utility method that runs resolve_data on all nodes with
+        the provided data dictionary. """
+        for node in self._node_list:
+            node.resolve_data(data)
+
     def get_by_attr(self, name):
         """ Safe accessor for looking up a node by :attr:`Node._attr_name` """
         try:

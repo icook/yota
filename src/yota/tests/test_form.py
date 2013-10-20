@@ -267,6 +267,15 @@ class TestForms(unittest.TestCase):
         assert('t' in test.data_by_attr())
         assert('two' in test.data_by_name())
 
+    def test_form_resolve(self):
+        """ resolve all should function as expected """
+        class TForm(yota.Form):
+            t = EntryNode()
+
+        test = TForm()
+        test.resolve_all({'t': 'Something'})
+        assert test.t.data == 'Something'
+
     def test_dynamic_insert(self):
         """ insert_after test, and subsequently insert itself """
         class TForm(yota.Form):
