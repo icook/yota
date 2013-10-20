@@ -64,7 +64,7 @@ class TestForms(unittest.TestCase):
 
             t = EntryNode()
             _t_valid = yota.Check(
-                MinLengthValidator(5, message="Darn"), 't')
+                MinLength(5, message="Darn"), 't')
 
         test = TForm()
         assert(isinstance(test.start, EntryNode))
@@ -148,8 +148,8 @@ class TestForms(unittest.TestCase):
     def test_blueprint_validators(self):
         """ ensure events get transferred properly """
         class TForm(yota.Form):
-            main = EntryNode(validators=MinLengthValidator(5))
-            other_name_val = Check(MinLengthValidator(10), "main")
+            main = EntryNode(validators=MinLength(5))
+            other_name_val = Check(MinLength(10), "main")
 
         class BForm(yota.Form):
             test4 = Blueprint(TForm)
@@ -164,7 +164,7 @@ class TestForms(unittest.TestCase):
     def test_error_header(self):
         """ tests the validate method use of success_header_generate """
         class TForm(yota.Form):
-            t = EntryNode(validators=RequiredValidator())
+            t = EntryNode(validators=Required())
 
             def error_header_generate(self, errors):
                 self.start.add_error({'message': 'This is a very specific error'})
@@ -210,14 +210,14 @@ class TestForms(unittest.TestCase):
     def test_validator_shorthand(self):
         """ Properly test many flexible shorthands """
         nl = [
-            MinLengthValidator(5),
-            (MinLengthValidator(5), ),
-            [MinLengthValidator(5), ],
+            MinLength(5),
+            (MinLength(5), ),
+            [MinLength(5), ],
             [],
-            Check(MinLengthValidator(5), 't'),
-            [Check(MinLengthValidator(5), 't'), ],
-            [Check(MinLengthValidator(5), 't'), MinLengthValidator(5)],
-            (Check(MinLengthValidator(5)), MinLengthValidator(5)),
+            Check(MinLength(5), 't'),
+            [Check(MinLength(5), 't'), ],
+            [Check(MinLength(5), 't'), MinLength(5)],
+            (Check(MinLength(5)), MinLength(5)),
         ]
         # Since we're going to resolve the Checks again, easier to duplicate
         # them
@@ -292,9 +292,9 @@ class TestForms(unittest.TestCase):
     def test_insert_validator(self):
         """ insert functions test plus special cases """
         test = yota.Form()
-        tch = Check(RequiredValidator(), 't')
-        tch2 = Check(MinLengthValidator(5), 't')
-        tch3 = Check(MaxLengthValidator(5), 't')
+        tch = Check(Required(), 't')
+        tch2 = Check(MinLength(5), 't')
+        tch3 = Check(MaxLength(5), 't')
         self.assertRaises(TypeError, test.insert_validator, ' ')
         test.insert_validator(tch)
         assert(test._validation_list[0] is tch)
@@ -336,7 +336,7 @@ class TestFormValidation(unittest.TestCase):
 
         class TForm(yota.Form):
             t = EntryNode()
-            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
+            _t_valid = yota.Check(Required(message="Darn"), 't')
 
         test = TForm()
         success, json = test.validate_json({'t': '', '_visited_names': '{"t": true}'},
@@ -349,7 +349,7 @@ class TestFormValidation(unittest.TestCase):
 
         class TForm(yota.Form):
             t = EntryNode()
-            _t_valid = yota.Check(MinLengthValidator(5), 't')
+            _t_valid = yota.Check(MinLength(5), 't')
 
         test = TForm()
         success, json = test.validate_json(
@@ -365,7 +365,7 @@ class TestFormValidation(unittest.TestCase):
         """ any non-visited nodes cause submission to block """
         class TForm(yota.Form):
             t = EntryNode()
-            _t_valid = yota.Check(MinLengthValidator(5), 't')
+            _t_valid = yota.Check(MinLength(5), 't')
 
         test = TForm()
         success, invalid = test._gen_validate(
@@ -411,7 +411,7 @@ class TestFormValidation(unittest.TestCase):
         class TForm(yota.Form):
             t = EntryNode()
             _t_valid = yota.Check(
-                MinLengthValidator(5, message="Darn"), 't')
+                MinLength(5, message="Darn"), 't')
 
         test = TForm()
         success, ret = test.validate({'t': 'adfasdfasdf'}, internal=True)
@@ -426,7 +426,7 @@ class TestFormValidation(unittest.TestCase):
         class TForm(yota.Form):
             t = EntryNode()
             _t_valid = yota.Check(
-                NonBlockingDummyValidator(), 't')
+                NonBlockingDummy(), 't')
 
         test = TForm()
         success, invalid = test._gen_validate({'t': 'toolong'}, internal=True)

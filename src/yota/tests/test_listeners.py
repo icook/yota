@@ -62,7 +62,7 @@ class TestListeners(unittest.TestCase):
 
 
         class TForm(yota.Form):
-            test = EntryNode(validators=MinLengthValidator(5))
+            test = EntryNode(validators=MinLength(5))
             event = Listener("validate_failure", test_func, "test")
         test = TForm()
         test.validate({'test': '1'})

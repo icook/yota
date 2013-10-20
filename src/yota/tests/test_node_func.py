@@ -125,7 +125,7 @@ class TestBuiltinNodes(unittest.TestCase):
         """ textarea data gets passed back in correctly """
         class TForm(yota.Form):
             t = TextareaNode(rows='15', columns='20')
-            _t_long = Check(MinLengthValidator(5), 't')
+            _t_long = Check(MinLength(5), 't')
         success, test = TForm(auto_start_close=False).validate_render({'t': 'test'})
         bs = BeautifulSoup(test)
         assert('test' in bs.findAll('textarea')[0].contents[0].strip())

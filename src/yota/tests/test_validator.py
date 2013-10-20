@@ -28,17 +28,17 @@ class TestValidators(unittest.TestCase):
 
     def test_unicode_validator(self):
         """ make sure unicode strings don't break validators """
-        for val in [MinLengthValidator(5),
-                    MaxLengthValidator(5),
-                    RegexValidator(regex='^[a-z]*$'),
-                    RequiredValidator(),
-                    EmailValidator()]:
+        for val in [MinLength(5),
+                    MaxLength(5),
+                    Regex(regex='^[a-z]*$'),
+                    Required(),
+                    Email()]:
             errors = self.run_check({'t': u"\u041f\u0440\u0438\u0432\u0435\u0442"}, val)
 
 
     def test_min_required(self):
         """ min validator testing, pos and neg """
-        meth = MinLengthValidator(5, message="Darn")
+        meth = MinLength(5, message="Darn")
 
         errors = self.run_check({'t':'short'}, meth)
         assert(len(errors) == 0)
@@ -47,7 +47,7 @@ class TestValidators(unittest.TestCase):
 
     def test_max_required(self):
         """ max validator testing, pos and neg """
-        meth = MaxLengthValidator(5, message="Darn")
+        meth = MaxLength(5, message="Darn")
 
         errors = self.run_check({'t':'shor'}, meth)
         assert(len(errors) == 0)
@@ -56,7 +56,7 @@ class TestValidators(unittest.TestCase):
 
     def test_regex_valid(self):
         """ regex validator testing, pos and neg """
-        meth = RegexValidator(regex='^[a-z]*$', message='darn')
+        meth = Regex(regex='^[a-z]*$', message='darn')
 
         errors = self.run_check({'t':'asdlkfdfsljgdlkfj'}, meth)
         assert(len(errors) == 0)
@@ -67,7 +67,7 @@ class TestValidators(unittest.TestCase):
 
     def test_url_valid(self):
         """ regex validator testing, pos and neg """
-        meth = URLValidator(message='darn')
+        meth = URL(message='darn')
 
         errors = self.run_check({'t':'http://google.com'}, meth)
         assert(len(errors) == 0)
@@ -88,7 +88,7 @@ class TestValidators(unittest.TestCase):
 
     def test_email(self):
         """ email validator testing, all branches """
-        meth = EmailValidator(message="Darn")
+        meth = Email(message="Darn")
 
         errors = self.run_check({'t': 'm@testing.com'}, meth)
         assert(len(errors) == 0)
@@ -105,7 +105,7 @@ class TestValidators(unittest.TestCase):
 
     def test_minmax(self):
         """ minmax validator testing, pos and neg """
-        meth = MinMaxValidator(2, 5, minmsg="Darn", maxmsg="Darn")
+        meth = MinMax(2, 5, minmsg="Darn", maxmsg="Darn")
 
         errors = self.run_check({'t': 'ai'}, meth)
         assert(len(errors) == 0)
@@ -116,14 +116,14 @@ class TestValidators(unittest.TestCase):
         errors = self.run_check({'t': 'asdfg'}, meth)
         assert(len(errors) == 0)
 
-        meth = MinMaxValidator(2, 5)
+        meth = MinMax(2, 5)
         errors = self.run_check({'t': 'aiadsflgkj'}, meth)
         assert(len(errors) > 0)
         assert("fewer" in errors[0].errors[0]['message'])
 
     def test_password(self):
         """ password validator testing, pos and neg """
-        meth = PasswordValidator()
+        meth = Password()
 
         errors = self.run_check({'t': 'a'}, meth)
         assert(len(errors) > 0)
@@ -143,7 +143,7 @@ class TestValidators(unittest.TestCase):
 
     def test_username(self):
         """ username validator testing, pos and neg """
-        meth = UsernameValidator()
+        meth = Username()
 
         errors = self.run_check({'t': 'a'}, meth)
         assert(len(errors) > 0)
@@ -163,7 +163,7 @@ class TestValidators(unittest.TestCase):
 
     def test_integer(self):
         """ integer validator testing, pos and neg """
-        meth = IntegerValidator(message="Darn")
+        meth = Integer(message="Darn")
 
         errors = self.run_check({'t': '12'}, meth)
         assert(len(errors) == 0)
@@ -174,7 +174,7 @@ class TestValidators(unittest.TestCase):
 
     def test_matching(self):
         """ matching validator """
-        meth = MatchingValidator(message="Darn")
+        meth = Matching(message="Darn")
 
         errors = self.run_check({'t': 'toolong', 'b': 'notmatching'}, meth)
         assert(len(errors) > 0)
@@ -183,7 +183,7 @@ class TestValidators(unittest.TestCase):
 
     def test_strength(self):
         """ password strength validator """
-        meth = PasswordStrengthValidator(message="Darn")
+        meth = PasswordStrength(message="Darn")
 
         errors = self.run_check({'t': 'AA'}, meth)
         assert('1' in errors[0].errors[0]['message'])
@@ -194,14 +194,14 @@ class TestValidators(unittest.TestCase):
         errors = self.run_check({'t': 'SOme33ing%'}, meth)
         assert('4' in errors[0].errors[0]['message'])
 
-        meth = PasswordStrengthValidator(message="Darn",
+        meth = PasswordStrength(message="Darn",
                                          regex=["(?=.*[A-Z].*[A-Z])"])
         errors = self.run_check({'t': 'SOme33ing%'}, meth)
         assert('1' in errors[0].errors[0]['message'])
 
     def test_required(self):
         """ required validator """
-        meth = RequiredValidator(message="Darn")
+        meth = Required(message="Darn")
 
         errors = self.run_check({'t': 'toolong'}, meth)
         assert(len(errors) == 0)
@@ -214,7 +214,7 @@ class TestCheck(unittest.TestCase):
         data """
         class TForm(yota.Form):
             t = EntryNode()
-            _t_valid = yota.Check(RequiredValidator(message="Darn"), 't')
+            _t_valid = yota.Check(Required(message="Darn"), 't')
 
         test = TForm()
         test.t._null_val = ['test']

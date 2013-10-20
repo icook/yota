@@ -4,7 +4,7 @@ import pysistor
 import pickle
 
 
-class MinLengthValidator(object):
+class MinLength(object):
     """ Checks to see if data is at least length long.
 
     :param length: The minimum length of the data.
@@ -19,14 +19,14 @@ class MinLengthValidator(object):
         self.min_length = length
         self.message = message if message else "Minimum allowed length {0}" \
             .format(length)
-        super(MinLengthValidator, self).__init__()
+        super(MinLength, self).__init__()
 
     def __call__(self, target):
         if len(target.data) < self.min_length:
             target.add_error({'message': self.message})
 
 
-class MaxLengthValidator(object):
+class MaxLength(object):
     """ Checks to see if data is at most length long.
 
     :param length: The maximum length of the data.
@@ -41,14 +41,14 @@ class MaxLengthValidator(object):
         self.max_length = length
         self.message = message if message else "Maximum allowed length {0}" \
             .format(length)
-        super(MaxLengthValidator, self).__init__()
+        super(MaxLength, self).__init__()
 
     def __call__(self, target):
         if len(target.data) > self.max_length:
             target.add_error({'message': self.message})
 
 
-class NonBlockingDummyValidator(object):
+class NonBlockingDummy(object):
     """ A dummy class for testing non-blocking validators
     """
 
@@ -56,7 +56,7 @@ class NonBlockingDummyValidator(object):
         target.add_error({'message': "I'm not blocking!", 'block': False})
 
 
-class MatchingValidator(object):
+class Matching(object):
     """ Checks if two nodes values match eachother. The error is delivered to
     the first node.
 
@@ -67,7 +67,7 @@ class MatchingValidator(object):
 
     def __init__(self, message=None):
         self.message = message if message else "Fields must match"
-        super(MatchingValidator, self).__init__()
+        super(Matching, self).__init__()
 
     def __call__(self, target1, target2):
         if target1.data != target2.data:
@@ -75,7 +75,7 @@ class MatchingValidator(object):
             target2.add_error({'message': self.message})
 
 
-class IntegerValidator(object):
+class Integer(object):
     """ Checks if the value is an integer and converts it to one if it is
 
     :param message: (optional) The message to present to the user upon failure.
@@ -85,7 +85,7 @@ class IntegerValidator(object):
 
     def __init__(self, message=None):
         self.message = message if message else "Value must only contain numbers"
-        super(IntegerValidator, self).__init__()
+        super(Integer, self).__init__()
 
     def __call__(self, target):
         try:
@@ -94,7 +94,7 @@ class IntegerValidator(object):
             target.add_error({'message': self.message})
 
 
-class MinMaxValidator(object):
+class MinMax(object):
     """ Checks if the value is between the min and max values given
 
     :param message: (optional) The message to present to the user upon failure.
@@ -117,7 +117,7 @@ class MinMaxValidator(object):
         self.max = max
         self.minmsg = minmsg if minmsg else "Must be longer than {0} characters".format(min)
         self.maxmsg = maxmsg if maxmsg else "Must be fewer than {0} characters".format(max)
-        super(MinMaxValidator, self).__init__()
+        super(MinMax, self).__init__()
 
     def __call__(self, target):
         if len(target.data) < self.min:
@@ -126,7 +126,7 @@ class MinMaxValidator(object):
             target.add_error({'message': self.maxmsg})
 
 
-class RegexValidator(object):
+class Regex(object):
     """ Quick and easy check to see if the input
     matches the given regex.
 
@@ -140,13 +140,13 @@ class RegexValidator(object):
     def __init__(self, regex=None, message=None):
         self.message = message if message else "Input does not match regex"
         self.regex = regex
-        super(RegexValidator, self).__init__()
+        super(Regex, self).__init__()
 
     def __call__(self, target=None):
         if re.match(self.regex, target.data) is None:
             target.add_error({'message': self.message})
 
-class PasswordValidator(RegexValidator):
+class Password(Regex):
     """ Quick and easy check to see if a field
     matches a stamdard password regex. This regex
     matches a string at least 7 characters long which
@@ -164,7 +164,7 @@ class PasswordValidator(RegexValidator):
                                                "a number, a special character, and no spaces"
         self.regex = '^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{7,}$'
 
-class UsernameValidator(RegexValidator):
+class Username(Regex):
     """ Quick and easy check to see if a field
     matches a stamdard username regex. This regex
     matches a string from 3-20 characters long and
@@ -182,7 +182,7 @@ class UsernameValidator(RegexValidator):
         self.regex = '^[a-zA-Z0-9-_]{3,20}$'
 
 
-class URLValidator(RegexValidator):
+class URL(Regex):
     """ A way to check for a valid URL value """
     __slots__ = ["message", "regex"]
 
@@ -197,7 +197,7 @@ class URLValidator(RegexValidator):
                         '(?:/?|[/?]\S+)$')
 
 
-class PasswordStrengthValidator(object):
+class PasswordStrength(object):
     """ A validator to check the password strength.
 
     :param regex: (optional) The regex to run against the input.
@@ -219,7 +219,7 @@ class PasswordStrengthValidator(object):
              ]
         else:
             self.regex = regex
-        super(PasswordStrengthValidator, self).__init__()
+        super(PasswordStrength, self).__init__()
 
     def __call__(self, target=None):
         strength = 0
@@ -233,14 +233,14 @@ class PasswordStrengthValidator(object):
                           'block': False})
 
 
-class CaptchaValidator(object):
+class Captcha(object):
     """ Only validates captcha nodes. Used to check correct solution
     """
     __slots__ = ["message"]
 
     def __init__(self, message=None):
         self.message = message if message else "Captcha did not match!"
-        super(CaptchaValidator, self).__init__()
+        super(Captcha, self).__init__()
 
     def __call__(self, target):
         # Fetch the test object from pysistor
@@ -252,7 +252,7 @@ class CaptchaValidator(object):
             target.add_error({'message': self.message})
 
 
-class RequiredValidator(object):
+class Required(object):
     """ Checks to make sure the user entered something.
 
     :param message: (optional) The message to present to the user upon failure.
@@ -262,13 +262,13 @@ class RequiredValidator(object):
 
     def __init__(self, message=None):
         self.message = message if message else "A value is required"
-        super(RequiredValidator, self).__init__()
+        super(Required, self).__init__()
 
     def __call__(self, target=None):
         if len(target.data) == 0:
             target.add_error({'message': self.message})
 
-class MimeTypeValidator(object):
+class MimeType(object):
     """ Checks to make sure a posted file is an allowed mime type
 
     :param message: (optional) The message to present to the user upon failure.
@@ -281,13 +281,13 @@ class MimeTypeValidator(object):
     def __init__(self, mimetypes, message=None):
         self.mimetypes = mimetypes
         self.message = message if message else "Sorry, that MIME type is not supported"
-        super(MimeTypeValidator, self).__init__()
+        super(MimeType, self).__init__()
 
     def __call__(self, target=None):
         if not target.data.type in self.mimetypes:
             target.add_error({'message': self.message})
 
-class EmailValidator(object):
+class Email(object):
     """ A direct port of the Django Email validator. Checks to see if an
     email is valid using regular expressions.
     """
@@ -307,7 +307,7 @@ class EmailValidator(object):
     def __init__(self, message=None):
         self.message = message if message else "Entered value must be a valid"\
                                                " email address"
-        super(EmailValidator, self).__init__()
+        super(Email, self).__init__()
 
     def valid(self, value):
         """ A small breakout function to make passing back errors less

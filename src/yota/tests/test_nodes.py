@@ -54,20 +54,20 @@ class TestNode(unittest.TestCase):
         # TODO: Needs to be reworked similar to the comprehensive test in Form
         class TForm(yota.Form):
             class MyNode(yota.nodes.EntryNode):
-                validators = MinLengthValidator(5, message="Darn")
+                validators = MinLength(5, message="Darn")
             t = MyNode()
 
         test = TForm()
         test._parse_shorthand_validator(test.t)
         assert(len(test._validation_list) > 0)
         assert(isinstance(test._validation_list[0].callable,
-                          MinLengthValidator))
+                          MinLength))
 
         # ensure that we can still add multiples through iterable types
         class TForm2(yota.Form):
             class MyNode(yota.nodes.EntryNode):
-                validators = [MinLengthValidator(5, message="Darn"),
-                                MaxLengthValidator(5, message="Darn")]
+                validators = [MinLength(5, message="Darn"),
+                                MaxLength(5, message="Darn")]
             t = MyNode()
 
         test = TForm2()
@@ -119,7 +119,7 @@ class TestNode(unittest.TestCase):
         class TForm(yota.Form):
             t = EntryNode()
             _t_valid = yota.Check(
-                RequiredValidator(message="Darn"), target='t')
+                Required(message="Darn"), target='t')
 
         test = TForm()
         success = test._gen_validate({'t': 'testing'})
