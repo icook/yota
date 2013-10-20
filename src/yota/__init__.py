@@ -1,6 +1,6 @@
 from yota.renderers import JinjaRenderer
 from yota.processors import FlaskPostProcessor
-from yota.nodes import LeaderNode, Node
+from yota.nodes import Leader, Node, Blueprint
 from yota.validators import Check, Listener
 import json
 import copy
@@ -212,14 +212,14 @@ class Form(_Form):
             self._node_list.insert(0, self.start)
         else:
             if self.auto_start_close:
-                self.insert(0, LeaderNode(template=self.start_template,
+                self.insert(0, Leader(template=self.start_template,
                                         _attr_name='start',
                                         **self.context))
         if hasattr(self, 'close'):
             self._node_list.append(self.close)
         else:
             if self.auto_start_close:
-                self.insert(-1, LeaderNode(template=self.close_template,
+                self.insert(-1, Leader(template=self.close_template,
                                            _attr_name='close',
                                            **self.context))
 

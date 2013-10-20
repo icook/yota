@@ -209,7 +209,7 @@ class Blueprint(object):
         self._validation_list = source._validation_list
 
 
-class BaseNode(Node):
+class Base(Node):
     """ This base Node supplies the name of the base rendering template that
     is used for standard form elements. This base template provides error divs
     and the horizontal form layout for Bootstrap by default through the
@@ -219,7 +219,7 @@ class BaseNode(Node):
     css_style = ''
 
 
-class NonDataNode(Node):
+class NonData(Node):
     """ A base to inherit from for Nodes that aren't designed to generate
     output, such as the SubmitNode or the LeaderNode. It must override
     resolve_data, otherwise the data will be set to :attr:`Node._null_val`. """
@@ -227,7 +227,7 @@ class NonDataNode(Node):
         pass
 
 
-class ListNode(BaseNode):
+class List(Base):
     """ Node for providing a basic drop down list. Requires an attribute that
      is a list of tuples providing the key and value for the dropdown list
      items.
@@ -243,7 +243,7 @@ class ListNode(BaseNode):
     _requires = ['items']
 
 
-class RadioNode(BaseNode):
+class Radio(Base):
     """ Node for providing a group of radio buttons. Requires buttons
     attribute.
 
@@ -253,7 +253,7 @@ class RadioNode(BaseNode):
     template = 'radio_group'
     _requires = ['buttons']
 
-class CheckNode(BaseNode):
+class Checkbox(Base):
     """ Creates a simple checkbox for your form. """
     template = 'checkbox'
 
@@ -265,7 +265,7 @@ class CheckNode(BaseNode):
             # value to false if there is no post data
             self.data = False
 
-class CheckGroupNode(BaseNode):
+class CheckboxGroup(Base):
     """ Node for providing a group of checkboxes. Requires boxes
     attribute. Instead of defining an ID value explicitly the
     :class:`Node.set_identifiers` defines a prefix value to be prefixed to all
@@ -307,7 +307,7 @@ class CheckGroupNode(BaseNode):
             self.title = self._attr_name.capitalize().replace('_', ' ')
 
 
-class ButtonNode(BaseNode, NonDataNode):
+class Button(Base, NonData):
     """ Creates a button in your form that submits
     no data.
     """
@@ -315,7 +315,7 @@ class ButtonNode(BaseNode, NonDataNode):
     button_title = 'Click me!'
 
 
-class CaptchaNode(BaseNode):
+class Captcha(Base):
     """ A node designed for basic captcha support. It expects
     to receive a captcha id through the global context and uses
     the id to reference a captcha image.
@@ -329,7 +329,7 @@ class CaptchaNode(BaseNode):
         import pickle
         import datetime
         # Perform the super context as normal
-        context = BaseNode.get_context(self, g_context)
+        context = Base.get_context(self, g_context)
 
         # Then generate a new Captcha Node from Pysistor and inject the
         # information
@@ -357,23 +357,23 @@ class CaptchaNode(BaseNode):
                                                                 self.name))
 
 
-class EntryNode(BaseNode):
+class Entry(Base):
     """ Creates an input box for your form. """
     template = 'entry'
 
 
-class PasswordNode(BaseNode):
+class Password(Base):
     """ Creates an input box for your form. """
     template = 'password'
 
 
-class FileNode(BaseNode):
+class File(Base):
     """ Creates an input box for your form. """
     template = 'file'
     accepts = 'audio/*,video/*,image/*'
 
 
-class TextareaNode(BaseNode):
+class Textarea(Base):
     """ A node with a basic textarea template with defaults provided.
 
     :attr rows: The number of rows to make the textarea
@@ -384,14 +384,14 @@ class TextareaNode(BaseNode):
     columns = '10'
 
 
-class SubmitNode(NonDataNode, BaseNode):
+class Submit(NonData, Base):
     """ Displays a submit button on the right side to align with Form elements
     """
     template = 'submit'
     css_class = 'btn btn-primary'
 
 
-class LeaderNode(NonDataNode):
+class Leader(NonData):
     """ A Node that does few special things to setup and close the form.
     Intended for use in the start and end Nodes. """
 

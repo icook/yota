@@ -1,7 +1,8 @@
 import unittest
 import yota
-from yota.validators import *
-from yota.nodes import *
+from yota import Check, Form, Listener, Blueprint
+import yota.validators as validators
+import yota.nodes as nodes
 from yota.exceptions import *
 from copy import copy, deepcopy
 
@@ -26,7 +27,7 @@ class TestForms(unittest.TestCase):
         tests = [
             ('g_context', copy(td), copy(td2), True),
             ('context', copy(td), copy(td2), True),
-            ('_node_list', [], [EntryNode(_attr_name='test')], True),
+            ('_node_list', [], [nodes.Entry(_attr_name='test')], True),
             ('_validation_list', copy(tl), copy(td2), True),
             ('my_custom_attr2', copy(tl), copy(tl2), True),
             ('start_template', 'customtem', 'close', False),
@@ -38,7 +39,7 @@ class TestForms(unittest.TestCase):
         ]
         for key, class_val, kwarg_val, mutable in tests:
             print("Running test for key type " + key)
-            class TForm(yota.Form):
+            class TForm(Form):
                 pass
             # set our class attribute
             setattr(TForm, key, class_val)
@@ -58,26 +59,26 @@ class TestForms(unittest.TestCase):
             assert(class_val != getattr(tester, key))
 
     def test_override_start_close(self):
-        class TForm(yota.Form):
-            start = EntryNode()
-            close = EntryNode()
+        class TForm(Form):
+            start = nodes.Entry()
+            close = nodes.Entry()
 
-            t = EntryNode()
+            t = nodes.Entry()
             _t_valid = yota.Check(
-                MinLength(5, message="Darn"), 't')
+                validators.MinLength(5, message="Darn"), 't')
 
         test = TForm()
-        assert(isinstance(test.start, EntryNode))
-        assert(isinstance(test.close, EntryNode))
+        assert(isinstance(test.start, nodes.Entry))
+        assert(isinstance(test.close, nodes.Entry))
         assert(test._node_list[0]._attr_name is 'start')
         assert(test._node_list[2]._attr_name is 'close')
 
     def test_node_order_prev(self):
         """ is node order being properly preserved, attr preserved, _node_list populated """
-        one = EntryNode()
-        two = EntryNode()
-        three = EntryNode()
-        class TForm(yota.Form):
+        one = nodes.Entry()
+        two = nodes.Entry()
+        three = nodes.Entry()
+        class TForm(Form):
             something = one
             other = two
             thing = three
@@ -100,15 +101,15 @@ class TestForms(unittest.TestCase):
 
     def test_blueprint_nodes(self):
         """ make sure forms can be used inside of forms """
-        class TForm(yota.Form):
-            something = EntryNode()
-            other = EntryNode()
-            thing = EntryNode()
+        class TForm(Form):
+            something = nodes.Entry()
+            other = nodes.Entry()
+            thing = nodes.Entry()
 
-        class BForm(yota.Form):
-            first = EntryNode()
+        class BForm(Form):
+            first = nodes.Entry()
             second = Blueprint(TForm)
-            third = EntryNode()
+            third = nodes.Entry()
 
         test = BForm()
 
@@ -127,11 +128,11 @@ class TestForms(unittest.TestCase):
         def testing():
             print("nothing")
 
-        class TForm(yota.Form):
+        class TForm(Form):
             test = Listener("something", testing)
             test2 = Listener("else", testing)
 
-        class BForm(yota.Form):
+        class BForm(Form):
             test3 = Listener("else", testing)
             test4 = Blueprint(TForm)
 
@@ -147,11 +148,11 @@ class TestForms(unittest.TestCase):
 
     def test_blueprint_validators(self):
         """ ensure events get transferred properly """
-        class TForm(yota.Form):
-            main = EntryNode(validators=MinLength(5))
-            other_name_val = Check(MinLength(10), "main")
+        class TForm(Form):
+            main = nodes.Entry(validators=validators.MinLength(5))
+            other_name_val = Check(validators.MinLength(10), "main")
 
-        class BForm(yota.Form):
+        class BForm(Form):
             test4 = Blueprint(TForm)
 
         test = BForm()
@@ -163,8 +164,8 @@ class TestForms(unittest.TestCase):
     # Test core functionality of Form class
     def test_error_header(self):
         """ tests the validate method use of success_header_generate """
-        class TForm(yota.Form):
-            t = EntryNode(validators=Required())
+        class TForm(Form):
+            t = nodes.Entry(validators=validators.Required())
 
             def error_header_generate(self, errors):
                 self.start.add_error({'message': 'This is a very specific error'})
@@ -178,19 +179,19 @@ class TestForms(unittest.TestCase):
 
     def test_parent_form(self):
         """ existence of _parent_form being populated"""
-        class TForm(yota.Form):
-            t = EntryNode()
+        class TForm(Form):
+            t = nodes.Entry()
 
         test = TForm()
-        test.insert(1, EntryNode(_attr_name="testing"))
+        test.insert(1, nodes.Entry(_attr_name="testing"))
         assert(test.t._parent_form is test)
         assert(test.testing._parent_form is test)
 
     def test_success_header(self):
         """ success header generation """
 
-        class TForm(yota.Form):
-            t = EntryNode()
+        class TForm(Form):
+            t = nodes.Entry()
 
             def success_json_generate(self):
                 self.start.add_error({'message': 'something else entirely'})
@@ -210,14 +211,14 @@ class TestForms(unittest.TestCase):
     def test_validator_shorthand(self):
         """ Properly test many flexible shorthands """
         nl = [
-            MinLength(5),
-            (MinLength(5), ),
-            [MinLength(5), ],
+            validators.MinLength(5),
+            (validators.MinLength(5), ),
+            [validators.MinLength(5), ],
             [],
-            Check(MinLength(5), 't'),
-            [Check(MinLength(5), 't'), ],
-            [Check(MinLength(5), 't'), MinLength(5)],
-            (Check(MinLength(5)), MinLength(5)),
+            Check(validators.MinLength(5), 't'),
+            [Check(validators.MinLength(5), 't'), ],
+            [Check(validators.MinLength(5), 't'), validators.MinLength(5)],
+            (Check(validators.MinLength(5)), validators.MinLength(5)),
         ]
         # Since we're going to resolve the Checks again, easier to duplicate
         # them
@@ -225,8 +226,8 @@ class TestForms(unittest.TestCase):
         valid_list = [1, 1, 1, 0, 1, 1, 2, 2]
         for i, node in enumerate(nl):
             print("Testing shorthand scenario #" + str(i))
-            class TForm(yota.Form):
-                t = EntryNode(validators=node)
+            class TForm(Form):
+                t = nodes.Entry(validators=node)
             test = TForm()
             test._parse_shorthand_validator(test.t)
             assert(len(test._validation_list) >= valid_list[i])
@@ -239,8 +240,8 @@ class TestForms(unittest.TestCase):
         for i, node in enumerate(nl2):
             # Now make sure passing as attr works
             print("Testing shorthand attr scenario #" + str(i))
-            class TForm(yota.Form):
-                class MyNode(yota.nodes.EntryNode):
+            class TForm(Form):
+                class MyNode(nodes.Entry):
                     validators = node
                 t = MyNode()
 
@@ -257,8 +258,8 @@ class TestForms(unittest.TestCase):
     # Coverage for utility functions, helpers
     def test_data_by_attr_name(self):
         """ Data by attr and by name functions as expected """
-        class TForm(yota.Form):
-            t = EntryNode()
+        class TForm(Form):
+            t = nodes.Entry()
 
         test = TForm()
         test.t.data = 'something'
@@ -269,8 +270,8 @@ class TestForms(unittest.TestCase):
 
     def test_form_resolve(self):
         """ resolve all should function as expected """
-        class TForm(yota.Form):
-            t = EntryNode()
+        class TForm(Form):
+            t = nodes.Entry()
 
         test = TForm()
         test.resolve_all({'t': 'Something'})
@@ -278,23 +279,23 @@ class TestForms(unittest.TestCase):
 
     def test_dynamic_insert(self):
         """ insert_after test, and subsequently insert itself """
-        class TForm(yota.Form):
-            t = EntryNode()
+        class TForm(Form):
+            t = nodes.Entry()
 
         test = TForm()
         # Test one that hits the mark and finds t
-        test.insert_after('t', EntryNode(_attr_name='t2'))
+        test.insert_after('t', nodes.Entry(_attr_name='t2'))
         assert(test._node_list[2]._attr_name == 't2')
         # Test one that goes to the bottom, no t4
-        test.insert_after('t4', EntryNode(_attr_name='t3'))
+        test.insert_after('t4', nodes.Entry(_attr_name='t3'))
         assert(test._node_list[4]._attr_name == 't3')
 
     def test_insert_validator(self):
         """ insert functions test plus special cases """
-        test = yota.Form()
-        tch = Check(Required(), 't')
-        tch2 = Check(MinLength(5), 't')
-        tch3 = Check(MaxLength(5), 't')
+        test = Form()
+        tch = Check(validators.Required(), 't')
+        tch2 = Check(validators.MinLength(5), 't')
+        tch3 = Check(validators.MaxLength(5), 't')
         self.assertRaises(TypeError, test.insert_validator, ' ')
         test.insert_validator(tch)
         assert(test._validation_list[0] is tch)
@@ -305,21 +306,21 @@ class TestForms(unittest.TestCase):
         assert(test._validation_list[2] is tch3)
 
         # And tuples just to be over-thorough...
-        test = yota.Form()
+        test = Form()
         test.insert_validator((tch, tch3))
         assert(test._validation_list[0] is tch)
         assert(test._validation_list[1] is tch3)
 
     def test_insert_special(self):
         """ insert functions test plus special cases """
-        test = yota.Form()
-        test.insert(0, EntryNode(_attr_name='test1'))
+        test = Form()
+        test.insert(0, nodes.Entry(_attr_name='test1'))
         assert(hasattr(test, 'test1'))
         assert(test._node_list[0]._attr_name == 'test1')
-        test.insert(-1, EntryNode(_attr_name='test2'))
+        test.insert(-1, nodes.Entry(_attr_name='test2'))
         assert(hasattr(test, 'test2'))
         assert(test._node_list[3]._attr_name == 'test2')
-        test.insert(2, EntryNode(_attr_name='test3'))
+        test.insert(2, nodes.Entry(_attr_name='test3'))
         assert(hasattr(test, 'test3'))
         assert(test._node_list[2]._attr_name == 'test3')
 
@@ -334,9 +335,9 @@ class TestFormValidation(unittest.TestCase):
         # TODO: Needs significant expansion. Severl more assertions at least,
         # and probably a few more scenarios
 
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(Required(message="Darn"), 't')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check(validators.Required(message="Darn"), 't')
 
         test = TForm()
         success, json = test.validate_json({'t': '', '_visited_names': '{"t": true}'},
@@ -347,9 +348,9 @@ class TestFormValidation(unittest.TestCase):
         """ a piecewise submit that is failing visited validators won't pass on
         submit"""
 
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(MinLength(5), 't')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check(validators.MinLength(5), 't')
 
         test = TForm()
         success, json = test.validate_json(
@@ -363,9 +364,9 @@ class TestFormValidation(unittest.TestCase):
 
     def test_piecewise_novisit(self):
         """ any non-visited nodes cause submission to block """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(MinLength(5), 't')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check(validators.MinLength(5), 't')
 
         test = TForm()
         success, invalid = test._gen_validate(
@@ -377,7 +378,7 @@ class TestFormValidation(unittest.TestCase):
 
     def test_piecewise_nosubmit(self):
         """ even with no errors and all visited, piecewise fails without submit """
-        test = yota.Form()
+        test = Form()
         success, json = test.validate_json(
             {'_visited_names': '{}', 'submit_action': False},
             piecewise=True,
@@ -388,12 +389,12 @@ class TestFormValidation(unittest.TestCase):
 
     def test_piecewise_exc(self):
         """ validation will throw an exception without passing visited nodes """
-        test = yota.Form()
+        test = Form()
         self.assertRaises(AttributeError, test._gen_validate, {}, piecewise=True)
 
     def test_success_insert(self):
         """ the dedicated success_insert function """
-        test = yota.Form()
+        test = Form()
         test._submit_action = True
         test.set_json_success(redirect='home')
         json = test.render_json({'submit_action': 'true'}, raw=True)
@@ -404,14 +405,14 @@ class TestFormValidation(unittest.TestCase):
     # Regular validation
     def test_valid_render_success(self):
         """ validate render method returns true for success when it's supposed to """
-        assert(yota.Form().validate_render({})[0] is True)
+        assert(Form().validate_render({})[0] is True)
 
     def test_validate_reg(self):
         """ regular validate meth works properly """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(
-                MinLength(5, message="Darn"), 't')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check(
+                validators.MinLength(5, message="Darn"), 't')
 
         test = TForm()
         success, ret = test.validate({'t': 'adfasdfasdf'}, internal=True)
@@ -423,10 +424,10 @@ class TestFormValidation(unittest.TestCase):
 
     def test_non_blocking(self):
         """ ensure that a non-blocking validators validation is successful """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(
-                NonBlockingDummy(), 't')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check(
+                validators.NonBlockingDummy(), 't')
 
         test = TForm()
         success, invalid = test._gen_validate({'t': 'toolong'}, internal=True)
@@ -434,9 +435,9 @@ class TestFormValidation(unittest.TestCase):
 
     def test_bad_validator(self):
         """ malformed checks need to throw an exception """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check('fgsdfg', 't')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check('fgsdfg', 't')
 
         test = TForm()
         self.assertRaises(
@@ -447,28 +448,28 @@ class TestFormValidation(unittest.TestCase):
     def test_override_start_close_exc(self):
         # Test the start node
         def make_class():
-            class TForm(yota.Form): start = ''
+            class TForm(Form): start = ''
         self.assertRaises(AttributeError, make_class)
 
         # and the close node
         def make_class():
-            class TForm(yota.Form): close = ''
+            class TForm(Form): close = ''
         self.assertRaises(AttributeError, make_class)
 
     def test_node_attr_safety(self):
         """ Ensure safe node _attr_names """
 
         def stupid_2_6():
-            class TForm(yota.Form):
-                name = EntryNode()
+            class TForm(Form):
+                name = nodes.Entry()
             TForm()
 
         self.assertRaises(AttributeError, stupid_2_6)
-        f = yota.Form()
-        self.assertRaises(AttributeError, f.insert, 0, EntryNode())
+        f = Form()
+        self.assertRaises(AttributeError, f.insert, 0, nodes.Entry())
         self.assertRaises(
-            AttributeError, f.insert, 0, EntryNode(_attr_name='name'))
+            AttributeError, f.insert, 0, nodes.Entry(_attr_name='name'))
         self.assertRaises(AttributeError,
                           f.insert,
                           0,
-                          EntryNode(_attr_name='g_context'))
+                          nodes.Entry(_attr_name='g_context'))

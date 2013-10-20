@@ -1,22 +1,24 @@
+from yota import Check, Form, Listener, Blueprint
+import yota.validators as validators
+import yota.nodes as nodes
+from yota.exceptions import *
+
 import unittest
 import yota
 from bs4 import BeautifulSoup
-from yota.validators import *
-from yota.nodes import *
-from yota.exceptions import *
 
 
 class TestBuiltinNodes(unittest.TestCase):
     """ Some functional testing for our builtin nodes. Still very incomplete """
-    builtin = [ListNode(items=[('1', 'some'), ('2', 'other')]),
-               RadioNode(buttons=[('1', 'some'), ('2', 'other')]),
-               EntryNode(),
-               TextareaNode()]
+    builtin = [nodes.List(items=[('1', 'some'), ('2', 'other')]),
+               nodes.Radio(buttons=[('1', 'some'), ('2', 'other')]),
+               nodes.Entry(),
+               nodes.Textarea()]
 
     def test_radio_node(self):
         """ radio node generating the radio buttons """
         class TForm(yota.Form):
-            t = RadioNode(buttons=[
+            t = nodes.Radio(buttons=[
                 ('1', 'something'),
                 ('2', 'else'),
                 ('3', 'is')
@@ -32,7 +34,7 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_check_node(self):
         """ check box node for generating check box """
         class TForm(yota.Form):
-            t = CheckNode(name='test')
+            t = nodes.Checkbox(name='test')
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
@@ -43,7 +45,7 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_check_group(self):
         """ grouped checkboxes generating check boxes """
         class TForm(yota.Form):
-            t = CheckGroupNode(boxes=[
+            t = nodes.CheckboxGroup(boxes=[
                 ('test', 'something'),
                 ('this', 'else'),
                 ('one', 'is')
@@ -59,7 +61,7 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_list_node(self):
         """ list node contains input fields """
         class TForm(yota.Form):
-            t = ListNode(items=[('1', 'something'),
+            t = nodes.List(items=[('1', 'something'),
                                 ('2', 'else'),
                                 ('3', 'is')
                                 ])
@@ -86,7 +88,7 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_entry(self):
         """ entry node contains input field """
         class TForm(yota.Form):
-            t = EntryNode(name='something')
+            t = nodes.Entry(name='something')
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
@@ -95,7 +97,7 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_file(self):
         """ input file node contains type=file attr """
         class TForm(yota.Form):
-            t = FileNode(name='something')
+            t = nodes.File(name='something')
 
         test = TForm(enctype='multipart/form-data').render()
         bs = BeautifulSoup(test)
@@ -105,7 +107,7 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_textarea(self):
         """ textarea contains textarea field """
         class TForm(yota.Form):
-            t = TextareaNode(rows='15', columns='20')
+            t = nodes.Textarea(rows='15', columns='20')
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
@@ -114,7 +116,7 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_submit(self):
         """ submit node for containing input fields type submit """
         class TForm(yota.Form):
-            t = SubmitNode(title='Yay')
+            t = nodes.Submit(title='Yay')
 
         test = TForm(auto_start_close=False).render()
         bs = BeautifulSoup(test)
@@ -124,8 +126,8 @@ class TestBuiltinNodes(unittest.TestCase):
     def test_textarea_content(self):
         """ textarea data gets passed back in correctly """
         class TForm(yota.Form):
-            t = TextareaNode(rows='15', columns='20')
-            _t_long = Check(MinLength(5), 't')
+            t = nodes.Textarea(rows='15', columns='20')
+            _t_long = Check(validators.MinLength(5), 't')
         success, test = TForm(auto_start_close=False).validate_render({'t': 'test'})
         bs = BeautifulSoup(test)
         assert('test' in bs.findAll('textarea')[0].contents[0].strip())

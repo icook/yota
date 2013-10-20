@@ -1,9 +1,10 @@
+from yota import Check, Form, Listener, Blueprint
+import yota.validators as validators
+import yota.nodes as nodes
+from yota.exceptions import *
+
 import unittest
 import yota
-from yota.validators import *
-from yota.nodes import *
-from yota.exceptions import *
-from copy import copy
 
 
 class TestListeners(unittest.TestCase):
@@ -13,7 +14,7 @@ class TestListeners(unittest.TestCase):
             list.data = "testing"
 
         class TForm(yota.Form):
-            test = ListNode()
+            test = nodes.List()
             event = Listener("dummy", test_func, "test")
         test = TForm()
         test.trigger_event("dummy")
@@ -31,7 +32,7 @@ class TestListeners(unittest.TestCase):
             list.data = "testing"
 
         class TForm(yota.Form):
-            test = ListNode()
+            test = nodes.List()
         test = TForm()
         test.add_listener(Listener("dummy", test_func, "test"))
         test.trigger_event("dummy")
@@ -45,7 +46,7 @@ class TestListeners(unittest.TestCase):
             list.data = "testing"
 
         class TForm(yota.Form):
-            test = EntryNode()
+            test = nodes.Entry()
             event = Listener("validate_success", test_func, "test")
         test = TForm()
         test.validate({'test': '1'})
@@ -62,7 +63,7 @@ class TestListeners(unittest.TestCase):
 
 
         class TForm(yota.Form):
-            test = EntryNode(validators=MinLength(5))
+            test = nodes.Entry(validators=validators.MinLength(5))
             event = Listener("validate_failure", test_func, "test")
         test = TForm()
         test.validate({'test': '1'})

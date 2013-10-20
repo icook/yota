@@ -1,8 +1,9 @@
-import unittest
-import yota
-from yota.validators import *
-from yota.nodes import *
+from yota import Check, Form, Listener
+import yota.validators as validators
+import yota.nodes as nodes
 from yota.exceptions import *
+
+import unittest
 
 
 class TestValidators(unittest.TestCase):
@@ -14,7 +15,7 @@ class TestValidators(unittest.TestCase):
         check accordingly """
         args = []
         for key, val in values.items():
-            args.append(EntryNode(_attr_name=key, data=val))
+            args.append(nodes.Entry(_attr_name=key, data=val))
 
         c = Check(validator, *args)
         c.resolved = True
@@ -28,26 +29,27 @@ class TestValidators(unittest.TestCase):
 
     def test_unicode_validator(self):
         """ make sure unicode strings don't break validators """
-        for val in [MinLength(5),
-                    MaxLength(5),
-                    Regex(regex='^[a-z]*$'),
-                    Required(),
-                    Email()]:
-            errors = self.run_check({'t': u"\u041f\u0440\u0438\u0432\u0435\u0442"}, val)
+        for val in [validators.MinLength(5),
+                    validators.MaxLength(5),
+                    validators.Regex(regex='^[a-z]*$'),
+                    validators.Required(),
+                    validators.Email()]:
+            errors = self.run_check(
+                {'t': u"\u041f\u0440\u0438\u0432\u0435\u0442"}, val)
 
 
     def test_min_required(self):
         """ min validator testing, pos and neg """
-        meth = MinLength(5, message="Darn")
+        meth = validators.MinLength(6, message="Darn")
 
-        errors = self.run_check({'t':'short'}, meth)
+        errors = self.run_check({'t':'shorts'}, meth)
         assert(len(errors) == 0)
         errors = self.run_check({'t':'shor'}, meth)
         assert(len(errors) > 0)
 
     def test_max_required(self):
         """ max validator testing, pos and neg """
-        meth = MaxLength(5, message="Darn")
+        meth = validators.MaxLength(5, message="Darn")
 
         errors = self.run_check({'t':'shor'}, meth)
         assert(len(errors) == 0)
@@ -56,7 +58,7 @@ class TestValidators(unittest.TestCase):
 
     def test_regex_valid(self):
         """ regex validator testing, pos and neg """
-        meth = Regex(regex='^[a-z]*$', message='darn')
+        meth = validators.Regex(regex='^[a-z]*$', message='darn')
 
         errors = self.run_check({'t':'asdlkfdfsljgdlkfj'}, meth)
         assert(len(errors) == 0)
@@ -67,7 +69,7 @@ class TestValidators(unittest.TestCase):
 
     def test_url_valid(self):
         """ regex validator testing, pos and neg """
-        meth = URL(message='darn')
+        meth = validators.URL(message='darn')
 
         errors = self.run_check({'t':'http://google.com'}, meth)
         assert(len(errors) == 0)
@@ -88,7 +90,7 @@ class TestValidators(unittest.TestCase):
 
     def test_email(self):
         """ email validator testing, all branches """
-        meth = Email(message="Darn")
+        meth = validators.Email(message="Darn")
 
         errors = self.run_check({'t': 'm@testing.com'}, meth)
         assert(len(errors) == 0)
@@ -105,7 +107,7 @@ class TestValidators(unittest.TestCase):
 
     def test_minmax(self):
         """ minmax validator testing, pos and neg """
-        meth = MinMax(2, 5, minmsg="Darn", maxmsg="Darn")
+        meth = validators.MinMax(2, 5, minmsg="Darn", maxmsg="Darn")
 
         errors = self.run_check({'t': 'ai'}, meth)
         assert(len(errors) == 0)
@@ -116,14 +118,14 @@ class TestValidators(unittest.TestCase):
         errors = self.run_check({'t': 'asdfg'}, meth)
         assert(len(errors) == 0)
 
-        meth = MinMax(2, 5)
+        meth = validators.MinMax(2, 5)
         errors = self.run_check({'t': 'aiadsflgkj'}, meth)
         assert(len(errors) > 0)
         assert("fewer" in errors[0].errors[0]['message'])
 
     def test_password(self):
         """ password validator testing, pos and neg """
-        meth = Password()
+        meth = validators.Password()
 
         errors = self.run_check({'t': 'a'}, meth)
         assert(len(errors) > 0)
@@ -143,7 +145,7 @@ class TestValidators(unittest.TestCase):
 
     def test_username(self):
         """ username validator testing, pos and neg """
-        meth = Username()
+        meth = validators.Username()
 
         errors = self.run_check({'t': 'a'}, meth)
         assert(len(errors) > 0)
@@ -163,7 +165,7 @@ class TestValidators(unittest.TestCase):
 
     def test_integer(self):
         """ integer validator testing, pos and neg """
-        meth = Integer(message="Darn")
+        meth = validators.Integer(message="Darn")
 
         errors = self.run_check({'t': '12'}, meth)
         assert(len(errors) == 0)
@@ -174,7 +176,7 @@ class TestValidators(unittest.TestCase):
 
     def test_matching(self):
         """ matching validator """
-        meth = Matching(message="Darn")
+        meth = validators.Matching(message="Darn")
 
         errors = self.run_check({'t': 'toolong', 'b': 'notmatching'}, meth)
         assert(len(errors) > 0)
@@ -183,7 +185,7 @@ class TestValidators(unittest.TestCase):
 
     def test_strength(self):
         """ password strength validator """
-        meth = PasswordStrength(message="Darn")
+        meth = validators.PasswordStrength(message="Darn")
 
         errors = self.run_check({'t': 'AA'}, meth)
         assert('1' in errors[0].errors[0]['message'])
@@ -194,14 +196,14 @@ class TestValidators(unittest.TestCase):
         errors = self.run_check({'t': 'SOme33ing%'}, meth)
         assert('4' in errors[0].errors[0]['message'])
 
-        meth = PasswordStrength(message="Darn",
+        meth = validators.PasswordStrength(message="Darn",
                                          regex=["(?=.*[A-Z].*[A-Z])"])
         errors = self.run_check({'t': 'SOme33ing%'}, meth)
         assert('1' in errors[0].errors[0]['message'])
 
     def test_required(self):
         """ required validator """
-        meth = Required(message="Darn")
+        meth = validators.Required(message="Darn")
 
         errors = self.run_check({'t': 'toolong'}, meth)
         assert(len(errors) == 0)
@@ -212,9 +214,9 @@ class TestCheck(unittest.TestCase):
     def test_key_access_exception(self):
         """ Proper raising of access exception when missing a required piece of
         data """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(Required(message="Darn"), 't')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check(validators.Required(message="Darn"), 't')
 
         test = TForm()
         test.t._null_val = ['test']

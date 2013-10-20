@@ -1,10 +1,10 @@
-import unittest
-import yota
-from yota.validators import *
-from yota.nodes import *
+from yota import Check, Form, Listener, Blueprint
+import yota.validators as validators
+import yota.nodes as nodes
 from yota.exceptions import *
-from copy import copy
 
+import unittest
+from copy import copy
 
 class TestNode(unittest.TestCase):
     def test_class_override(self):
@@ -29,7 +29,7 @@ class TestNode(unittest.TestCase):
         ]
         for key, class_val, kwarg_val, mutable in tests:
             print("Running test for key type " + key)
-            class TNode(yota.nodes.Node):
+            class TNode(nodes.Node):
                 pass
             # set our class attribute
             setattr(TNode, key, class_val)
@@ -52,22 +52,22 @@ class TestNode(unittest.TestCase):
         """ Test whether setting validator as class attributes of Nodes gets
         correctly passed """
         # TODO: Needs to be reworked similar to the comprehensive test in Form
-        class TForm(yota.Form):
-            class MyNode(yota.nodes.EntryNode):
-                validators = MinLength(5, message="Darn")
+        class TForm(Form):
+            class MyNode(nodes.Entry):
+                validators = validators.MinLength(5, message="Darn")
             t = MyNode()
 
         test = TForm()
         test._parse_shorthand_validator(test.t)
         assert(len(test._validation_list) > 0)
         assert(isinstance(test._validation_list[0].callable,
-                          MinLength))
+                          validators.MinLength))
 
         # ensure that we can still add multiples through iterable types
-        class TForm2(yota.Form):
-            class MyNode(yota.nodes.EntryNode):
-                validators = [MinLength(5, message="Darn"),
-                                MaxLength(5, message="Darn")]
+        class TForm2(Form):
+            class MyNode(nodes.Entry):
+                validators = [validators.MinLength(5, message="Darn"),
+                                validators.MaxLength(5, message="Darn")]
             t = MyNode()
 
         test = TForm2()
@@ -76,16 +76,16 @@ class TestNode(unittest.TestCase):
 
     def test_required(self):
         """ required node attribute properly raise on render """
-        class TForm(yota.Form):
-            t = ListNode()
+        class TForm(Form):
+            t = nodes.List()
 
         test = TForm()
         self.assertRaises(InvalidContextException, test.render)
 
     def test_ignores(self):
         """ _ignores doesn't pass to rendering context """
-        class TForm(yota.Form):
-            t = EntryNode()
+        class TForm(Form):
+            t = nodes.Entry()
 
         test = TForm()
         assert('template' not in test.t.get_context({}))
@@ -93,14 +93,14 @@ class TestNode(unittest.TestCase):
     def test_ignores_requires_override(self):
         """ Ensure _ignores and _requires can be overridden as kwargs
         properly """
-        t = EntryNode(_ignores=['something'], _requires=['something_else'])
+        t = nodes.Entry(_ignores=['something'], _requires=['something_else'])
 
         assert('something' in t._ignores)
         assert('something_else' in t._requires)
 
     def test_attribute_pass(self):
         """ Make sure we can pass attributes through the class """
-        class MyNode(yota.Node):
+        class MyNode(nodes.Node):
             _ignores = None
             _requires = list()
             validator = dict()
@@ -116,10 +116,10 @@ class TestNode(unittest.TestCase):
 
     def test_data_resolver(self):
         """ default data resolution implemented """
-        class TForm(yota.Form):
-            t = EntryNode()
-            _t_valid = yota.Check(
-                Required(message="Darn"), target='t')
+        class TForm(Form):
+            t = nodes.Entry()
+            _t_valid = Check(
+                validators.Required(message="Darn"), target='t')
 
         test = TForm()
         success = test._gen_validate({'t': 'testing'})
@@ -131,8 +131,8 @@ class TestNodeSpecific(unittest.TestCase):
 
     def test_checknode(self):
         """ checkbox node should return false if name not in return data """
-        class TForm(yota.Form):
-            t = CheckNode()
+        class TForm(Form):
+            t = nodes.Checkbox()
 
         test = TForm()
 
@@ -146,8 +146,8 @@ class TestNodeSpecific(unittest.TestCase):
 
     def test_checkgroup(self):
         """ checkbox group data extraction works as intended """
-        class TForm(yota.Form):
-            t = CheckGroupNode(boxes=[('test', 'something'),
+        class TForm(Form):
+            t = nodes.CheckboxGroup(boxes=[('test', 'something'),
                                    ('this', 'else'),
                                    ('one', 'is')
                                    ])
