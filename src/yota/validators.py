@@ -182,6 +182,21 @@ class UsernameValidator(RegexValidator):
         self.regex = '^[a-zA-Z0-9-_]{3,20}$'
 
 
+class URLValidator(RegexValidator):
+    """ A way to check for a valid URL value """
+    __slots__ = ["message", "regex"]
+
+    def __init__(self, message=None):
+        self.message = message if message else "Must be 3-20 characters and only " \
+                                               "contain letters, numbers, hyphens and underscores"
+        self.regex = ('^(?:http|ftp)s?://' # http:// or https://
+                        '(?:(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+(?:[A-Za-z]{2,6}\.?|[A-Za-z0-9-]{2,}\.?)|' #domain...
+                        'localhost|' #localhost...
+                        '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+                        '(?::\d+)?' # optional port
+                        '(?:/?|[/?]\S+)$')
+
+
 class PasswordStrengthValidator(object):
     """ A validator to check the password strength.
 

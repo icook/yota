@@ -65,6 +65,27 @@ class TestValidators(unittest.TestCase):
         errors = self.run_check({'t':'123sdflkns'}, meth)
         assert(len(errors) > 0)
 
+    def test_url_valid(self):
+        """ regex validator testing, pos and neg """
+        meth = URLValidator(message='darn')
+
+        errors = self.run_check({'t':'http://google.com'}, meth)
+        assert(len(errors) == 0)
+        errors = self.run_check({'t':'http://localhost'}, meth)
+        assert(len(errors) == 0)
+        errors = self.run_check({'t':'http://localhost:8080/login'}, meth)
+        assert(len(errors) == 0)
+        errors = self.run_check({'t':'http://192.168.1.1:8080/login'}, meth)
+        assert(len(errors) == 0)
+        errors = self.run_check({'t':'https://192.168.1.1:8080/'}, meth)
+        assert(len(errors) == 0)
+        errors = self.run_check({'t':'ftp://192.168.1.1:8080/'}, meth)
+        assert(len(errors) == 0)
+
+        # negative
+        errors = self.run_check({'t':'http;//google.com'}, meth)
+        assert(len(errors) > 0)
+
     def test_email(self):
         """ email validator testing, all branches """
         meth = EmailValidator(message="Darn")
