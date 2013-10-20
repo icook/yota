@@ -183,7 +183,7 @@ class TestForms(unittest.TestCase):
             t = nodes.Entry()
 
         test = TForm()
-        test.insert(1, nodes.Entry(_attr_name="testing"))
+        test.insert_node(1, nodes.Entry(_attr_name="testing"))
         assert(test.t._parent_form is test)
         assert(test.testing._parent_form is test)
 
@@ -284,10 +284,10 @@ class TestForms(unittest.TestCase):
 
         test = TForm()
         # Test one that hits the mark and finds t
-        test.insert_after('t', nodes.Entry(_attr_name='t2'))
+        test.insert_node_after('t', nodes.Entry(_attr_name='t2'))
         assert(test._node_list[2]._attr_name == 't2')
         # Test one that goes to the bottom, no t4
-        test.insert_after('t4', nodes.Entry(_attr_name='t3'))
+        test.insert_node_after('t4', nodes.Entry(_attr_name='t3'))
         assert(test._node_list[4]._attr_name == 't3')
 
     def test_insert_validator(self):
@@ -314,13 +314,13 @@ class TestForms(unittest.TestCase):
     def test_insert_special(self):
         """ insert functions test plus special cases """
         test = Form()
-        test.insert(0, nodes.Entry(_attr_name='test1'))
+        test.insert_node(0, nodes.Entry(_attr_name='test1'))
         assert(hasattr(test, 'test1'))
         assert(test._node_list[0]._attr_name == 'test1')
-        test.insert(-1, nodes.Entry(_attr_name='test2'))
+        test.insert_node(-1, nodes.Entry(_attr_name='test2'))
         assert(hasattr(test, 'test2'))
         assert(test._node_list[3]._attr_name == 'test2')
-        test.insert(2, nodes.Entry(_attr_name='test3'))
+        test.insert_node(2, nodes.Entry(_attr_name='test3'))
         assert(hasattr(test, 'test3'))
         assert(test._node_list[2]._attr_name == 'test3')
 
@@ -466,10 +466,10 @@ class TestFormValidation(unittest.TestCase):
 
         self.assertRaises(AttributeError, stupid_2_6)
         f = Form()
-        self.assertRaises(AttributeError, f.insert, 0, nodes.Entry())
+        self.assertRaises(AttributeError, f.insert_node, 0, nodes.Entry())
         self.assertRaises(
-            AttributeError, f.insert, 0, nodes.Entry(_attr_name='name'))
+            AttributeError, f.insert_node, 0, nodes.Entry(_attr_name='name'))
         self.assertRaises(AttributeError,
-                          f.insert,
+                          f.insert_node,
                           0,
                           nodes.Entry(_attr_name='g_context'))

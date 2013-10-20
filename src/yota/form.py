@@ -213,14 +213,14 @@ class Form(_Form):
             self._node_list.insert(0, self.start)
         else:
             if self.auto_start_close:
-                self.insert(0, Leader(template=self.start_template,
+                self.insert_node(0, Leader(template=self.start_template,
                                         _attr_name='start',
                                         **self.context))
         if hasattr(self, 'close'):
             self._node_list.append(self.close)
         else:
             if self.auto_start_close:
-                self.insert(-1, Leader(template=self.close_template,
+                self.insert_node(-1, Leader(template=self.close_template,
                                            _attr_name='close',
                                            **self.context))
 
@@ -293,13 +293,6 @@ class Form(_Form):
     def is_piecewise(self):
         return bool('piecewise' in self.g_context and self.g_context['piecewise'])
 
-    def add_listener(self, listener):
-        """ Attaches a :class:`Listener` to an event type. These Listener will
-        be executed when trigger event is called. """
-        if type not in self._event_lists:
-            self._event_lists[listener.type] = []
-        self._event_lists[listener.type].append(listener)
-
     def trigger_event(self, type):
         """ Runs all the associated :class:`Listener`'s for a specific event
         type. """
@@ -309,6 +302,14 @@ class Form(_Form):
                 event()
         except KeyError:
             pass
+
+    def insert_listener(self, listener):
+        """ Attaches a :class:`Listener` to an event type. These Listener will
+        be executed when trigger event is called. """
+        if type not in self._event_lists:
+            self._event_lists[listener.type] = []
+        self._event_lists[listener.type].append(listener)
+
     def insert_validator(self, new_validators):
         """ Inserts a validator to the validator list.
 
@@ -323,7 +324,7 @@ class Form(_Form):
             # append the validator to the list
             self._validation_list.append(validator)
 
-    def insert(self, position, new_node_list):
+    def insert_node(self, position, new_node_list):
         """ Inserts a :class:`Node` object or a list of objects at the
         specified position into the :attr:`Form._node_list` of the form.
         Index -1 is an alias for the end of the list.  After insertion
@@ -345,7 +346,7 @@ class Form(_Form):
             else:
                 self._node_list.insert(position + i, new_node)
 
-    def insert_after(self, prev_attr_name, new_node_list):
+    def insert_node_after(self, prev_attr_name, new_node_list):
         """ Runs through the internal node structure attempting to find
         a :class:`Node` object whos :attr:`Node._attr_name` is
         prev_attr_name and inserts the passed node after it. If

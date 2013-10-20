@@ -26,7 +26,7 @@ class TestListeners(unittest.TestCase):
         test = yota.Form()
         test.trigger_event("dummy")
 
-    def test_add_listener(self):
+    def test_insert_listener(self):
         """ make sure no exception for empty events """
         def test_func(list):
             list.data = "testing"
@@ -34,7 +34,7 @@ class TestListeners(unittest.TestCase):
         class TForm(yota.Form):
             test = nodes.List()
         test = TForm()
-        test.add_listener(Listener("dummy", test_func, "test"))
+        test.insert_listener(Listener("dummy", test_func, "test"))
         test.trigger_event("dummy")
 
         assert test.test.data == "testing"
