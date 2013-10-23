@@ -109,8 +109,8 @@ class MinMax(object):
     __slots__ = ["minmsg", "maxmsg", "max", "min"]
 
     def __init__(self,
-                 min,
-                 max,
+                 min=None,
+                 max=None,
                  minmsg=None,
                  maxmsg=None):
         self.min = min
@@ -120,9 +120,9 @@ class MinMax(object):
         super(MinMax, self).__init__()
 
     def __call__(self, target):
-        if len(target.data) < self.min:
+        if self.min and len(target.data) < self.min:
             target.add_error({'message': self.minmsg})
-        if len(target.data) > self.max:
+        if self.max and len(target.data) > self.max:
             target.add_error({'message': self.maxmsg})
 
 
