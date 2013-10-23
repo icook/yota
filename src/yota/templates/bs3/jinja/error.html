@@ -1,19 +1,19 @@
     <div
-      {% if not errors %}
+      {% if not msgs %}
         style="display:none;"
       {% else %}
-        class="{{ errors[0]['_type_class'] }}"
+        class="{{ msgs[0]['_type_class'] }}"
       {% endif %}
         id="{{ id }}_error">
-        {% if errors|length > 1 %}
+        {% if msgs|length > 1 %}
           <ul>
-            {% for error in errors %}
-            <li>{{ error['message'] }}</li>
+            {% for msg in msgs %}
+            <li>{{ msg['message'] }}</li>
             {%endfor%}
           </ul>
         {%else%}
-          {% if errors %}
-          {{ errors[0]['message'] }}
+          {% if msgs %}
+          {{ msgs[0]['message'] }}
           {%endif%}
         {%endif%}
     </div>

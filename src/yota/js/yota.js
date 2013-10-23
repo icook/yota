@@ -61,8 +61,12 @@
             // Called upon successful return of the AJAJ call
             success: function (jsonObj)  {
                 // upon failure, deliver our error messages
+                // This block is a slightly complex system of keeping track of
+                // what has errors so it can properly send 'update' to nodes
+                // that should already have error displays, thus eliminating
+                // flicker
                 if (jsonObj.success == false) {
-                    error_obj = jsonObj.errors;
+                    error_obj = jsonObj.msgs;
                     for (var key in error_obj) {
                         if (key in errors_present) {
                             // update

@@ -174,7 +174,7 @@ example will help clarify.
 
     def MyValidator(node_in):
         if len(node_in.data) > 5:
-            node_in.add_error({'message': "You're text is too long!"})
+            node_in.add_msg({'message': "You're text is too long!"})
 
     class MyForm(yota.Form):
         test_node = yota.nodes.EntryNode()
@@ -205,7 +205,7 @@ Return Semantics
 
 Validators need not return anything explicitly, but instead provide output by
 appending error information to one of their supplied Node's errors list
-attribute via the method :meth:`Node.add_error`. This method is simply a
+attribute via the method :meth:`Node.add_msg`. This method is simply a
 wrapper around appending to a list so that different ordering or filtering
 semantics may be used if desired. The data can be put into this list is fairly
 flexible, although a dictionary is recommended. If you are running a JSON based
@@ -239,7 +239,7 @@ Looking at a builtin validator should provide additional clarity.
                 target.data = int(target.data)
             except ValueError:
                 # Type can be safely ommitted because this is an error
-                target.add_error({'message': self.message})
+                target.add_msg({'message': self.message})
 
 For rendering errors you may notice the _type_class key being looked for in the 
 error.html template. This is generated internally from what you enter as 'type'

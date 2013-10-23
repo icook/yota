@@ -23,7 +23,7 @@ class MinLength(object):
 
     def __call__(self, target):
         if len(target.data) < self.min_length:
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 
 class MaxLength(object):
@@ -45,7 +45,7 @@ class MaxLength(object):
 
     def __call__(self, target):
         if len(target.data) > self.max_length:
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 
 class NonBlockingDummy(object):
@@ -53,7 +53,7 @@ class NonBlockingDummy(object):
     """
 
     def __call__(self, target):
-        target.add_error({'message': "I'm not blocking!", 'block': False})
+        target.add_msg({'message': "I'm not blocking!", 'block': False})
 
 
 class Matching(object):
@@ -71,8 +71,8 @@ class Matching(object):
 
     def __call__(self, target1, target2):
         if target1.data != target2.data:
-            target1.add_error({'message': self.message})
-            target2.add_error({'message': self.message})
+            target1.add_msg({'message': self.message})
+            target2.add_msg({'message': self.message})
 
 
 class Integer(object):
@@ -91,7 +91,7 @@ class Integer(object):
         try:
             int(target.data)
         except ValueError:
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 
 class MinMax(object):
@@ -121,9 +121,9 @@ class MinMax(object):
 
     def __call__(self, target):
         if self.min and len(target.data) < self.min:
-            target.add_error({'message': self.minmsg})
+            target.add_msg({'message': self.minmsg})
         if self.max and len(target.data) > self.max:
-            target.add_error({'message': self.maxmsg})
+            target.add_msg({'message': self.maxmsg})
 
 
 class Regex(object):
@@ -144,7 +144,7 @@ class Regex(object):
 
     def __call__(self, target=None):
         if re.match(self.regex, target.data) is None:
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 class Password(Regex):
     """ Quick and easy check to see if a field
@@ -229,7 +229,7 @@ class PasswordStrength(object):
         for regex in self.regex:
             if re.match(regex, target.data):
                 strength += 1
-        target.add_error({'message': "Password strength is " + str(strength),
+        target.add_msg({'message': "Password strength is " + str(strength),
                           'block': False})
 
 
@@ -249,7 +249,7 @@ class Captcha(object):
                               adapter=target._parent_form.pysistor_adapter)
         test = pickle.loads(test)
         if not test.test_solutions([target.data]):
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 
 class Required(object):
@@ -266,7 +266,7 @@ class Required(object):
 
     def __call__(self, target=None):
         if len(target.data) == 0:
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 class MimeType(object):
     """ Checks to make sure a posted file is an allowed mime type
@@ -285,7 +285,7 @@ class MimeType(object):
 
     def __call__(self, target=None):
         if not target.data.type in self.mimetypes:
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 class Email(object):
     """ A direct port of the Django Email validator. Checks to see if an
@@ -338,7 +338,7 @@ class Email(object):
         if self.valid(target.data):
             return None
         else:
-            target.add_error({'message': self.message})
+            target.add_msg({'message': self.message})
 
 
 class ActionWrapper(object):

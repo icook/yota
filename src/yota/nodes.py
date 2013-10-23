@@ -67,7 +67,7 @@ class Node(object):
     template = None
     validators = []
     label = True
-    errors = []
+    msgs = []
     data = ''
 
     def __init__(self, **kwargs):
@@ -89,13 +89,18 @@ class Node(object):
         self._create_counter = Node._create_counter
         Node._create_counter += 1
 
-    def add_error(self, error):
-        """ This method serves mostly as a wrapper alowing for different error
-        ordering semantics, or possibly error post-processing. Errors from
-        validation methods should be added in this way allowing them to be
-        caught. More information about what gets passed in in the
-        :doc:`Validators` section. """
-        self.errors.append(error)
+    def add_msg(self, *args, **kwargs):
+        """ This method serves mostly as a wrapper alowing for different
+        message ordering semantics, or possibly error post-processing. Messages
+        from validation methods should be added in this way allowing them to be
+        pre-processed if needed. More information about what gets passed in in
+        the :doc:`Validators` section. """
+
+        # Allow them to pass a dictionary in position one, or define kwargs
+        if len(args) > 0:
+            self.msgs.append(args[0])
+        else:
+            self.msgs.append(kwargs)
 
     def json_identifiers(self):
         """ Allows passing arbitrary identification information to your JSON

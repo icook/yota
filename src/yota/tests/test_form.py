@@ -63,8 +63,7 @@ class TestForms(unittest.TestCase):
             close = nodes.Entry()
 
             t = nodes.Entry()
-            _t_valid = yota.Check(
-                validators.MinLength(5, message="Darn"), 't')
+            _t_valid = Check(validators.MinLength(5, message="Darn"), 't')
 
         test = TForm()
         assert(isinstance(test.start, nodes.Entry))
@@ -167,11 +166,12 @@ class TestForms(unittest.TestCase):
             t = nodes.Entry(validators=validators.Required())
 
             def error_header_generate(self, errors):
-                self.start.add_error({'message': 'This is a very specific error'})
+                self.start.add_msg({'message': 'This is a very specific error'})
                 return {'message': 'Other error'}
 
         test = TForm()
         success, render = test.validate_render({'t': ''})
+        print render
         assert(success is False)
         assert('This is a very specific error' in render)
         assert('Other error' in render)
@@ -193,7 +193,7 @@ class TestForms(unittest.TestCase):
             t = nodes.Entry()
 
             def success_json_generate(self):
-                self.start.add_error({'message': 'something else entirely'})
+                self.start.add_msg({'message': 'something else entirely'})
                 return {'message': 'something....'}
 
         test = TForm()
@@ -232,7 +232,7 @@ class TestForms(unittest.TestCase):
             assert(len(test._validation_list) >= valid_list[i])
             block, err_list = test._gen_validate({'t': ''}, internal=True)
             if valid_list[i] > 0:
-                assert(len(err_list[0].errors) >= valid_list[i])
+                assert(len(err_list[0].msgs) >= valid_list[i])
             else:
                 assert(len(err_list) == 0)
 
@@ -248,7 +248,7 @@ class TestForms(unittest.TestCase):
             block, err_list = test._gen_validate({'t': 'a'}, internal=True)
             assert(len(test._validation_list) >= valid_list[i])
             if valid_list[i] > 0:
-                assert(len(err_list[0].errors) >= valid_list[i])
+                assert(len(err_list[0].msgs) >= valid_list[i])
             else:
                 assert(len(err_list) == 0)
 
@@ -359,7 +359,7 @@ class TestFormValidation(unittest.TestCase):
             piecewise=True,
             raw=True)
         assert(success is False)
-        assert(len(json['errors']) > 0)
+        assert(len(json['msgs']) > 0)
 
     def test_piecewise_novisit(self):
         """ any non-visited nodes cause submission to block """

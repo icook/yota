@@ -279,10 +279,10 @@ class Form(_Form):
             # remove the attribute so multiple calls doesn't break things
             delattr(node, 'validators')
 
-    def _process_errors(self):
+    def _process_msgs(self):
         for node in self._node_list:
-            # process the node errors and inject special values
-            for error in node.errors:
+            # process the node messages and inject special values
+            for error in node.msgs:
                 # Try and retrieve the class values for the result type
                 # and send along the required render value
                 try:
@@ -402,7 +402,7 @@ class Form(_Form):
         as it covers this function as well as itself. """
         pass
 
-    def error_header_generate(self, errors):
+    def error_header_generate(self, msgs):
         """ This function is generally used to generate a header on the start
         Node automatically when there is an error in validation. For instance,
         you might want to say "Please fix the errors below" or something
@@ -410,9 +410,9 @@ class Form(_Form):
         failure, it is better practice to create a listener that subscribes to
         "validation_failure" event, as this function is called at the same time.
 
-        :param errors: This will be a list of all other Nodes that have errors,
+        :param msgs: This will be a list of all other Nodes that have messages,
             with the idea that you might want to list the errors that occurred.
-        :type errors: list
+        :type msgs: list
 
         .. note: By default this function does nothing.
         """
@@ -439,7 +439,7 @@ class Form(_Form):
         return ret
 
     def validate_json(self, data, piecewise="auto", raw=False):
-        """ The same as :meth:`Form.validate_render` except the errors
+        """ The same as :meth:`Form.validate_render` except the messges
         are loaded into a JSON string to be passed back as a query
         result. This output is designed to be used by the Yota
         Javascript library.
@@ -463,10 +463,10 @@ class Form(_Form):
 
     def validate_render(self, data):
         """ Runs all the validators on the `data` that is passed in and returns
-        a re-render of the :class:`Form` if there are validation errors,
+        a re-render of the :class:`Form` if there are validation message,
         otherwise it returns True representing a successful submission. Since
         validators are designed to pass error information in through the
-        :attr:`Node.errors` attribute then this error information is in turn
+        :attr:`Node.msgs` attribute then this error information is in turn
         availible through the rendering context.
 
         :param data: The data to be passed through the
@@ -493,12 +493,12 @@ class Form(_Form):
         if not invalid or not success:
             invalid = []
             for node in self._node_list:
-                if node.errors:
+                if node.msgs:
                     invalid.append(node)
 
                 # slightly confusing way of setting our block = True by
                 # default
-                for error in node.errors:
+                for error in node.msgs:
                     block |= error.get('block', True)
 
             # Make sure they have run validate
@@ -507,12 +507,12 @@ class Form(_Form):
             else:
                 success = False
 
-        errors = {}
+        msgs = {}
 
-        # convert node errors into a format for the JS callbacks
+        # convert node messages into a format for the JS callbacks
         for node in invalid:
-            errors[node._attr_name] = {'identifiers': node.json_identifiers(),
-                                       'errors': node.errors}
+            msgs[node._attr_name] = {'identifiers': node.json_identifiers(),
+                                       'msgs': node.msgs}
 
         retval = {'success': success}
 
@@ -529,10 +529,10 @@ class Form(_Form):
                 retval['success_ids'] = self.start.json_identifiers()
 
 
-        retval['errors'] = errors
+        retval['msgs'] = msgs
 
-        # process the errors before we serialize
-        self._process_errors()
+        # process the msgs before we serialize
+        self._process_msgs()
 
         # Return our raw dictionary if requested, otherwise serialize for
         # convenience...
@@ -547,8 +547,8 @@ class Form(_Form):
 
         :returns: A string containing the generated output.
         """
-        # process the errors before we render
-        self._process_errors()
+        # process the messages before we render
+        self._process_msgs()
 
         return self._renderer().render(self._node_list, self.g_context)
 
@@ -565,7 +565,7 @@ class Form(_Form):
         # reset all error lists and data, then re-resolve with the new data.
         # also parse nodes for shorthand validators at this time
         for node in self._node_list:
-            node.errors = []
+            node.msgs = []
             node.data = ''
             node.resolve_data(data)
             self._parse_shorthand_validator(node)
@@ -593,24 +593,24 @@ class Form(_Form):
         # Run the one off validation method
         self.validator()
 
-        # a list to hold Nodes that actually have errors. while this list isn't
+        # a list to hold Nodes that actually have messages. while this list isn't
         # used in this function, it's cheap to generate and saves a loop if
         # serialization is run at the same time as validation
         invalid = []
         for node in self._node_list:
-            if node.errors:
+            if node.msgs:
                 invalid.append(node)
 
             # slightly confusing way of setting our block = True by
             # default
-            for error in node.errors:
+            for error in node.msgs:
                 block |= error.get('block', True)
 
         # If it's blocking right now then there was an error, so generate
         # the error header
         header_err = self.error_header_generate(invalid)
         if header_err:
-            self.start.add_error(header_err)
+            self.start.add_msg(header_err)
 
         # Run our validation trigger events. At this point block represents just
         # the validation
