@@ -171,7 +171,6 @@ class TestForms(unittest.TestCase):
 
         test = TForm()
         success, render = test.validate_render({'t': ''})
-        print render
         assert(success is False)
         assert('This is a very specific error' in render)
         assert('Other error' in render)
